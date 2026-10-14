@@ -25,7 +25,7 @@ Status: draft for edition 2026. Anything not listed here is not in the language 
 - **Bare values:** a run of non-whitespace characters, not ending in `,`
   (`ghcr.io/me/api:latest`, `api.example.com`, `/`, `eu-west-2`).
 - **Quoted strings:** `"..."` with `\"` and `\\` escapes.
-- **Numbers:** integers. **Ranges:** `2 to 10`. **Durations:** `30s`, `5m`, `1h`.
+- **Numbers:** integers. **Ranges:** `2 to 10`. **Durations:** `30s`, `5m`, `1h`, `14d`.
   These are ordinary words to the lexer; `check` gives them meaning from the
   property they appear in.
 - **Keywords are contextual** (see D8). The lexer only produces words, strings,
@@ -150,11 +150,11 @@ now.
 
 | Kind | AWS | GCP | Key properties / traits |
 |---|---|---|---|
-| `service` | ECS Fargate | Cloud Run | `image`, `port`, `scale`, `cpu`, `memory`, `env` |
-| `database` | RDS | Cloud SQL | traits: engine + version, size (`small`/`medium`/`large`) |
-| `bucket` | S3 | GCS | traits: `private`/`public` |
+| `service` | ECS Fargate | Cloud Run | `image`, `port`, `scale`, `cpu`, `memory`, `env`, `health check`, `command` |
+| `database` | RDS | Cloud SQL | traits: engine + version, size, `highly available`, `protected`; `storage`, `backups` |
+| `bucket` | S3 | GCS | traits: `private`/`public`, `versioned`, `protected`; `expire after` |
 | `load balancer` / `lb` | ALB | External HTTPS LB | `listen on <port> [with tls for <domain>]`, `send <path> to <name>` |
-| `queue` | SQS | Pub/Sub | traits: `fifo` (where supported) |
+| `queue` | SQS | Pub/Sub | traits: `fifo`; `retry`, `timeout`, `keep messages for` |
 
 The full per-cloud support table lives in the capability matrix (see 03-check.md),
 not here.
@@ -175,22 +175,46 @@ left out takes the default shown. Keys and keyword values (`to`, `on`,
 | `cpu` | vCPUs: `0.25`, `0.5`, `1`, `2`, `4`, `8` | cloud default |
 | `memory` | whole `mb` or `gb` (binary: `1gb` = `1024mb`) | cloud default |
 | `env` | `env <NAME> <value>`, repeatable; quote values with spaces | — |
+| `health check` | `health check <path>`: the path load balancers check; it must answer 2xx or 3xx | `/`, where any answer below 500 counts |
+| `command` | `command <word...>`: replaces the image's command; quote words with spaces | the image's |
 
-**`database`** — traits only, no properties.
+**`database`**
 
 | Trait group | Values | Default |
 |---|---|---|
 | engine | `postgres [<version>]`, `mysql [<version>]` | required |
 | size | `small`, `medium`, `large` | `small` |
+| availability | `highly available`: a standby in another zone takes over on failure | one zone |
+| protection | `protected`: can't be deleted, and keeps a final snapshot | deleted by `clowd destroy` (D15) |
+
+| Property | Form | Default |
+|---|---|---|
+| `storage` | `storage <n>gb`, 20–65536; grows automatically on AWS | cloud default |
+| `backups` | `backups <n> days` (1–365, at most 35 on AWS) or `backups off` | cloud default |
 
 A missing version means the backend's default for that engine. Versions are
 numbers like `16` or `8.0`; which ones a cloud offers is in the capability
 matrix. Postgres versions are majors (`16`, or `16.4` to pin a minor). MySQL
 versions name a release line (`8.0`, `8.4`), so a bare `mysql 8` is an error.
 
-**`bucket`** — trait `private` (default) or `public`.
+**`bucket`** — traits `private` (default) or `public`; `versioned` keeps
+every version of an object; `protected` can't be deleted while it holds
+objects (otherwise `clowd destroy` empties it, D15).
+
+| Property | Form | Default |
+|---|---|---|
+| `expire after` | `expire after <n>d`: deletes objects (and, when versioned, old versions) after whole days | kept |
 
 **`queue`** — trait `fifo` (ordered, exactly-once); standard by default.
+
+| Property | Form | Default |
+|---|---|---|
+| `retry` | `retry <n> times`: after the first try and n retries, a message moves to the dead-letter queue `<name>-dead` | retried until it expires |
+| `timeout` | `timeout <duration>`, 1s–12h: how long a consumer has before the message is delivered again | cloud default |
+| `keep messages for` | `keep messages for <duration>`, 1m–31d: how long unhandled messages are kept | cloud default |
+
+Each cloud's narrower limits (GCP: 4–99 retries and a 10s–600s timeout;
+AWS: messages kept for at most 14d) are reported by the capability matrix.
 
 **`load balancer`** — trait `public` (default) or `internal`.
 

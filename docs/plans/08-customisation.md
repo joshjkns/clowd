@@ -1,8 +1,7 @@
-# Customisation without clowd.toml (proposal)
+# Customisation without clowd.toml
 
-Status: proposal. Nothing here is in the spec yet. If it is accepted, the
-spec (01-language.md), the CLI plan (04-cli.md), versioning (06-versioning.md)
-and the decision log change in the same PR as the first implementation step.
+Status: implemented (D16–D18). The spec (01-language.md) and the CLI plan
+(04-cli.md) are the reference; this records why it is shaped this way.
 
 ## Problem
 
@@ -289,38 +288,30 @@ Lowering still sees only the IR. Network and tags now come from the
 program, not from `lower/aws.Options`, which removes the one path from
 config to lowering that bypassed the IR.
 
-## Order of work
+## How it landed
 
-Each step is one PR that builds and passes tests.
+Three stacked PRs, each building and passing tests, landed before
+`feat/cli-deploy` merged, so the CLI never shipped with TOML:
 
-1. **Sub-blocks in the grammar.** Parser, AST, formatter, goldens. No new
-   meaning yet: `check` rejects children wherever they aren't allowed.
-2. **`on <cloud>` inside resources.** Move overrides; error on the old form;
-   nested provider blocks with allowlists. Update `examples/app.clowd`.
-3. **`project` and `network`; remove clowd.toml.** Move network and name
-   into the IR; JSON lock; `--runtime`. Record decisions D16–D18 (below).
-4. **Portable properties**, one kind per PR, each with capability entries
-   and AWS lowering.
+1. **Sub-blocks and `on` inside resources** (D16): the grammar change,
+   nested provider blocks with a schema allowlist, and the old top-level
+   form reported with its replacement.
+2. **`project` and `network`; no clowd.toml** (D17): settings in the IR,
+   a JSON lock, `--runtime` / `CLOWD_RUNTIME`.
+3. **Portable properties** (D18): every kind's additions at once, with
+   capability entries and AWS lowering.
 
-Steps 1–3 should land before `feat/cli-deploy` merges, so the CLI doesn't
-ship with TOML that is removed immediately afterwards.
-
-## Decisions this would record
-
-- **D16:** No `clowd.toml`. Project and network settings are written in
-  Clowd. This supersedes D7 (edition in TOML) and D12 (TOML-subset parser),
-  and the "deploy settings" part of D14.
-- **D17:** Overrides live inside the resource they change, and may set
-  nested blocks. This supersedes the form in the spec and extends D13.
-- **D18:** The four-layer rule: portable first, per-cloud nested, program-wide
-  declarations, machine settings as flags.
+Details that differ from the sketch above: `retry <n> times` counts
+retries, so clouds see one more delivery than the number written; keys
+in a resource's `on` block keep their case in `clowd fmt`, since they are
+provider data; values outside one cloud's limits are ✗ in the matrix
+rather than ⚠; `network is private` applies to the whole network rather
+than per service, because NAT is paid for per network and
+`service api is private` would read as "not exposed".
 
 ## Open questions
 
-- `network is private` versus a per-service trait. Per-service is more
-  granular, but NAT is paid for per network, and `service api is private`
-  would read as "not exposed", which every service already is.
 - Should `project` live in its own file once multi-file programs exist
   (like `go.mod`)? Probably yes. It would still be Clowd syntax.
-- `backups` on GCP counts retained daily backups, not days. That matches
-  `backups <n> days` only while backups are daily.
+- Environments (`in prod` blocks) and shared defaults (`every service`)
+  build on the same grammar but are not designed yet.

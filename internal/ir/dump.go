@@ -59,6 +59,12 @@ func Dump(src *diag.File, p *Program) string {
 			for _, e := range r.Env {
 				line(1, "env %s=%q", e.Name, e.Value)
 			}
+			if r.HealthCheck != "" {
+				line(1, "health check %s", r.HealthCheck)
+			}
+			if r.Command != nil {
+				line(1, "command %q", r.Command)
+			}
 		case *Database:
 			version := r.Version
 			if version == "" {
@@ -70,10 +76,40 @@ func Dump(src *diag.File, p *Program) string {
 			}
 			line(1, "engine %s %s", engine, version)
 			line(1, "size %s", r.Size)
+			if r.HighlyAvailable {
+				line(1, "highly available")
+			}
+			if r.Protected {
+				line(1, "protected")
+			}
+			if r.StorageGB != 0 {
+				line(1, "storage %dgb", r.StorageGB)
+			}
+			if r.Has("backups") {
+				line(1, "backups %d days", r.BackupDays)
+			}
 		case *Bucket:
 			line(1, "public %t", r.Public)
+			if r.Versioned {
+				line(1, "versioned")
+			}
+			if r.Protected {
+				line(1, "protected")
+			}
+			if r.ExpireDays != 0 {
+				line(1, "expire after %d days", r.ExpireDays)
+			}
 		case *Queue:
 			line(1, "fifo %t", r.FIFO)
+			if r.Retries != 0 {
+				line(1, "retry %d times", r.Retries)
+			}
+			if r.Timeout != 0 {
+				line(1, "timeout %ds", r.Timeout)
+			}
+			if r.Retention != 0 {
+				line(1, "keep messages for %ds", r.Retention)
+			}
 		case *LoadBalancer:
 			line(1, "internal %t", r.Internal)
 			for _, l := range r.Listeners {

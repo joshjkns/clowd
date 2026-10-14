@@ -82,6 +82,9 @@ func (l *lowerer) service(s *ir.Service) {
 			},
 		},
 	}
+	if s.Command != nil {
+		container["command"] = s.Command
+	}
 	taskDef := l.cfg.Resource("aws_ecs_task_definition", n, tfjson.Body{
 		"family":                   l.physical(255, n),
 		"requires_compatibilities": []string{"FARGATE"},
@@ -134,6 +137,10 @@ func (l *lowerer) service(s *ir.Service) {
 	if len(targets) > 0 {
 		svc["load_balancer"] = targets
 		svc["health_check_grace_period_seconds"] = 60
+	} else if s.HealthCheck != "" {
+		// ECS checks a container's health with a command inside the
+		// image, which Clowd can't assume exists.
+		l.diags.Add(diag.Infof(s.At("health"), "on aws: the health check is used by load balancers, and none sends to %s; ECS restarts it only when it exits", s.Name))
 	}
 	autoscale := s.Scale.Min < s.Scale.Max
 	if autoscale {

@@ -44,7 +44,7 @@ error: aws_s3_bucket has no setting `versioning` that `on aws` can change
    |
 34 |     versioning true
    |     ^^^^^^^^^^
-   = help: aws_s3_bucket settings that can be changed: force_destroy, object_lock_enabled
+   = help: use the `versioned` trait instead, which works on every cloud
 
 error: aws_lb has no setting `subnets` that `on aws` can change
   --> overrides.clowd:45:5

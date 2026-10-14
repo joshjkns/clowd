@@ -143,3 +143,18 @@ each setting went, rather than being silently ignored. Without a
 `project` declaration the directory's name is still used, but
 `clowd init` writes one, so renaming the directory doesn't rename
 everything deployed.
+
+## D18 — Portable first: customisation has a plain-English form where clouds agree
+Each setting goes in one place, chosen by what it means: a portable
+property or trait when every cloud can express it (`storage 50gb`,
+`highly available`, `retry 5 times`), an `on <cloud>` block in the
+resource when it belongs to one cloud (D16), a `project` or `network`
+declaration when it isn't about one resource (D17), and a CLI flag when
+it is about the machine. Portable features go in the capability matrix,
+which reports a cloud's narrower limits (Pub/Sub's 5–100 delivery
+attempts, RDS's 35 days of backups) instead of the syntax narrowing to
+the strictest cloud. `on` blocks are for what really is one cloud's, so
+the overrides allowlist points at the portable form where there is one
+(`versioning` on a bucket → the `versioned` trait). `protected` replaces
+the per-cloud overrides D15 suggested for data that must survive
+`clowd destroy`.

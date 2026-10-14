@@ -54,6 +54,19 @@ const (
 	ProjectTags    Feature = "project tags"
 	PrivateNetwork Feature = "private network"
 	NetworkCIDR    Feature = "network address block"
+
+	ServiceHealthCheck Feature = "service health check path"
+	ServiceCommand     Feature = "service command"
+	DatabaseHA         Feature = "highly available database"
+	DatabaseProtected  Feature = "protected database"
+	DatabaseStorage    Feature = "database storage size"
+	DatabaseBackups    Feature = "database backup retention"
+	BucketVersioning   Feature = "versioned bucket"
+	BucketProtected    Feature = "protected bucket"
+	BucketExpiry       Feature = "bucket object expiry"
+	QueueRetry         Feature = "queue retries with a dead-letter queue"
+	QueueTimeout       Feature = "queue timeout"
+	QueueRetention     Feature = "queue message retention"
 )
 
 func (f Feature) isKind() bool {
@@ -119,6 +132,12 @@ func resourceFeatures(r ir.Resource) []use {
 		if len(r.Env) > 0 {
 			add(ServiceEnv, "env")
 		}
+		if r.HealthCheck != "" {
+			add(ServiceHealthCheck, "health")
+		}
+		if r.Command != nil {
+			add(ServiceCommand, "command")
+		}
 	case *ir.Database:
 		switch r.Engine {
 		case ir.Postgres:
@@ -129,13 +148,51 @@ func resourceFeatures(r ir.Resource) []use {
 		if r.Version != "" && r.Engine != 0 {
 			uses = append(uses, use{feature: DatabaseVersion, pos: h.At("engine"), check: versionCheck(r.Engine, r.Version)})
 		}
+		if r.HighlyAvailable {
+			add(DatabaseHA, "availability")
+		}
+		if r.Protected {
+			add(DatabaseProtected, "protection")
+		}
+		if r.StorageGB != 0 {
+			add(DatabaseStorage, "storage")
+		}
+		if r.Has("backups") {
+			uses = append(uses, use{feature: DatabaseBackups, pos: h.At("backups"), check: rangeCheck(DatabaseBackups, r.BackupDays, maxBackupDays, "backups are kept for at most %d days")})
+		}
 	case *ir.Bucket:
 		if r.Public {
 			add(PublicBucket, "visibility")
 		}
+		if r.Versioned {
+			add(BucketVersioning, "versioning")
+		}
+		if r.Protected {
+			add(BucketProtected, "protection")
+		}
+		if r.ExpireDays != 0 {
+			add(BucketExpiry, "expire")
+		}
 	case *ir.Queue:
 		if r.FIFO {
 			add(FIFOQueue, "fifo")
+		}
+		if r.Retries != 0 {
+			// Clouds count deliveries: the first try and the retries.
+			uses = append(uses, use{feature: QueueRetry, pos: h.At("retry"), check: limitCheck(QueueRetry, r.Retries+1, queueDeliveries,
+				func(lo, hi int) string { return fmt.Sprintf("a message can be retried %d to %d times", lo-1, hi-1) })})
+		}
+		if r.Timeout != 0 {
+			uses = append(uses, use{feature: QueueTimeout, pos: h.At("timeout"), check: limitCheck(QueueTimeout, r.Timeout, queueTimeouts,
+				func(lo, hi int) string {
+					return fmt.Sprintf("the timeout is between %s and %s", seconds(lo), seconds(hi))
+				})})
+		}
+		if r.Retention != 0 {
+			uses = append(uses, use{feature: QueueRetention, pos: h.At("keep"), check: limitCheck(QueueRetention, r.Retention, queueRetention,
+				func(lo, hi int) string {
+					return fmt.Sprintf("messages are kept for %s to %s", seconds(lo), seconds(hi))
+				})})
 		}
 	case *ir.LoadBalancer:
 		if r.Internal {
@@ -240,6 +297,41 @@ func tagCheck(value string) func(ir.Cloud) Entry {
 		}
 		return Lookup(ProjectTags, cloud)
 	}
+}
+
+// rangeCheck returns a check that n is at most a cloud's limit in max;
+// clouds without a limit take the matrix entry.
+func rangeCheck(f Feature, n int, max map[ir.Cloud]int, note string) func(ir.Cloud) Entry {
+	return func(cloud ir.Cloud) Entry {
+		if limit, ok := max[cloud]; ok && n > limit {
+			return Entry{Level: Unsupported, Note: fmt.Sprintf(note, limit)}
+		}
+		return Lookup(f, cloud)
+	}
+}
+
+// limitCheck returns a check that n is within a cloud's [lo, hi] in
+// limits; note describes the range.
+func limitCheck(f Feature, n int, limits map[ir.Cloud][2]int, note func(lo, hi int) string) func(ir.Cloud) Entry {
+	return func(cloud ir.Cloud) Entry {
+		if l, ok := limits[cloud]; ok && (n < l[0] || n > l[1]) {
+			return Entry{Level: Unsupported, Note: note(l[0], l[1])}
+		}
+		return Lookup(f, cloud)
+	}
+}
+
+// seconds writes a number of seconds in the largest unit that divides it.
+func seconds(s int) string {
+	for _, u := range []struct {
+		n    int
+		unit string
+	}{{86400, "d"}, {3600, "h"}, {60, "m"}} {
+		if s >= u.n && s%u.n == 0 {
+			return fmt.Sprintf("%d%s", s/u.n, u.unit)
+		}
+	}
+	return fmt.Sprintf("%ds", s)
 }
 
 // memoryCheck returns a check that a cloud's services can have mib of

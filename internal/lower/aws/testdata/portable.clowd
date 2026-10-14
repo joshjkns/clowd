@@ -1,0 +1,35 @@
+use aws in eu-west-2
+
+service api
+  image a
+  health check /healthz
+  command ./server --port 8080
+
+service worker
+  image b
+  health check /up
+
+load balancer web
+  listen on 80
+  send / to api
+
+database db is postgres 16, highly available, protected
+  storage 50gb
+  backups 14 days
+
+database scratch is postgres
+  backups off
+
+bucket uploads is versioned, protected
+  expire after 30d
+
+bucket tmp
+  expire after 1d
+
+queue jobs
+  retry 4 times
+  timeout 2m
+  keep messages for 4d
+
+queue events is fifo
+  retry 1 time
