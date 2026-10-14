@@ -3,6 +3,7 @@ package parser
 import (
 	"strings"
 
+	"github.com/joshjkns/clowd/internal/spell"
 	"github.com/joshjkns/clowd/internal/syntax/ast"
 )
 
@@ -91,7 +92,7 @@ func guessKind(word string) (ast.Kind, bool) {
 		return k, true
 	}
 	for _, k := range kinds {
-		if len(k.words) == 1 && len(k.words[0]) > 2 && isTypo(w, k.words[0]) {
+		if len(k.words) == 1 && len(k.words[0]) > 2 && spell.IsTypo(w, k.words[0]) {
 			return k.value, true
 		}
 	}
@@ -102,49 +103,9 @@ func guessKind(word string) (ast.Kind, bool) {
 func guessVerb(word string) (ast.Verb, bool) {
 	w := strings.ToLower(word)
 	for _, v := range verbs {
-		if isTypo(w, v.words[0]) {
+		if spell.IsTypo(w, v.words[0]) {
 			return v.value, true
 		}
 	}
 	return ast.BadVerb, false
-}
-
-// isTypo reports whether got is a plausible misspelling of want: within one
-// edit for short words and two for longer ones, but not identical.
-func isTypo(got, want string) bool {
-	limit := 1
-	if len(want) > 4 {
-		limit = 2
-	}
-	d := distance(got, want)
-	return d > 0 && d <= limit
-}
-
-// distance is the optimal string alignment distance between a and b:
-// insertions, deletions, substitutions and adjacent transpositions each
-// cost 1, so "servcie" is one edit from "service".
-func distance(a, b string) int {
-	ra, rb := []rune(a), []rune(b)
-	// d[i][j] is the distance between ra[:i] and rb[:j].
-	d := make([][]int, len(ra)+1)
-	for i := range d {
-		d[i] = make([]int, len(rb)+1)
-		d[i][0] = i
-	}
-	for j := range d[0] {
-		d[0][j] = j
-	}
-	for i := 1; i <= len(ra); i++ {
-		for j := 1; j <= len(rb); j++ {
-			cost := 1
-			if ra[i-1] == rb[j-1] {
-				cost = 0
-			}
-			d[i][j] = min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+cost)
-			if i > 1 && j > 1 && ra[i-1] == rb[j-2] && ra[i-2] == rb[j-1] {
-				d[i][j] = min(d[i][j], d[i-2][j-2]+1)
-			}
-		}
-	}
-	return d[len(ra)][len(rb)]
 }

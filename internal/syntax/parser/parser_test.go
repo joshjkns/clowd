@@ -144,25 +144,6 @@ func typeName(s ast.Stmt) string {
 	return "?"
 }
 
-func TestDistance(t *testing.T) {
-	tests := []struct {
-		a, b string
-		want int
-	}{
-		{"service", "service", 0},
-		{"servcie", "service", 1}, // transposition
-		{"servic", "service", 1},
-		{"sevrcie", "service", 2},
-		{"", "abc", 3},
-		{"queue", "quuee", 1}, // adjacent swap
-	}
-	for _, tt := range tests {
-		if got := distance(tt.a, tt.b); got != tt.want {
-			t.Errorf("distance(%q, %q) = %d, want %d", tt.a, tt.b, got, tt.want)
-		}
-	}
-}
-
 // FuzzParse checks that no input makes the parser panic, loop forever or
 // produce malformed spans.
 func FuzzParse(f *testing.F) {
