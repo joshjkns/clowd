@@ -1,0 +1,34 @@
+# Every construct, with canonical and non-canonical spelling.
+use aws in eu-west-2
+use gcp
+USE Azure IN "west europe"
+
+database db is postgres 16, small
+Database cache is redis 7 and small and internal
+bucket uploads is private
+queue jobs is fifo
+lb edge
+Load Balancer web is public
+  listen on 443 with tls for api.example.com
+  send / to api
+
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+  env GREETING "hello, world"
+  healthcheck
+
+api connects to db
+api reads and writes uploads
+api reads uploads
+api writes uploads
+api sends to jobs
+API Connects To DB
+queue connects to db
+on reads uploads
+
+on aws
+  service api sets capacity_provider to FARGATE_SPOT
+  load balancer web sets idle_timeout to 120
+  database db sets tags to "team: payments"

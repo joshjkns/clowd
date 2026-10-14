@@ -1,0 +1,8 @@
+  use aws
+create service api
+create
+"quoted" at start
+, comma at start
+hello
+  child of unknown statement
+service api

@@ -1,0 +1,16 @@
+service
+service is public
+bucket uploads private
+database db is
+database db is postgres 16,
+database db is , small
+service "api"
+servcie worker
+  image x
+server web
+  port 80
+service api
+  image x
+    nested y
+  env A a, b
+  "quoted" x

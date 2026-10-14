@@ -1,0 +1,53 @@
+use 1:3-1:10
+  cloud "aws" 1:7-1:10
+declare 2:8-2:19 service
+  kind 2:8-2:15
+  name "api" 2:16-2:19
+bad 3:7-4:1
+bad 4:1-4:18
+bad 5:1-5:17
+bad 6:1-6:6
+declare 8:1-8:12 service
+  kind 8:1-8:8
+  name "api" 8:9-8:12
+
+diagnostics:
+error: unexpected indentation
+ --> err_misc.clowd:1:3
+  |
+1 |   use aws
+  |   ^^^^^^^
+  = help: top-level statements start at the beginning of the line
+
+error: statements don't start with `create`
+ --> err_misc.clowd:2:1
+  |
+2 | create service api
+  | ^^^^^^
+  = help: remove `create`: a Clowd file describes what exists
+
+error: statements don't start with `create`
+ --> err_misc.clowd:3:1
+  |
+3 | create
+  | ^^^^^^
+  = help: remove `create`: a Clowd file describes what exists
+
+error: unexpected `"quoted"` at the start of a statement
+ --> err_misc.clowd:4:1
+  |
+4 | "quoted" at start
+  | ^^^^^^^^
+
+error: unexpected `,` at the start of a statement
+ --> err_misc.clowd:5:1
+  |
+5 | , comma at start
+  | ^
+
+error: unknown statement `hello`
+ --> err_misc.clowd:6:1
+  |
+6 | hello
+  | ^^^^^
+  = help: statements start with `use`, `on` or a resource kind (`service`, `database`, `bucket`, `load balancer`, `queue`), or relate two names: `api connects to db`
