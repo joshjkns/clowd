@@ -1,0 +1,22 @@
+# A web API with a database and file uploads, deployable to AWS and GCP.
+
+use aws in eu-west-2
+use gcp in europe-west2
+
+database db is postgres 16, small
+bucket uploads is private
+
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+
+load balancer web is public
+  listen on 443 with tls for api.example.com
+  send / to api
+
+api connects to db
+api reads and writes uploads
+
+on aws
+  service api sets capacity_provider to FARGATE_SPOT

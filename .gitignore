@@ -1,0 +1,28 @@
+# Build output
+/bin/
+/dist/
+/clowd
+
+# Clowd working directories (build output, tofu state for local runs)
+.clowd/
+
+# OpenTofu / Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Go
+*.test
+*.out
+coverage.*
+
+# Editor extensions
+editors/vscode/node_modules/
+editors/vscode/out/
+*.vsix
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
