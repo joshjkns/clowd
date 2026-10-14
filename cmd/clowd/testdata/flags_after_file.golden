@@ -1,15 +1,22 @@
 exit 1
 --- stdout
-                              aws    azure
-database db                   ✓      ✗      azure: database not implemented yet
-bucket uploads                ✓      ✗      azure: bucket not implemented yet
-service api                   ✓      ✗      azure: service not implemented yet
-load balancer web             ✓      ✗      azure: load balancer not implemented yet
-api connects to db            ✓      ✗      azure: service connects to database not implemented yet
-api reads and writes uploads  ✓      ✗      azure: service reads or writes bucket not implemented yet
-on aws                        ✓      –
+../../examples/app.clowd → aws (eu-west-2), azure
 
-Deployable: aws ✓  azure ✗
+Resources                       aws    azure
+  database db                   ✓      ✗      azure: database not implemented yet
+  bucket uploads                ✓      ✗      azure: bucket not implemented yet
+  service api                   ✓      ✗      azure: service not implemented yet
+  load balancer web             ✓      ✗      azure: load balancer not implemented yet
+
+Relationships
+  api connects to db            ✓      ✗      azure: service connects to database not implemented yet
+  api reads and writes uploads  ✓      ✗      azure: service reads or writes bucket not implemented yet
+
+Overrides
+  on aws                        ✓      –
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws · ✗ not deployable to azure
 --- stderr
 warning: database is not implemented for azure yet
  --> ../../examples/app.clowd:6:10

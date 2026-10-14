@@ -10,3 +10,5 @@ error: unknown relationship `links to`
   = help: did you mean `connects to`?
 
 testdata/errors.clowd: 1 error; not formatted
+
+✗ 1 of 2 files needs formatting; run `clowd fmt` · ✗ 1 file could not be formatted

@@ -9,6 +9,7 @@ exit 2
       "deployable": {},
       "rows": [
         {
+          "section": "resources",
           "label": "service api",
           "pos": {
             "line": 1,

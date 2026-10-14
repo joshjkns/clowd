@@ -1,0 +1,48 @@
+exit 1
+--- stdout
+␛[1mtestdata/undeployable.clowd␛[0m → ␛[1maws␛[0m ␛[2m(eu-west-2)␛[0m, ␛[1mgcp␛[0m ␛[2m(europe-west2)␛[0m
+
+␛[1mResources␛[0m                 ␛[1maws␛[0m  ␛[1mgcp␛[0m
+  service api             ␛[31m✗␛[0m    ␛[32m✓␛[0m    ␛[31maws:␛[0m ␛[2mECS Fargate can't start a task for an incoming request, so the minimum must be at least 1␛[0m
+  service worker          ␛[32m✓␛[0m    ␛[32m✓␛[0m
+  queue jobs              ␛[32m✓␛[0m    ␛[33m⚠␛[0m    ␛[33mgcp:␛[0m ␛[2mPub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput␛[0m
+  load balancer web       ␛[32m✓␛[0m    ␛[31m✗␛[0m    ␛[31mgcp:␛[0m ␛[2mpublic load balancers serve HTTP on 80 or 8080 and HTTPS on 443␛[0m
+
+␛[1mRelationships␛[0m
+  api sends to jobs       ␛[32m✓␛[0m    ␛[32m✓␛[0m
+  worker reads jobs       ␛[32m✓␛[0m    ␛[33m⚠␛[0m    ␛[33mgcp:␛[0m ␛[2mCloud Run consumes a pull subscription, so CPU stays allocated while instances run␛[0m
+  api connects to worker  ␛[31m✗␛[0m    ␛[31m✗␛[0m    ␛[31maws, gcp:␛[0m ␛[2mservice connects to service not implemented yet␛[0m
+
+␛[2m✓ supported  ⚠ emulated  ✗ unavailable  – not applicable␛[0m
+␛[1;31m✗ not deployable to aws, gcp␛[0m
+--- stderr
+␛[1;33mwarning␛[0m␛[1m:␛[0m ␛[1mnot supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1␛[0m
+ ␛[1;34m-->␛[0m testdata/undeployable.clowd:6:3
+  ␛[1;34m|␛[0m
+␛[1;34m6␛[0m ␛[1;34m|␛[0m   scale 0 to 4
+  ␛[1;34m|␛[0m   ␛[1;33m^^^^^^^^^^^^␛[0m
+
+␛[1;34minfo␛[0m␛[1m:␛[0m ␛[1mon gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput␛[0m
+  ␛[1;34m-->␛[0m testdata/undeployable.clowd:11:15
+   ␛[1;34m|␛[0m
+␛[1;34m11␛[0m ␛[1;34m|␛[0m queue jobs is fifo
+   ␛[1;34m|␛[0m               ␛[1;34m^^^^␛[0m
+
+␛[1;33mwarning␛[0m␛[1m:␛[0m ␛[1mnot supported on gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443␛[0m
+  ␛[1;34m-->␛[0m testdata/undeployable.clowd:14:3
+   ␛[1;34m|␛[0m
+␛[1;34m14␛[0m ␛[1;34m|␛[0m   listen on 8443
+   ␛[1;34m|␛[0m   ␛[1;33m^^^^^^^^^^^^^^␛[0m
+
+␛[1;34minfo␛[0m␛[1m:␛[0m ␛[1mon gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run␛[0m
+  ␛[1;34m-->␛[0m testdata/undeployable.clowd:18:1
+   ␛[1;34m|␛[0m
+␛[1;34m18␛[0m ␛[1;34m|␛[0m worker reads jobs
+   ␛[1;34m|␛[0m ␛[1;34m^^^^^^^^^^^^^^^^^␛[0m
+
+␛[1;33mwarning␛[0m␛[1m:␛[0m ␛[1mservice connects to service is not implemented for aws and gcp yet␛[0m
+  ␛[1;34m-->␛[0m testdata/undeployable.clowd:19:1
+   ␛[1;34m|␛[0m
+␛[1;34m19␛[0m ␛[1;34m|␛[0m api connects to worker
+   ␛[1;34m|␛[0m ␛[1;33m^^^^^^^^^^^^^^^^^^^^^^␛[0m
+

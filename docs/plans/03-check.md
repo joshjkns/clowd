@@ -7,17 +7,28 @@ infrastructure — before anything is deployed.
 
 ```
 $ clowd check app.clowd
-                 aws   gcp   azure
-database db       ✓     ✓     ✓
-bucket uploads    ✓     ✓     ✓
-service api       ✓     ✓     ⚠  min scale 2 needs a dedicated plan
-lb web            ✓     ✓     ✗  path routing with TLS not yet implemented
-on aws ...        ✓     –     –
+app.clowd → aws (eu-west-2), gcp (europe-west2), azure (uksouth)
 
-Deployable: aws ✓  gcp ✓  azure ✗
+Resources            aws  gcp  azure
+  database db        ✓    ✓    ✓
+  bucket uploads     ✓    ✓    ✓
+  service api        ✓    ✓    ⚠    azure: min scale 2 needs a dedicated plan
+  load balancer web  ✓    ✓    ✗    azure: path routing with TLS not implemented yet
+
+Relationships
+  api connects to db ✓    ✓    ✓
+
+Overrides
+  on aws             ✓    –    –
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws, gcp · ✗ not deployable to azure
 ```
 
 Columns are the clouds in the file's `use` lines (or `--target` to check others).
+Rows are grouped into resources, relationships and overrides. On a terminal
+the marks are coloured (✓ green, ⚠ yellow, ✗ red) and so is the cloud name
+before each note, so a blocking finding stands out (04-cli.md, Output).
 
 ## Support levels
 

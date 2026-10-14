@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/joshjkns/clowd/internal/golden"
@@ -41,6 +42,11 @@ func TestCLI(t *testing.T) {
 		{"fmt_check_unformatted", []string{"fmt", "../../examples/app.clowd", "--check", "testdata/unformatted.clowd"}, exitFailure},
 		{"fmt_check_errors", []string{"fmt", "--check", "testdata/errors.clowd", "testdata/unformatted.clowd"}, exitBadInput},
 		{"fmt_missing_file", []string{"fmt", "--check", "testdata/nope.clowd"}, exitBadInput},
+		{"color_check", []string{"check", "--color=always", "testdata/undeployable.clowd"}, exitFailure},
+		{"color_errors", []string{"check", "--color", "always", "testdata/errors.clowd"}, exitBadInput},
+		{"color_fmt", []string{"fmt", "--check", "--color=always", "testdata/unformatted.clowd"}, exitFailure},
+		{"color_never", []string{"check", "--color=never", "../../examples/app.clowd"}, exitOK},
+		{"bad_color", []string{"check", "--color=rainbow", "../../examples/app.clowd"}, exitBadInput},
 		{"unknown_command", []string{"deploy"}, exitBadInput},
 		{"no_args", nil, exitBadInput},
 	}
@@ -51,6 +57,8 @@ func TestCLI(t *testing.T) {
 				t.Errorf("exit code %d, want %d\nstdout:\n%s\nstderr:\n%s", code, tt.code, stdout, stderr)
 			}
 			got := fmt.Sprintf("exit %d\n--- stdout\n%s--- stderr\n%s", code, stdout, stderr)
+			// Show escapes as ␛ so coloured goldens are readable in a diff.
+			got = strings.ReplaceAll(got, "\x1b", "␛")
 			golden.Check(t, filepath.Join("testdata", tt.name+".golden"), got)
 		})
 	}

@@ -2,3 +2,4 @@ exit 1
 --- stdout
 testdata/unformatted.clowd
 --- stderr
+✗ 1 of 2 files needs formatting; run `clowd fmt`

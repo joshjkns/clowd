@@ -107,8 +107,31 @@ type Cell struct {
 	Findings []Finding
 }
 
+// Section is the part of the matrix a row belongs to.
+type Section int
+
+// Sections, in the order the matrix lists them.
+const (
+	SectionResources Section = iota
+	SectionRelationships
+	SectionOverrides
+)
+
+func (s Section) String() string {
+	switch s {
+	case SectionResources:
+		return "resources"
+	case SectionRelationships:
+		return "relationships"
+	case SectionOverrides:
+		return "overrides"
+	}
+	return fmt.Sprintf("Section(%d)", int(s))
+}
+
 // Row is one line of the matrix: a resource, a relation or an `on` block.
 type Row struct {
+	Section Section
 	// Label is how the row is shown: "service api", "api connects to db",
 	// "on aws".
 	Label string
@@ -188,8 +211,8 @@ func (r *Report) Diagnostics() diag.List {
 // be any clouds (`clowd check --target`).
 func Evaluate(p *ir.Program, clouds []ir.Cloud) *Report {
 	rep := &Report{Clouds: clouds}
-	add := func(label string, pos diag.Span, uses []use) {
-		row := Row{Label: label, Pos: pos}
+	add := func(sec Section, label string, pos diag.Span, uses []use) {
+		row := Row{Section: sec, Label: label, Pos: pos}
 		for _, c := range clouds {
 			row.Cells = append(row.Cells, evaluate(uses, c))
 		}
@@ -197,15 +220,15 @@ func Evaluate(p *ir.Program, clouds []ir.Cloud) *Report {
 	}
 	for _, r := range p.Resources {
 		h := r.Meta()
-		add(fmt.Sprintf("%s %s", r.Kind(), h.Name), h.Pos, resourceFeatures(r))
+		add(SectionResources, fmt.Sprintf("%s %s", r.Kind(), h.Name), h.Pos, resourceFeatures(r))
 	}
 	for _, rel := range p.Relations {
 		if f, ok := relationFeature(p, rel); ok {
-			add(fmt.Sprintf("%s %s %s", rel.From, rel.Verb, rel.To), rel.Pos, []use{{feature: f, pos: rel.Pos}})
+			add(SectionRelationships, fmt.Sprintf("%s %s %s", rel.From, rel.Verb, rel.To), rel.Pos, []use{{feature: f, pos: rel.Pos}})
 		}
 	}
 	for _, cloud := range overrideClouds(p) {
-		row := Row{Label: fmt.Sprintf("on %s", cloud)}
+		row := Row{Section: SectionOverrides, Label: fmt.Sprintf("on %s", cloud)}
 		first := true
 		for _, o := range p.Overrides {
 			if o.Cloud == cloud && first {

@@ -1,0 +1,39 @@
+exit 2
+--- stdout
+--- stderr
+␛[1;31merror␛[0m␛[1m:␛[0m ␛[1munknown service property `prot`␛[0m
+ ␛[1;34m-->␛[0m testdata/errors.clowd:5:3
+  ␛[1;34m|␛[0m
+␛[1;34m5␛[0m ␛[1;34m|␛[0m   prot 8080
+  ␛[1;34m|␛[0m   ␛[1;31m^^^^␛[0m
+  ␛[1;34m=␛[0m ␛[1;36mhelp:␛[0m did you mean `port`?
+
+␛[1;31merror␛[0m␛[1m:␛[0m ␛[1munknown relationship `links to`␛[0m
+ ␛[1;34m-->␛[0m testdata/errors.clowd:7:5
+  ␛[1;34m|␛[0m
+␛[1;34m7␛[0m ␛[1;34m|␛[0m api links to db
+  ␛[1;34m|␛[0m     ␛[1;31m^^^^^^^^␛[0m
+  ␛[1;34m=␛[0m ␛[1;36mhelp:␛[0m did you mean `connects to`?
+
+␛[1;31merror␛[0m␛[1m:␛[0m ␛[1mno resource named `db`␛[0m
+ ␛[1;34m-->␛[0m testdata/errors.clowd:7:14
+  ␛[1;34m|␛[0m
+␛[1;34m7␛[0m ␛[1;34m|␛[0m api links to db
+  ␛[1;34m|␛[0m              ␛[1;31m^^␛[0m
+  ␛[1;34m=␛[0m ␛[1;36mhelp:␛[0m declare it, for example `database db`
+
+␛[1;33mwarning␛[0m␛[1m:␛[0m ␛[1m`API` is declared as `api`␛[0m
+ ␛[1;34m-->␛[0m testdata/errors.clowd:8:1
+  ␛[1;34m|␛[0m
+␛[1;34m8␛[0m ␛[1;34m|␛[0m API reads uploads
+  ␛[1;34m|␛[0m ␛[1;33m^^^␛[0m
+  ␛[1;34m=␛[0m ␛[1;36mhelp:␛[0m write `api`
+
+␛[1;31merror␛[0m␛[1m:␛[0m ␛[1mno resource named `uploads`␛[0m
+ ␛[1;34m-->␛[0m testdata/errors.clowd:8:11
+  ␛[1;34m|␛[0m
+␛[1;34m8␛[0m ␛[1;34m|␛[0m API reads uploads
+  ␛[1;34m|␛[0m           ␛[1;31m^^^^^^^␛[0m
+  ␛[1;34m=␛[0m ␛[1;36mhelp:␛[0m declare it, for example `bucket uploads`
+
+␛[1mtestdata/errors.clowd␛[0m: ␛[1;31m4 errors, 1 warning␛[0m; fix them to see the capability matrix

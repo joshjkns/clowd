@@ -16,6 +16,9 @@ const (
 	exitBadInput = 2 // usage or source errors
 )
 
+// colorUsage documents --color, which every command with human output takes.
+const colorUsage = "colour output: `auto` (when writing to a terminal and NO_COLOR is unset), always or never"
+
 // edition is the newest language edition this binary supports (06-versioning.md).
 const edition = "2026"
 
