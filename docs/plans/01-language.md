@@ -26,8 +26,13 @@ Status: draft for edition 2026. Anything not listed here is not in the language 
   (`ghcr.io/me/api:latest`, `api.example.com`, `/`, `eu-west-2`).
 - **Quoted strings:** `"..."` with `\"` and `\\` escapes.
 - **Numbers:** integers. **Ranges:** `2 to 10`. **Durations:** `30s`, `5m`, `1h`.
-- **Multi-word keywords** are single tokens: `load balancer` (alias `lb`),
-  `connects to`, `reads and writes`.
+  These are ordinary words to the lexer; `check` gives them meaning from the
+  property they appear in.
+- **Keywords are contextual** (see D8). The lexer only produces words, strings,
+  commas and layout tokens; the parser recognises keywords by position and
+  case-insensitively. Multi-word keywords (`load balancer`, alias `lb`;
+  `connects to`; `reads and writes`) are matched as a sequence of words, so
+  `to` in `scale 2 to 10` and a resource named `web` or `jobs` are unaffected.
 
 ## Statement shapes
 
@@ -113,7 +118,9 @@ not here.
 
 ## Grammar (EBNF draft)
 
-The lexer emits `NEWLINE`, `INDENT` and `DEDENT` tokens (Python-style).
+The lexer emits `WORD`, `STRING`, `COMMA`, `NEWLINE`, `INDENT` and `DEDENT`
+tokens (layout is Python-style). Quoted terminals below are words matched
+case-insensitively by the parser, not distinct token kinds.
 
 ```ebnf
 file       = { statement } ;
