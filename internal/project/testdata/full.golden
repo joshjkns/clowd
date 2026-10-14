@@ -1,0 +1,9 @@
+name "shop"
+edition 2026
+runtime "terraform"
+state.backend "local"
+aws.network.services "private"
+aws.network.cidr "10.20.0.0/16"
+aws.network.vpc ""
+aws.network.public_subnets []
+aws.network.private_subnets []

@@ -1,0 +1,59 @@
+name "default"
+edition 2026
+runtime ""
+state.backend "local"
+aws.network.services "public"
+aws.network.cidr "10.0.0.0/16"
+aws.network.vpc ""
+aws.network.public_subnets []
+aws.network.private_subnets []
+
+diagnostics:
+error: expected a value, found `shop`
+ --> bad_syntax.toml:1:8
+  |
+1 | name = shop
+  |        ^^^^
+  = help: quote strings: "shop"
+
+error: only whole numbers are supported in bad_syntax.toml
+ --> bad_syntax.toml:2:11
+  |
+2 | edition = 2026.0
+  |           ^^^^^^
+
+error: dotted keys aren't supported in bad_syntax.toml; use a `[table]` header
+ --> bad_syntax.toml:3:4
+  |
+3 | aws.region = "eu-west-2"
+  |    ^
+
+error: unexpected text after the value
+ --> bad_syntax.toml:4:18
+  |
+4 | runtime = "tofu" extra
+  |                  ^^^^^
+
+error: only whole numbers are supported in bad_syntax.toml
+ --> bad_syntax.toml:5:11
+  |
+5 | created = 2026-10-14
+  |           ^^^^^^^^^^
+
+error: arrays of tables (`[[...]]`) aren't supported in bad_syntax.toml
+ --> bad_syntax.toml:7:2
+  |
+7 | [[targets]]
+  |  ^^
+
+error: inline tables aren't supported in bad_syntax.toml; use a `[table]` header
+ --> bad_syntax.toml:8:8
+  |
+8 | tags = { a = "b" }
+  |        ^
+
+error: unterminated string
+ --> bad_syntax.toml:9:8
+  |
+9 | note = "unterminated
+  |        ^^^^^^^^^^^^^

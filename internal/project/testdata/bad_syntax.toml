@@ -1,0 +1,9 @@
+name = shop
+edition = 2026.0
+aws.region = "eu-west-2"
+runtime = "tofu" extra
+created = 2026-10-14
+name = "dup"
+[[targets]]
+tags = { a = "b" }
+note = "unterminated
