@@ -1,0 +1,87 @@
+tokens:
+  3:1-3:4      word "use"
+  3:5-3:8      word "aws"
+  3:9-3:11     word "in"
+  3:12-3:21    word "eu-west-2"
+  3:21-4:1     end of line
+  4:1-4:4      word "use"
+  4:5-4:8      word "gcp"
+  4:9-4:11     word "in"
+  4:12-4:24    word "europe-west2"
+  4:24-5:1     end of line
+  6:1-6:9      word "database"
+  6:10-6:12    word "db"
+  6:13-6:15    word "is"
+  6:16-6:24    word "postgres"
+  6:25-6:27    word "16"
+  6:27-6:28    `,`
+  6:29-6:34    word "small"
+  6:34-7:1     end of line
+  7:1-7:7      word "bucket"
+  7:8-7:15     word "uploads"
+  7:16-7:18    word "is"
+  7:19-7:26    word "private"
+  7:26-8:1     end of line
+  9:1-9:8      word "service"
+  9:9-9:12     word "api"
+  9:12-10:1    end of line
+  10:1-10:3    indent
+  10:3-10:8    word "image"
+  10:9-10:30   word "ghcr.io/me/api:latest"
+  10:30-11:1   end of line
+  11:3-11:7    word "port"
+  11:8-11:12   word "8080"
+  11:12-12:1   end of line
+  12:3-12:8    word "scale"
+  12:9-12:10   word "2"
+  12:11-12:13  word "to"
+  12:14-12:16  word "10"
+  12:16-13:1   end of line
+  14:1-14:1    dedent
+  14:1-14:5    word "load"
+  14:6-14:14   word "balancer"
+  14:15-14:18  word "web"
+  14:19-14:21  word "is"
+  14:22-14:28  word "public"
+  14:28-15:1   end of line
+  15:1-15:3    indent
+  15:3-15:9    word "listen"
+  15:10-15:12  word "on"
+  15:13-15:16  word "443"
+  15:17-15:21  word "with"
+  15:22-15:25  word "tls"
+  15:26-15:29  word "for"
+  15:30-15:45  word "api.example.com"
+  15:45-16:1   end of line
+  16:3-16:7    word "send"
+  16:8-16:9    word "/"
+  16:10-16:12  word "to"
+  16:13-16:16  word "api"
+  16:16-17:1   end of line
+  18:1-18:1    dedent
+  18:1-18:4    word "api"
+  18:5-18:13   word "connects"
+  18:14-18:16  word "to"
+  18:17-18:19  word "db"
+  18:19-19:1   end of line
+  19:1-19:4    word "api"
+  19:5-19:10   word "reads"
+  19:11-19:14  word "and"
+  19:15-19:21  word "writes"
+  19:22-19:29  word "uploads"
+  19:29-20:1   end of line
+  21:1-21:3    word "on"
+  21:4-21:7    word "aws"
+  21:7-22:1    end of line
+  22:1-22:3    indent
+  22:3-22:10   word "service"
+  22:11-22:14  word "api"
+  22:15-22:19  word "sets"
+  22:20-22:37  word "capacity_provider"
+  22:38-22:40  word "to"
+  22:41-22:53  word "FARGATE_SPOT"
+  22:53-23:1   end of line
+  23:1-23:1    dedent
+  23:1-23:1    end of file
+comments:
+  1:1-1:73     comment "# A web API with a database and file uploads, deployable to AWS and GCP."

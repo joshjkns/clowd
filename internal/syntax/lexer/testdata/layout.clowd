@@ -1,0 +1,11 @@
+service api
+  image x
+
+  # comment lines don't affect layout
+      # even when oddly indented
+  port 8080
+on aws
+  outer
+    inner
+      deepest
+top

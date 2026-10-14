@@ -3,6 +3,8 @@ package diag
 import (
 	"strings"
 	"testing"
+
+	_ "github.com/joshjkns/clowd/internal/golden" // defines -update
 )
 
 func TestPosition(t *testing.T) {

@@ -1,0 +1,23 @@
+tokens:
+  1:1-1:8      word "service"
+  1:9-1:12     word "api"
+  1:12-2:1     end of line
+  2:1-2:5      indent
+  2:5-2:10     word "image"
+  2:11-2:12    word "x"
+  2:12-3:1     end of line
+  3:3-3:7      word "port"
+  3:8-3:12     word "8080"
+  3:12-4:1     end of line
+  4:1-4:1      dedent
+  4:1-4:7      word "bucket"
+  4:8-4:9      word "b"
+  4:9-5:1      end of line
+  5:1-5:1      end of file
+diagnostics:
+error: indentation of 2 spaces doesn't match the block (4) or the level outside it (0)
+ --> bad_dedent.clowd:3:1
+  |
+3 |   port 8080
+  | ^^
+  = help: use 4 spaces to stay in the block, or 0 to leave it
