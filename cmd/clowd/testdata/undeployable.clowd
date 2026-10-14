@@ -1,0 +1,19 @@
+use aws in eu-west-2
+use gcp in europe-west2
+
+service api
+  image ghcr.io/me/api:latest
+  scale 0 to 4
+
+service worker
+  image ghcr.io/me/worker:latest
+
+queue jobs is fifo
+
+load balancer web
+  listen on 8443
+  send / to api
+
+api sends to jobs
+worker reads jobs
+api connects to worker

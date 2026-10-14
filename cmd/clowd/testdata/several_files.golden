@@ -1,0 +1,54 @@
+exit 1
+--- stdout
+testdata/no_targets.clowd
+No targets: add a `use` line or pass --target.
+
+testdata/undeployable.clowd
+                        aws  gcp
+service api             ✗    ✓    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
+service worker          ✓    ✓
+queue jobs              ✓    ⚠    gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
+load balancer web       ✓    ✗    gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
+api sends to jobs       ✓    ✓
+worker reads jobs       ✓    ⚠    gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
+api connects to worker  ✗    ✗    aws, gcp: service connects to service not implemented yet
+
+Deployable: aws ✗  gcp ✗
+--- stderr
+warning: this file has no `use` line, so it deploys nowhere
+ --> testdata/no_targets.clowd:1:1
+  |
+1 | service api
+  | ^
+  = help: add a target, for example `use aws in eu-west-2`
+
+warning: not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
+ --> testdata/undeployable.clowd:6:3
+  |
+6 |   scale 0 to 4
+  |   ^^^^^^^^^^^^
+
+info: on gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
+  --> testdata/undeployable.clowd:11:15
+   |
+11 | queue jobs is fifo
+   |               ^^^^
+
+warning: not supported on gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
+  --> testdata/undeployable.clowd:14:3
+   |
+14 |   listen on 8443
+   |   ^^^^^^^^^^^^^^
+
+info: on gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
+  --> testdata/undeployable.clowd:18:1
+   |
+18 | worker reads jobs
+   | ^^^^^^^^^^^^^^^^^
+
+warning: service connects to service is not implemented for aws and gcp yet
+  --> testdata/undeployable.clowd:19:1
+   |
+19 | api connects to worker
+   | ^^^^^^^^^^^^^^^^^^^^^^
+

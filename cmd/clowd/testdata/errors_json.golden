@@ -1,0 +1,71 @@
+exit 2
+--- stdout
+{
+  "files": [
+    {
+      "path": "testdata/errors.clowd",
+      "ok": false,
+      "clouds": [],
+      "deployable": {},
+      "rows": [],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "message": "unknown service property `prot`",
+          "suggestion": "did you mean `port`?",
+          "pos": {
+            "line": 5,
+            "column": 3,
+            "endLine": 5,
+            "endColumn": 7
+          }
+        },
+        {
+          "severity": "error",
+          "message": "unknown relationship `links to`",
+          "suggestion": "did you mean `connects to`?",
+          "pos": {
+            "line": 7,
+            "column": 5,
+            "endLine": 7,
+            "endColumn": 13
+          }
+        },
+        {
+          "severity": "error",
+          "message": "no resource named `db`",
+          "suggestion": "declare it, for example `database db`",
+          "pos": {
+            "line": 7,
+            "column": 14,
+            "endLine": 7,
+            "endColumn": 16
+          }
+        },
+        {
+          "severity": "warning",
+          "message": "`API` is declared as `api`",
+          "suggestion": "write `api`",
+          "pos": {
+            "line": 8,
+            "column": 1,
+            "endLine": 8,
+            "endColumn": 4
+          }
+        },
+        {
+          "severity": "error",
+          "message": "no resource named `uploads`",
+          "suggestion": "declare it, for example `bucket uploads`",
+          "pos": {
+            "line": 8,
+            "column": 11,
+            "endLine": 8,
+            "endColumn": 18
+          }
+        }
+      ]
+    }
+  ]
+}
+--- stderr

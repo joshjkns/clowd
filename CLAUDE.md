@@ -34,7 +34,9 @@ cmd/clowd/          CLI entrypoint
 internal/diag/      shared diagnostics (severity, span, message, suggestion)
 internal/syntax/    token, lexer, ast, parser
 internal/resolve/   name resolution
-internal/check/     semantic checks
+internal/spell/     "did you mean" edit distance
+internal/check/     semantic checks; builds the IR
+internal/compile/   parse → resolve → check in one call
 internal/ir/        cloud-neutral resource graph
 internal/capability/ per-cloud capability matrix
 internal/lower/     IR → provider resources, one package per cloud

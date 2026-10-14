@@ -1,0 +1,12 @@
+exit 2
+--- stdout
+--- stderr
+invalid value "oracle" for flag -target: unknown cloud "oracle" (clouds are aws, gcp and azure)
+Usage: clowd check [--target cloud] [--json] [file.clowd ...]
+
+With no files, checks every .clowd file in the current directory.
+
+  -json
+    	print machine-readable JSON
+  -target cloud
+    	check against these clouds instead of the file's use lines (repeatable, or comma-separated)

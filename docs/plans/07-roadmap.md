@@ -2,14 +2,14 @@
 
 Each phase ends with something runnable and tested.
 
-## Phase 1 — Syntax
+## Phase 1 — Syntax ✓
 - `internal/diag`, `internal/syntax/{token,lexer,ast,parser}`
 - Indent-aware lexer, error-tolerant parser with spans
 - Golden tests from `examples/`
 - **Done when:** every example parses; broken inputs give useful errors and a
   partial AST.
 
-## Phase 2 — Meaning
+## Phase 2 — Meaning ✓
 - `internal/resolve`, `internal/check`, `internal/ir`
 - `internal/capability` with AWS + GCP entries
 - `clowd check` with the matrix table and `--json`
