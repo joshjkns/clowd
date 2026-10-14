@@ -228,10 +228,25 @@ func (l *lowerer) capacityProviders(svc tfjson.Body) {
 	svc["depends_on"] = append(deps, addr)
 }
 
+// portable are provider settings that Clowd writes portably, so the error
+// can point at the portable form (D18).
+var portable = map[string]map[string]string{
+	"aws_s3_bucket": {
+		"versioning":     "the `versioned` trait",
+		"lifecycle_rule": "`expire after <duration>`",
+	},
+	"aws_sqs_queue": {
+		"redrive_policy": "`retry <n> times`",
+	},
+}
+
 func unknownKey(s ir.Setting, resource string, args map[string]arg) diag.Diagnostic {
 	key := strings.ToLower(s.Key)
 	top, _, _ := strings.Cut(resource, " ")
 	d := diag.Errorf(s.KeyPos, "%s has no setting `%s` that `on aws` can change", resource, s.Key)
+	if p, ok := portable[resource][key]; ok {
+		return d.Suggest("use %s instead, which works on every cloud", p)
+	}
 	if slices.Contains(wiring[resource], key) {
 		return d.Suggest("Clowd sets `%s` to connect %s to the rest of the program", key, top)
 	}

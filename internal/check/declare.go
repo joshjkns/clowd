@@ -51,17 +51,24 @@ type traitGroup struct {
 // traitSynonyms are wrong guesses accepted with an error, keyed by kind.
 var traitSynonyms = map[ast.Kind]map[string]string{
 	ast.Database: {
-		"postgresql": "postgres",
-		"pg":         "postgres",
-		"psql":       "postgres",
-		"tiny":       "small",
-		"xs":         "small",
-		"big":        "large",
-		"xl":         "large",
+		"postgresql":         "postgres",
+		"pg":                 "postgres",
+		"psql":               "postgres",
+		"tiny":               "small",
+		"xs":                 "small",
+		"big":                "large",
+		"xl":                 "large",
+		"ha":                 "highly available",
+		"multi-az":           "highly available",
+		"high availability":  "highly available",
+		"highly-available":   "highly available",
+		"replicated":         "highly available",
+		"deletion-protected": "protected",
 	},
 	ast.Bucket: {
-		"internal": "private",
-		"open":     "public",
+		"internal":   "private",
+		"open":       "public",
+		"versioning": "versioned",
 	},
 	ast.LoadBalancer: {
 		"private":  "internal",
@@ -90,6 +97,19 @@ func (c *checker) traits(d *ast.Declare, h *ir.Header, groups []traitGroup) {
 	}
 	chosen := map[string]string{} // group key → trait as written, e.g. "postgres 16"
 	for _, t := range d.Traits {
+		if len(t.Words) > 1 {
+			// A trait that is a phrase (`highly available`) is matched
+			// whole, then handled as one word.
+			full := strings.ToLower(joinValues(t.Words))
+			canon, isSyn := traitSynonyms[d.Kind][full]
+			if isSyn {
+				c.diags.Add(diag.Errorf(t.Pos, "unknown %s trait `%s`", d.Kind, joinValues(t.Words)).Suggest("write `%s`", canon))
+				full = canon
+			}
+			if slices.ContainsFunc(groups, func(g traitGroup) bool { return slices.Contains(g.words, full) }) {
+				t = ast.Trait{Words: []ast.Value{{Text: full, Pos: t.Pos}}, Pos: t.Pos}
+			}
+		}
 		first := t.Words[0]
 		word := strings.ToLower(first.Text)
 		version := ""
@@ -198,6 +218,9 @@ func (c *checker) unknownTrait(k ast.Kind, v ast.Value, groups []traitGroup) dia
 // ---- properties ----
 
 type propSpec struct {
+	// name is how the property is shown when its key is only its first
+	// word (`health check`).
+	name    string
 	repeat  bool
 	example string
 	// set interprets p and reports whether it was valid.
@@ -206,24 +229,35 @@ type propSpec struct {
 
 // propSynonyms are wrong guesses for property names, accepted with an error.
 var propSynonyms = map[string]string{
-	"replicas":    "scale",
-	"instances":   "scale",
-	"count":       "scale",
-	"autoscale":   "scale",
-	"ports":       "port",
-	"environment": "env",
-	"envs":        "env",
-	"var":         "env",
-	"mem":         "memory",
-	"ram":         "memory",
-	"vcpu":        "cpu",
-	"cpus":        "cpu",
-	"img":         "image",
-	"container":   "image",
-	"route":       "send",
-	"forward":     "send",
-	"listener":    "listen",
-	"listens":     "listen",
+	"replicas":     "scale",
+	"instances":    "scale",
+	"count":        "scale",
+	"autoscale":    "scale",
+	"ports":        "port",
+	"environment":  "env",
+	"envs":         "env",
+	"var":          "env",
+	"mem":          "memory",
+	"ram":          "memory",
+	"vcpu":         "cpu",
+	"cpus":         "cpu",
+	"img":          "image",
+	"container":    "image",
+	"route":        "send",
+	"forward":      "send",
+	"listener":     "listen",
+	"listens":      "listen",
+	"healthcheck":  "health check",
+	"health_check": "health check",
+	"cmd":          "command",
+	"args":         "command",
+	"disk":         "storage",
+	"backup":       "backups",
+	"retries":      "retry",
+	"expires":      "expire",
+	"ttl":          "expire",
+	"retention":    "keep",
+	"visibility":   "timeout",
 }
 
 // props checks d's properties against specs, keyed by lowercase name.
@@ -249,10 +283,13 @@ func (c *checker) props(d *ast.Declare, h *ir.Header, specs map[string]propSpec,
 		}
 		spec, ok := specs[key]
 		if !ok {
+			// A canonical name may be a phrase (`health check`), whose
+			// first word is the key.
 			if canon, isSyn := propSynonyms[key]; isSyn {
-				if s, known := specs[canon]; known {
+				first, _, _ := strings.Cut(canon, " ")
+				if s, known := specs[first]; known {
 					c.diags.Add(diag.Errorf(p.Key.Pos, "unknown %s property `%s`", d.Kind, p.Key.Text).Suggest("write `%s`", canon))
-					key, spec, ok = canon, s, true
+					key, spec, ok = first, s, true
 				}
 			}
 		}
@@ -260,8 +297,12 @@ func (c *checker) props(d *ast.Declare, h *ir.Header, specs map[string]propSpec,
 			c.diags.Add(c.unknownProp(d, p, specs, groups))
 			continue
 		}
+		name := key
+		if spec.name != "" {
+			name = spec.name
+		}
 		if prev, dup := seen[key]; dup && !spec.repeat {
-			c.diags.Add(diag.Errorf(p.Pos, "`%s` is already set on line %d", key, c.line(prev)).
+			c.diags.Add(diag.Errorf(p.Pos, "`%s` is already set on line %d", name, c.line(prev)).
 				Suggest("remove one of them"))
 			continue
 		}
@@ -283,9 +324,13 @@ func (c *checker) unknownProp(d *ast.Declare, p ast.Property, specs map[string]p
 	is := func(trait string) diag.Diagnostic {
 		return e.Suggest("`%s` is a trait: `%s is %s`", trait, head(d), trait)
 	}
+	line := strings.ToLower(joinValues(append([]ast.Value{p.Key}, p.Values...)))
 	for _, g := range groups {
 		if slices.Contains(g.words, key) {
 			return is(key) // `public` as a property
+		}
+		if slices.Contains(g.words, line) {
+			return is(line) // `highly available` as a property
 		}
 		if g.key == key && len(p.Values) > 0 { // `size small`
 			return is(strings.ToLower(joinValues(p.Values)))
@@ -294,9 +339,19 @@ func (c *checker) unknownProp(d *ast.Declare, p ast.Property, specs map[string]p
 	if len(specs) == 0 {
 		return e.Suggest("a %s has no properties", d.Kind)
 	}
-	names := slices.Sorted(maps.Keys(specs))
-	if guess, ok := spell.Closest(key, names); ok {
-		return e.Suggest("did you mean `%s`?", guess)
+	keys := slices.Sorted(maps.Keys(specs))
+	display := func(k string) string {
+		if n := specs[k].name; n != "" {
+			return n
+		}
+		return k
+	}
+	if guess, ok := spell.Closest(key, keys); ok {
+		return e.Suggest("did you mean `%s`?", display(guess))
+	}
+	names := make([]string, len(keys))
+	for i, k := range keys {
+		names[i] = display(k)
 	}
 	return e.Suggest("a %s's properties are %s", d.Kind, codeList(names, "and"))
 }
@@ -395,6 +450,15 @@ func (c *checker) service(d *ast.Declare, h ir.Header) *ir.Service {
 			s.Env = append(s.Env, e)
 			return true
 		}},
+		"health": {name: "health check", example: "health check /healthz", set: func(p ast.Property) bool {
+			return setFrom(&s.HealthCheck, func() (string, bool) { return c.healthCheck(p) })
+		}},
+		"command": {example: "command ./server --port 8080", set: func(p ast.Property) bool {
+			for _, v := range p.Values {
+				s.Command = append(s.Command, v.Text)
+			}
+			return true
+		}},
 	}
 	c.props(d, &s.Header, specs, nil)
 	c.required(d, &s.Header, "image", "image ghcr.io/me/api:latest")
@@ -417,9 +481,19 @@ func (c *checker) database(d *ast.Declare, h ir.Header) *ir.Database {
 		{key: "size", words: []string{"small", "medium", "large"}, set: func(w, _ string) {
 			db.Size = map[string]ir.Size{"small": ir.Small, "medium": ir.Medium, "large": ir.Large}[w]
 		}},
+		{key: "availability", words: []string{"highly available"}, set: func(string, string) { db.HighlyAvailable = true }},
+		{key: "protection", words: []string{"protected"}, set: func(string, string) { db.Protected = true }},
 	}
 	c.traits(d, &db.Header, groups)
-	c.props(d, &db.Header, nil, groups)
+	specs := map[string]propSpec{
+		"storage": {example: "storage 50gb", set: func(p ast.Property) bool {
+			return setFrom(&db.StorageGB, c.oneThen(p, "storage 50gb", c.storage))
+		}},
+		"backups": {example: "backups 14 days", set: func(p ast.Property) bool {
+			return setFrom(&db.BackupDays, func() (int, bool) { return c.backups(p) })
+		}},
+	}
+	c.props(d, &db.Header, specs, groups)
 	if db.Engine == 0 && !c.hasTraitError(d, groups[0]) {
 		c.diags.Add(diag.Errorf(d.Name.Pos, "database `%s` needs an engine", d.Name.Name).
 			Suggest("for example `database %s is postgres 16`", d.Name.Name))
@@ -457,9 +531,16 @@ func (c *checker) bucket(d *ast.Declare, h ir.Header) *ir.Bucket {
 	b := &ir.Bucket{Header: h}
 	groups := []traitGroup{
 		{key: "visibility", words: []string{"private", "public"}, set: func(w, _ string) { b.Public = w == "public" }},
+		{key: "versioning", words: []string{"versioned"}, set: func(string, string) { b.Versioned = true }},
+		{key: "protection", words: []string{"protected"}, set: func(string, string) { b.Protected = true }},
 	}
 	c.traits(d, &b.Header, groups)
-	c.props(d, &b.Header, nil, groups)
+	specs := map[string]propSpec{
+		"expire": {name: "expire after", example: "expire after 30d", set: func(p ast.Property) bool {
+			return setFrom(&b.ExpireDays, func() (int, bool) { return c.expire(p) })
+		}},
+	}
+	c.props(d, &b.Header, specs, groups)
 	return b
 }
 
@@ -469,7 +550,20 @@ func (c *checker) queue(d *ast.Declare, h ir.Header) *ir.Queue {
 		{key: "fifo", words: []string{"fifo"}, set: func(string, string) { q.FIFO = true }},
 	}
 	c.traits(d, &q.Header, groups)
-	c.props(d, &q.Header, nil, groups)
+	specs := map[string]propSpec{
+		"retry": {example: "retry 5 times", set: func(p ast.Property) bool {
+			return setFrom(&q.Retries, func() (int, bool) { return c.retry(p) })
+		}},
+		"timeout": {example: "timeout 60s", set: func(p ast.Property) bool {
+			return setFrom(&q.Timeout, c.oneThen(p, "timeout 60s", func(v ast.Value) (int, bool) {
+				return c.duration(v, "a queue's timeout", 1, 12*hour)
+			}))
+		}},
+		"keep": {name: "keep messages for", example: "keep messages for 4d", set: func(p ast.Property) bool {
+			return setFrom(&q.Retention, func() (int, bool) { return c.keep(p) })
+		}},
+	}
+	c.props(d, &q.Header, specs, groups)
 	return q
 }
 

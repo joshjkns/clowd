@@ -197,9 +197,14 @@ func (p *printer) kind(k ast.Kind, sp diag.Span) string {
 // key and value index (01-language.md, kind reference). Only these are
 // lowercased: other values, such as env names and images, are data.
 var valueKeywords = map[string]map[int]string{
-	"scale":  {1: "to"},
-	"send":   {1: "to"},
-	"listen": {0: "on", 2: "with", 3: "tls", 4: "for"},
+	"scale":   {1: "to"},
+	"send":    {1: "to"},
+	"listen":  {0: "on", 2: "with", 3: "tls", 4: "for"},
+	"health":  {0: "check"},
+	"backups": {0: "off", 1: "days"},
+	"expire":  {0: "after"},
+	"retry":   {1: "times"},
+	"keep":    {0: "messages", 1: "for"},
 }
 
 // property prints a property line. Inside raw (`on`) blocks the keys and

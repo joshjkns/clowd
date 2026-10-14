@@ -51,7 +51,7 @@ error: unknown bucket trait `encrypted`
   |
 8 | bucket f is encrypted
   |             ^^^^^^^^^
-  = help: a bucket's traits are `private` and `public`
+  = help: a bucket's traits are `private`, `public`, `versioned` and `protected`
 
 error: unknown bucket property `public`
   --> bucket_queue.clowd:10:3

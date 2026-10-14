@@ -217,6 +217,11 @@ type Service struct {
 	// Memory is in MiB; 0 means the cloud's default.
 	Memory int
 	Env    []EnvVar
+	// HealthCheck is the path load balancers check; empty means `/`,
+	// where any answer below 500 counts as healthy.
+	HealthCheck string
+	// Command replaces the image's command when set.
+	Command []string
 }
 
 // Scale is an instance count range. Min == Max is a fixed count.
@@ -279,18 +284,45 @@ type Database struct {
 	// default for the engine.
 	Version string
 	Size    Size
+	// HighlyAvailable keeps a standby in another zone that takes over on
+	// failure.
+	HighlyAvailable bool
+	// Protected databases can't be deleted, and keep a final snapshot.
+	Protected bool
+	// StorageGB is the initial disk size; 0 means the backend's default.
+	StorageGB int
+	// BackupDays is how long daily backups are kept. 0 means the
+	// backend's default, unless Has("backups"), when backups are off.
+	BackupDays int
 }
 
 // Bucket is object storage.
 type Bucket struct {
 	Header
 	Public bool
+	// Versioned buckets keep every version of an object.
+	Versioned bool
+	// Protected buckets can't be deleted while they hold objects.
+	Protected bool
+	// ExpireDays deletes objects this many days after they are written;
+	// 0 keeps them.
+	ExpireDays int
 }
 
 // Queue is a message queue.
 type Queue struct {
 	Header
 	FIFO bool
+	// Retries is how many times a failed message is retried before it
+	// moves to a dead-letter queue; 0 means no dead-letter queue.
+	Retries int
+	// Timeout is how long, in seconds, a consumer has to handle a
+	// message before it is delivered again; 0 means the backend's
+	// default.
+	Timeout int
+	// Retention is how long, in seconds, unhandled messages are kept; 0
+	// means the backend's default.
+	Retention int
 }
 
 // LoadBalancer is an HTTP(S) load balancer.

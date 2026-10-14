@@ -1,0 +1,59 @@
+use aws in eu-west-2
+
+service api
+  image a
+  health check /healthz
+  command ./server --port "8080"
+
+service w1
+  image b
+  healthcheck /up
+  health check /again
+service w2
+  image b
+  health /up
+service w3
+  image b
+  health check up
+service w4
+  image b
+  health check /a /b
+
+database db is postgres 16, medium, highly available and protected
+  storage 50gb
+  backups 14 days
+
+database d1 is mysql 8.0, ha
+  storage 10gb
+  backups off
+database d2 is postgres, high availability
+  storage 50
+  backups 3
+database d3 is postgres
+  backups 400 days
+  highly available
+  disk 30gb
+
+bucket uploads is versioned, protected
+  expire after 30d
+
+bucket b1
+  expire after 36h
+bucket b2
+  expire 30d
+bucket b3
+  ttl after 1d
+
+queue jobs
+  retry 5 times
+  timeout 60s
+  keep messages for 4d
+
+queue q1
+  retry five times
+  timeout 60
+  keep messages 4d
+queue q2
+  retries 3 times
+  timeout 13h
+  keep messages for 32d

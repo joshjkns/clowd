@@ -53,6 +53,46 @@ var matrix = map[Feature]map[ir.Cloud]Entry{
 	ProjectTags:    {ir.AWS: ok, ir.GCP: ok},
 	PrivateNetwork: {ir.AWS: ok, ir.GCP: ok},
 	NetworkCIDR:    {ir.AWS: ok, ir.GCP: ok},
+
+	ServiceHealthCheck: {ir.AWS: ok, ir.GCP: ok},
+	ServiceCommand:     {ir.AWS: ok, ir.GCP: ok},
+	DatabaseHA:         {ir.AWS: ok, ir.GCP: ok},
+	DatabaseProtected:  {ir.AWS: ok, ir.GCP: ok},
+	DatabaseStorage:    {ir.AWS: ok, ir.GCP: ok},
+	DatabaseBackups:    {ir.AWS: ok, ir.GCP: ok},
+	BucketVersioning:   {ir.AWS: ok, ir.GCP: ok},
+	BucketProtected:    {ir.AWS: ok, ir.GCP: ok},
+	BucketExpiry:       {ir.AWS: ok, ir.GCP: ok},
+	QueueRetry:         {ir.AWS: ok, ir.GCP: ok},
+	QueueTimeout:       {ir.AWS: ok, ir.GCP: ok},
+	QueueRetention:     {ir.AWS: ok, ir.GCP: ok},
+}
+
+// maxBackupDays is the longest each cloud keeps automated database
+// backups.
+var maxBackupDays = map[ir.Cloud]int{
+	ir.AWS: 35,
+}
+
+// queueDeliveries are the fewest and most deliveries (the first try and
+// its retries) before a message is dead-lettered.
+var queueDeliveries = map[ir.Cloud][2]int{
+	ir.AWS: {1, 1000},
+	ir.GCP: {5, 100},
+}
+
+// queueTimeouts are the shortest and longest time, in seconds, a consumer
+// can be given to handle a message.
+var queueTimeouts = map[ir.Cloud][2]int{
+	ir.AWS: {0, 12 * 3600},
+	ir.GCP: {10, 600},
+}
+
+// queueRetention are the shortest and longest time, in seconds, unhandled
+// messages can be kept.
+var queueRetention = map[ir.Cloud][2]int{
+	ir.AWS: {60, 14 * 86400},
+	ir.GCP: {600, 31 * 86400},
 }
 
 // products are what each kind becomes, for hovers and docs.

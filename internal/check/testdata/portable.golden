@@ -1,0 +1,250 @@
+target aws eu-west-2 1:1
+service api 3:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  health check /healthz
+  command ["./server" "--port" "8080"]
+  at command 6:3
+  at health 5:3
+  at image 4:3
+service w1 8:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  health check /up
+  at health 10:3
+  at image 9:3
+service w2 12:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  at image 13:3
+service w3 15:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  at image 16:3
+service w4 18:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  at image 19:3
+database db 22:10
+  engine postgres 16
+  size medium
+  highly available
+  protected
+  storage 50gb
+  backups 14 days
+  at availability 22:37
+  at backups 24:3
+  at engine 22:16
+  at protection 22:58
+  at size 22:29
+  at storage 23:3
+database d1 26:10
+  engine mysql 8.0
+  size small
+  highly available
+  backups 0 days
+  at availability 26:27
+  at backups 28:3
+  at engine 26:16
+database d2 29:10
+  engine postgres <default>
+  size small
+  highly available
+  at availability 29:26
+  at engine 29:16
+database d3 32:10
+  engine postgres <default>
+  size small
+  storage 30gb
+  at engine 32:16
+  at storage 35:3
+bucket uploads 37:8
+  public false
+  versioned
+  protected
+  expire after 30 days
+  at expire 38:3
+  at protection 37:30
+  at versioning 37:19
+bucket b1 40:8
+  public false
+bucket b2 42:8
+  public false
+bucket b3 44:8
+  public false
+  expire after 1 days
+  at expire 45:3
+queue jobs 47:7
+  fifo false
+  retry 5 times
+  timeout 60s
+  keep messages for 345600s
+  at keep 50:3
+  at retry 48:3
+  at timeout 49:3
+queue q1 52:7
+  fifo false
+queue q2 56:7
+  fifo false
+  retry 3 times
+  at retry 57:3
+
+diagnostics:
+error: unknown service property `healthcheck`
+  --> portable.clowd:10:3
+   |
+10 |   healthcheck /up
+   |   ^^^^^^^^^^^
+   = help: write `health check`
+
+error: `health check` is already set on line 10
+  --> portable.clowd:11:3
+   |
+11 |   health check /again
+   |   ^^^^^^^^^^^^^^^^^^^
+   = help: remove one of them
+
+error: expected `check`
+  --> portable.clowd:14:10
+   |
+14 |   health /up
+   |          ^^^
+   = help: write `health check /healthz`
+
+error: `up` is not a path
+  --> portable.clowd:17:16
+   |
+17 |   health check up
+   |                ^^
+   = help: paths start with `/`, such as `health check /healthz`
+
+error: a health check takes one path
+  --> portable.clowd:20:19
+   |
+20 |   health check /a /b
+   |                   ^^
+   = help: write `health check /healthz`
+
+error: unknown database trait `ha`
+  --> portable.clowd:26:27
+   |
+26 | database d1 is mysql 8.0, ha
+   |                           ^^
+   = help: write `highly available`
+
+error: `10gb` is out of range
+  --> portable.clowd:27:11
+   |
+27 |   storage 10gb
+   |           ^^^^
+   = help: storage is between 20gb and 65536gb
+
+error: unknown database trait `high availability`
+  --> portable.clowd:29:26
+   |
+29 | database d2 is postgres, high availability
+   |                          ^^^^^^^^^^^^^^^^^
+   = help: write `highly available`
+
+error: `50` is not a disk size
+  --> portable.clowd:30:11
+   |
+30 |   storage 50
+   |           ^^
+   = help: write `50gb`
+
+error: expected `backups <n> days` or `backups off`
+  --> portable.clowd:31:11
+   |
+31 |   backups 3
+   |           ^
+   = help: for example `backups 14 days`
+
+error: `400` is not a number of days from 1 to 365
+  --> portable.clowd:33:11
+   |
+33 |   backups 400 days
+   |           ^^^
+   = help: for example `backups 14 days`, or `backups off`
+
+error: unknown database property `highly`
+  --> portable.clowd:34:3
+   |
+34 |   highly available
+   |   ^^^^^^
+   = help: `highly available` is a trait: `database d3 is highly available`
+
+error: unknown database property `disk`
+  --> portable.clowd:35:3
+   |
+35 |   disk 30gb
+   |   ^^^^
+   = help: write `storage`
+
+error: buckets expire objects in whole days
+  --> portable.clowd:41:16
+   |
+41 |   expire after 36h
+   |                ^^^
+   = help: write a number of days, such as `expire after 30d`
+
+error: expected `after`
+  --> portable.clowd:43:10
+   |
+43 |   expire 30d
+   |          ^^^
+   = help: write `expire after 30d`
+
+error: unknown bucket property `ttl`
+  --> portable.clowd:45:3
+   |
+45 |   ttl after 1d
+   |   ^^^
+   = help: write `expire`
+
+error: `five` is not a number of retries from 1 to 999
+  --> portable.clowd:53:9
+   |
+53 |   retry five times
+   |         ^^^^
+   = help: for example `retry 5 times`
+
+error: `60` is not a duration
+  --> portable.clowd:54:11
+   |
+54 |   timeout 60
+   |           ^^
+   = help: add a unit: `60s`, `60m`, `60h` or `60d`
+
+error: expected `for`
+  --> portable.clowd:55:17
+   |
+55 |   keep messages 4d
+   |                 ^^
+   = help: write `keep messages for 4d`
+
+error: unknown queue property `retries`
+  --> portable.clowd:57:3
+   |
+57 |   retries 3 times
+   |   ^^^^^^^
+   = help: write `retry`
+
+error: `13h` is out of range
+  --> portable.clowd:58:11
+   |
+58 |   timeout 13h
+   |           ^^^
+   = help: a queue's timeout is between 1s and 12h
+
+error: `32d` is out of range
+  --> portable.clowd:59:21
+   |
+59 |   keep messages for 32d
+   |                     ^^^
+   = help: how long messages are kept is between 1m and 31d

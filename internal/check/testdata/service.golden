@@ -231,7 +231,7 @@ error: unknown service property `colour`
    |
 63 |   colour blue
    |   ^^^^^^
-   = help: a service's properties are `cpu`, `env`, `image`, `memory`, `port` and `scale`
+   = help: a service's properties are `command`, `cpu`, `env`, `health check`, `image`, `memory`, `port` and `scale`
 
 error: expected a value after `memory`
   --> service.clowd:64:9

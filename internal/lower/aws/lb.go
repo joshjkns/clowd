@@ -84,6 +84,13 @@ func (l *lowerer) loadBalancer(lb *ir.LoadBalancer) {
 			"from_port":                    s.Port,
 			"to_port":                      s.Port,
 		})
+		// Without a health check path, any answer below 500 at `/` means
+		// the service is up, since a 404 there is normal for an API. A
+		// path the user named is a health endpoint, so it must succeed.
+		path, matcher := "/", "200-499"
+		if s.HealthCheck != "" {
+			path, matcher = s.HealthCheck, "200-399"
+		}
 		_, tg := splitAddr(targetGroupAddr(lb.Name, name))
 		l.cfg.Resource("aws_lb_target_group", tg, tfjson.Body{
 			"name":                 l.physical(32, n, id(name)),
@@ -92,11 +99,9 @@ func (l *lowerer) loadBalancer(lb *ir.LoadBalancer) {
 			"target_type":          "ip",
 			"vpc_id":               l.net.vpc,
 			"deregistration_delay": 30,
-			// Any answer below 500 means the service is up; a 404 at `/`
-			// is normal for an API.
 			"health_check": tfjson.Body{
-				"path":                "/",
-				"matcher":             "200-499",
+				"path":                path,
+				"matcher":             matcher,
 				"interval":            15,
 				"healthy_threshold":   2,
 				"unhealthy_threshold": 3,

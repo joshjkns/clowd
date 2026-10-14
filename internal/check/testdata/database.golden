@@ -169,7 +169,7 @@ error: unknown database trait `fast`
    |
 18 | database unknown is postgres, fast
    |                               ^^^^
-   = help: a database's traits are `postgres`, `mysql`, `small`, `medium` and `large`
+   = help: a database's traits are `postgres`, `mysql`, `small`, `medium`, `large`, `highly available` and `protected`
 
 error: unknown database property `size`
   --> database.clowd:20:3
@@ -183,7 +183,7 @@ error: unknown database property `port`
    |
 21 |   port 5432
    |   ^^^^
-   = help: a database has no properties
+   = help: a database's properties are `backups` and `storage`
 
 error: `postgres 12` contradicts `postgres 16`
   --> database.clowd:22:33
