@@ -1,0 +1,19 @@
+# Uses before declarations resolve, and lb targets are references.
+api connects to db
+api reads and writes uploads
+api sends to jobs
+
+load balancer web
+  listen on 443
+  send / to api
+  send /admin to admin
+
+database db
+bucket uploads
+queue jobs
+service api
+service admin
+
+on aws
+  service api sets capacity_provider to FARGATE_SPOT
+  database db sets multi_az to true

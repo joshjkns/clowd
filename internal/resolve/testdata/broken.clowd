@@ -1,0 +1,7 @@
+# Half-typed input: missing names must not produce resolver noise.
+service
+database db is
+api connects to
+ connects to db
+on aws
+  service sets x to y

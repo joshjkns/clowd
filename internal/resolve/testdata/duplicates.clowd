@@ -1,0 +1,7 @@
+service api
+database api
+service Api
+bucket uploads
+bucket uploads
+
+api connects to api

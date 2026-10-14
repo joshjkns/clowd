@@ -1,0 +1,7 @@
+service my.api
+database 2db
+bucket "my uploads"
+queue jobs/main
+service ok-name_2
+
+my.api connects to 2db

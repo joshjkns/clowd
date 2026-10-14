@@ -1,0 +1,38 @@
+decls:
+  1:9 service my.api
+  2:10 database 2db
+  3:8 bucket my uploads
+  4:7 queue jobs/main
+  5:9 service ok-name_2
+refs:
+  7:1 my.api -> service my.api at 1:9
+  7:20 2db -> database 2db at 2:10
+
+diagnostics:
+error: `my.api` is not a valid name
+ --> bad_names.clowd:1:9
+  |
+1 | service my.api
+  |         ^^^^^^
+  = help: names start with a letter and contain only letters, digits, `-` and `_`, e.g. `my-api`
+
+error: `2db` is not a valid name
+ --> bad_names.clowd:2:10
+  |
+2 | database 2db
+  |          ^^^
+  = help: names start with a letter and contain only letters, digits, `-` and `_`
+
+error: `my uploads` is not a valid name
+ --> bad_names.clowd:3:8
+  |
+3 | bucket "my uploads"
+  |        ^^^^^^^^^^^^
+  = help: names start with a letter and contain only letters, digits, `-` and `_`, e.g. `my-uploads`
+
+error: `jobs/main` is not a valid name
+ --> bad_names.clowd:4:7
+  |
+4 | queue jobs/main
+  |       ^^^^^^^^^
+  = help: names start with a letter and contain only letters, digits, `-` and `_`, e.g. `jobs-main`
