@@ -1,0 +1,125 @@
+relate 1:1-1:16
+  from "api" 1:1-1:4
+  verb "connects to" 1:5-1:13
+  to "db" 1:14-1:16
+relate 2:1-2:12
+  from "api" 2:1-2:4
+  verb "connects to" 2:5-2:9
+  to "db" 2:10-2:12
+relate 3:1-3:23
+  from "api" 3:1-3:4
+  verb "reads" 3:5-3:15
+  to "uploads" 3:16-3:23
+relate 4:1-4:22
+  from "api" 4:1-4:4
+  verb "writes" 4:5-4:14
+  to "uploads" 4:15-4:22
+relate 5:1-5:27
+  from "api" 5:1-5:4
+  verb "reads and writes" 5:5-5:19
+  to "uploads" 5:20-5:27
+relate 6:1-6:19
+  from "api" 6:1-6:4
+  verb "connects to" 6:5-6:16
+  to "db" 6:17-6:19
+relate 7:1-7:19
+  from "api" 7:1-7:4
+  verb "connects to" 7:5-7:16
+  to "db" 7:17-7:19
+relate 8:1-8:16
+  from "api" 8:1-8:4
+  verb "connects to" 8:5-8:16
+  to <missing> 8:16-8:16
+bad 9:1-9:18
+bad 10:1-10:13
+relate 11:1-11:19
+  from "api" 11:1-11:4
+  verb "connects to" 11:5-11:16
+  to "db" 11:17-11:19
+relate 12:1-12:19
+  from "api" 12:1-12:4
+  verb "connects to" 12:5-12:16
+  to "db" 12:17-12:19
+
+diagnostics:
+error: unknown relationship `links to`
+ --> err_relate.clowd:1:5
+  |
+1 | api links to db
+  |     ^^^^^^^^
+  = help: did you mean `connects to`?
+
+error: unknown relationship `uses`
+ --> err_relate.clowd:2:5
+  |
+2 | api uses db
+  |     ^^^^
+  = help: did you mean `connects to`?
+
+error: unknown relationship `reads from`
+ --> err_relate.clowd:3:5
+  |
+3 | api reads from uploads
+  |     ^^^^^^^^^^
+  = help: did you mean `reads`?
+
+error: unknown relationship `writes to`
+ --> err_relate.clowd:4:5
+  |
+4 | api writes to uploads
+  |     ^^^^^^^^^
+  = help: did you mean `writes`?
+
+error: unknown relationship `read and write`
+ --> err_relate.clowd:5:5
+  |
+5 | api read and write uploads
+  |     ^^^^^^^^^^^^^^
+  = help: did you mean `reads and writes`?
+
+error: a relationship has one target
+ --> err_relate.clowd:6:20
+  |
+6 | api connects to db and cache
+  |                    ^^^^^^^^^
+  = help: put each target on its own line: `api connects to cache`
+
+error: a relationship has one target
+ --> err_relate.clowd:7:19
+  |
+7 | api connects to db, cache
+  |                   ^^^^^^^
+  = help: put each target on its own line: `api connects to cache`
+
+error: expected a name after `connects to`
+ --> err_relate.clowd:8:16
+  |
+8 | api connects to
+  |                ^
+
+error: unknown relationship `conects`
+ --> err_relate.clowd:9:5
+  |
+9 | api conects to db
+  |     ^^^^^^^
+  = help: did you mean `connects to`?
+
+error: unknown relationship `pokes`
+  --> err_relate.clowd:10:5
+   |
+10 | api pokes db
+   |     ^^^^^
+   = help: relationships are `connects to`, `reads`, `writes`, `reads and writes`, `sends to`
+
+error: unexpected `extra`
+  --> err_relate.clowd:11:20
+   |
+11 | api connects to db extra
+   |                    ^^^^^
+
+error: unexpected indented block
+  --> err_relate.clowd:13:3
+   |
+13 |   port 8080
+   |   ^^^^^^^^^
+   = help: relationships don't take a block

@@ -1,0 +1,10 @@
+use aws in eu-west-2
+
+service api
+  image ghcr.io/me/api:latest
+  port
+
+database db is
+
+api connects to
+lo

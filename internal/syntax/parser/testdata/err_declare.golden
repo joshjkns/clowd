@@ -1,0 +1,137 @@
+declare 1:1-1:8 service
+  kind 1:1-1:8
+  name <missing> 1:8-1:8
+declare 2:1-2:18 service
+  kind 2:1-2:8
+  name <missing> 2:8-2:8
+  trait 2:12-2:18
+    word "public" 2:12-2:18
+declare 3:1-3:23 bucket
+  kind 3:1-3:7
+  name "uploads" 3:8-3:15
+  trait 3:16-3:23
+    word "private" 3:16-3:23
+declare 4:1-4:15 database
+  kind 4:1-4:9
+  name "db" 4:10-4:12
+declare 5:1-5:28 database
+  kind 5:1-5:9
+  name "db" 5:10-5:12
+  trait 5:16-5:27
+    word "postgres" 5:16-5:24
+    word "16" 5:25-5:27
+declare 6:1-6:23 database
+  kind 6:1-6:9
+  name "db" 6:10-6:12
+  trait 6:18-6:23
+    word "small" 6:18-6:23
+declare 7:1-7:14 service
+  kind 7:1-7:8
+  name "api" 7:9-7:14
+declare 8:1-8:15 service
+  kind 8:1-8:8
+  name "worker" 8:9-8:15
+  property 9:3-9:10
+    key "image" 9:3-9:8
+    value "x" 9:9-9:10
+declare 10:1-10:11 service
+  kind 10:1-10:7
+  name "web" 10:8-10:11
+  property 11:3-11:10
+    key "port" 11:3-11:7
+    value "80" 11:8-11:10
+declare 12:1-12:12 service
+  kind 12:1-12:8
+  name "api" 12:9-12:12
+  property 13:3-13:10
+    key "image" 13:3-13:8
+    value "x" 13:9-13:10
+  property 15:3-15:13
+    key "env" 15:3-15:6
+    value "A" 15:7-15:8
+    value "a" 15:9-15:10
+    value "b" 15:12-15:13
+  property 16:3-16:13
+    key string "quoted" 16:3-16:11
+    value "x" 16:12-16:13
+
+diagnostics:
+error: expected a name after `service`
+ --> err_declare.clowd:1:8
+  |
+1 | service
+  |        ^
+  = help: for example `service api`
+
+error: expected a name after `service`
+ --> err_declare.clowd:2:8
+  |
+2 | service is public
+  |        ^
+  = help: for example `service api is ...`
+
+error: unexpected `private` after the name
+ --> err_declare.clowd:3:16
+  |
+3 | bucket uploads private
+  |                ^^^^^^^
+  = help: traits go after `is`: `bucket uploads is private`
+
+error: expected a trait after `is`
+ --> err_declare.clowd:4:15
+  |
+4 | database db is
+  |               ^
+
+error: expected a trait after `,`
+ --> err_declare.clowd:5:28
+  |
+5 | database db is postgres 16,
+  |                            ^
+
+error: expected a trait before `,`
+ --> err_declare.clowd:6:16
+  |
+6 | database db is , small
+  |                ^
+
+error: names can't be quoted
+ --> err_declare.clowd:7:9
+  |
+7 | service "api"
+  |         ^^^^^
+  = help: write `api` without quotes
+
+error: unknown resource kind `servcie`
+ --> err_declare.clowd:8:1
+  |
+8 | servcie worker
+  | ^^^^^^^
+  = help: did you mean `service`?
+
+error: unknown resource kind `server`
+  --> err_declare.clowd:10:1
+   |
+10 | server web
+   | ^^^^^^
+   = help: did you mean `service`?
+
+error: unexpected indentation
+  --> err_declare.clowd:14:5
+   |
+14 |     nested y
+   |     ^^^^^^^^
+   = help: properties are all indented to the same level
+
+error: unexpected `,` in the value of `env`
+  --> err_declare.clowd:15:10
+   |
+15 |   env A a, b
+   |          ^
+   = help: quote values that contain commas: `"a, b"`
+
+error: property names can't be quoted
+  --> err_declare.clowd:16:3
+   |
+16 |   "quoted" x
+   |   ^^^^^^^^

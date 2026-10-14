@@ -1,0 +1,14 @@
+on aws
+service api
+on
+  service api sets x to y
+on gcp
+  service api
+  service api sets
+  service api sets x
+  service api sets x to
+  servcie api sets x to y
+  frobnicate everything
+    nested
+  bucket b sets x to a, b
+  service api sets x to y

@@ -1,0 +1,46 @@
+use 1:1-1:4
+  cloud <missing> 1:4-1:4
+use 2:1-2:11
+  cloud "aws" 2:5-2:8
+use 3:1-3:18
+  cloud "aws" 3:5-3:8
+  region "eu-west-2" 3:9-3:18
+use 4:1-4:21
+  cloud "aws" 4:5-4:8
+  region "eu-west-2" 4:12-4:21
+use 5:1-5:8
+  cloud "gcp" 5:5-5:8
+
+diagnostics:
+error: expected a cloud after `use`
+ --> err_use.clowd:1:4
+  |
+1 | use
+  |    ^
+  = help: for example `use aws in eu-west-2`
+
+error: expected a region after `in`
+ --> err_use.clowd:2:11
+  |
+2 | use aws in
+  |           ^
+
+error: expected `in` before the region
+ --> err_use.clowd:3:9
+  |
+3 | use aws eu-west-2
+  |         ^^^^^^^^^
+  = help: write `use aws in eu-west-2`
+
+error: unexpected `extra`
+ --> err_use.clowd:4:22
+  |
+4 | use aws in eu-west-2 extra
+  |                      ^^^^^
+
+error: unexpected indented block
+ --> err_use.clowd:6:3
+  |
+6 |   region x
+  |   ^^^^^^^^
+  = help: `use` lines don't take a block
