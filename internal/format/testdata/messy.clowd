@@ -17,6 +17,10 @@ service api
 
     Scale 2 TO 10
     env GREETING "say \"hi\", C:\\"
+    ON Aws
+          Platform_Version LATEST   # raw values keep their case
+          capacity_provider_strategy
+              capacity_provider   FARGATE_SPOT
     env MODE Debug
         # indented too far, still the end of the block
 Load Balancer web
@@ -29,8 +33,8 @@ api reads and writes uploads
 # workers
 api SENDS TO jobs
 On AWS
-      Service api SETS capacity_provider TO FARGATE_SPOT   # spot is cheaper
-      lb edge sets idle_timeout to 120
+      Network
+         public_subnets subnet-a ,subnet-b ,   subnet-c   # an existing VPC's
 
 
 # Trailing comment at the end of the file.

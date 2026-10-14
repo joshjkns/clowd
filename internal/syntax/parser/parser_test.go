@@ -113,7 +113,7 @@ func TestStatementKinds(t *testing.T) {
 		{"api connects to db\n", "*ast.Relate"},
 		{"use connects to db\n", "*ast.Relate"},    // name shadows `use`
 		{"service reads uploads\n", "*ast.Relate"}, // name shadows a kind
-		{"on aws\n  service a sets k to v\n", "*ast.On"},
+		{"on aws\n  network\n    vpc v\n", "*ast.On"},
 		{"nonsense\n", "*ast.Bad"},
 	}
 	for _, tt := range tests {

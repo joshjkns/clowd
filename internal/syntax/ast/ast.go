@@ -67,6 +67,10 @@ const (
 	Bucket
 	LoadBalancer
 	Queue
+	// Project and Network are program-wide declarations, not resources:
+	// nothing can refer to them, and each appears at most once.
+	Project
+	Network
 )
 
 var kindNames = [...]string{
@@ -76,12 +80,22 @@ var kindNames = [...]string{
 	Bucket:       "bucket",
 	LoadBalancer: "load balancer",
 	Queue:        "queue",
+	Project:      "project",
+	Network:      "network",
 }
 
 // String returns the canonical spelling of the kind.
 func (k Kind) String() string { return kindNames[k] }
 
-// Declare declares a resource:
+// IsResource reports whether declarations of k are resources, which have
+// names that relationships and routes refer to.
+func (k Kind) IsResource() bool { return k >= Service && k <= Queue }
+
+// Named reports whether a declaration of k has a name. A program has one
+// network, so `network` takes none.
+func (k Kind) Named() bool { return k != Network }
+
+// Declare declares a resource, the project or the network:
 //
 //	service api is public
 //	  port 8080
@@ -100,13 +114,29 @@ type Trait struct {
 	Pos   diag.Span
 }
 
-// Property is an indented `<key> <value...>` line in a declaration.
-// Values may be empty; check reports properties that need one.
+// Property is an indented `<key> <value...>` line, optionally with an
+// indented block of properties under it:
+//
+//	service api
+//	  port 8080
+//	  on aws
+//	    platform_version LATEST
+//
+// Values may be empty; check reports properties that need one, and
+// blocks under properties that don't take one.
 type Property struct {
 	Key    Value
 	Values []Value
-	Pos    diag.Span
+	// Commas are the commas between values. Only settings inside an `on`
+	// block may have them, to write a list (`public_subnets a, b`).
+	Commas []diag.Span
+	Block  []Property
+	// Pos covers the line, not the block.
+	Pos diag.Span
 }
+
+// HasBlock reports whether an indented block follows the property line.
+func (p Property) HasBlock() bool { return len(p.Block) > 0 }
 
 // Verb is a relationship verb.
 type Verb int
@@ -142,24 +172,18 @@ type Relate struct {
 	To      Ident
 }
 
-// On is an escape-hatch block applied only when lowering to Cloud:
+// On is a top-level block of program-wide settings for one cloud:
 //
 //	on aws
-//	  service api sets capacity_provider to FARGATE_SPOT
+//	  network
+//	    vpc vpc-0123
+//
+// Settings for one resource go in an `on` property inside its declaration
+// instead. Settings may contain commas and nested blocks.
 type On struct {
-	Pos       diag.Span
-	Cloud     Ident
-	Overrides []Override
-}
-
-// Override sets a raw provider property on a generated resource.
-type Override struct {
-	Pos     diag.Span
-	Kind    Kind
-	KindPos diag.Span
-	Name    Ident
-	Key     Value
-	Value   []Value
+	Pos      diag.Span
+	Cloud    Ident
+	Settings []Property
 }
 
 // Bad is a statement the parser could not make sense of. A diagnostic has

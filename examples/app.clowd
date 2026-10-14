@@ -4,6 +4,9 @@ use aws in eu-west-2
 use gcp in europe-west2
 
 database db is postgres 16, small
+  on aws
+    backup_retention_period 14
+
 bucket uploads is private
 
 service api
@@ -17,6 +20,3 @@ load balancer web is public
 
 api connects to db
 api reads and writes uploads
-
-on aws
-  database db sets backup_retention_period to 14

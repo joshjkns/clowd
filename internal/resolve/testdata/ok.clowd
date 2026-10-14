@@ -9,11 +9,9 @@ load balancer web
   send /admin to admin
 
 database db
+  on aws
+    multi_az true
 bucket uploads
 queue jobs
 service api
 service admin
-
-on aws
-  service api sets capacity_provider to FARGATE_SPOT
-  database db sets multi_az to true

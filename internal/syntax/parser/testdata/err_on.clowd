@@ -1,14 +1,17 @@
 on aws
 service api
 on
-  service api sets x to y
+  x y
 on gcp
-  service api
-  service api sets
-  service api sets x
-  service api sets x to
-  servcie api sets x to y
-  frobnicate everything
+  a, b
+  , x
+  "quoted" x
+service api
+  image a
+  port 1, 2
+  , stray
+  on aws
+    list a, b
     nested
-  bucket b sets x to a, b
-  service api sets x to y
+      deeper x, y
+  after 1

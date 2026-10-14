@@ -5,23 +5,24 @@ database db 6:10
   size small
   at engine 6:16
   at size 6:29
-bucket uploads 7:8
+bucket uploads 10:8
   public false
-  at visibility 7:19
-service api 9:9
+  at visibility 10:19
+service api 12:9
   image "ghcr.io/me/api:latest"
   port 8080
   scale 2 to 10
-  at image 10:3
-  at port 11:3
-  at scale 12:3
-load balancer web 14:15
+  at image 13:3
+  at port 14:3
+  at scale 15:3
+load balancer web 17:15
   internal false
   listen 443 tls api.example.com
   route / -> api
-  at listen 15:3
-  at send 16:3
-  at visibility 14:22
-relation api connects to db 18:1
-relation api reads and writes uploads 19:1
-override aws database db backup_retention_period = "14" 22:3
+  at listen 18:3
+  at send 19:3
+  at visibility 17:22
+relation api connects to db 21:1
+relation api reads and writes uploads 22:1
+override aws database db 7:3
+  backup_retention_period = "14" 8:5

@@ -166,9 +166,8 @@ func TestDeploy(t *testing.T) {
 
 service api
   image a
-
-on aws
-  service api sets capacity_provider to FARGATE_SPOT
+  on aws
+    capacity_provider FARGATE_SPOT
 `},
 			commands: [][]string{{"check"}, {"build"}},
 		},

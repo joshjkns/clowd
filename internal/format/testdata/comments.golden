@@ -16,5 +16,7 @@ service api # on the header
 
 # leading the next statement
 on aws
-  # only a comment before the override
-  service api sets a to b
+  # only a comment before the setting
+  network
+    # inside a nested block
+    vpc vpc-1

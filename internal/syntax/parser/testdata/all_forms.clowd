@@ -18,6 +18,12 @@ service api
   scale 2 to 10
   env GREETING "hello, world"
   healthcheck
+  on aws
+    platform_version LATEST
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
+      weight 1
+    tags "team: payments"
 
 api connects to db
 api reads and writes uploads
@@ -29,6 +35,6 @@ queue connects to db
 on reads uploads
 
 on aws
+  network
+    public_subnets subnet-a, subnet-b,subnet-c
   service api sets capacity_provider to FARGATE_SPOT
-  load balancer web sets idle_timeout to 120
-  database db sets tags to "team: payments"

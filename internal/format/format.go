@@ -123,6 +123,13 @@ func (p *printer) code() []line {
 			stmt:    stmt,
 		})
 	}
+	var props func(stmt, indent int, ps []ast.Property, raw bool)
+	props = func(stmt, indent int, ps []ast.Property, raw bool) {
+		for _, prop := range ps {
+			add(stmt, indent, prop.Pos, property(prop, raw))
+			props(stmt, indent+1, prop.Block, raw || isOn(prop))
+		}
+	}
 	for i, s := range p.file.Stmts {
 		switch s := s.(type) {
 		case *ast.Use:
@@ -133,17 +140,14 @@ func (p *printer) code() []line {
 			add(i, 0, s.Pos, text)
 		case *ast.Declare:
 			add(i, 0, s.Pos, p.declare(s))
-			for _, prop := range s.Props {
-				add(i, 1, prop.Pos, property(prop))
-			}
+			props(i, 1, s.Props, false)
 		case *ast.Relate:
 			add(i, 0, s.Pos, s.From.Name+" "+s.Verb.String()+" "+s.To.Name)
 		case *ast.On:
+			// Program-wide settings are Clowd's own, so their keys are
+			// keywords; only `on` blocks in resources hold provider data.
 			add(i, 0, s.Pos, "on "+strings.ToLower(s.Cloud.Name))
-			for _, o := range s.Overrides {
-				text := p.kind(o.Kind, o.KindPos) + " " + o.Name.Name + " sets " + value(o.Key) + " to " + values(o.Value)
-				add(i, 1, o.Pos, text)
-			}
+			props(i, 1, s.Settings, false)
 		case *ast.Bad:
 			// Unreachable: Bad statements always come with an error, and
 			// files with errors are not formatted.
@@ -196,18 +200,40 @@ var valueKeywords = map[string]map[int]string{
 	"listen": {0: "on", 2: "with", 3: "tls", 4: "for"},
 }
 
-func property(prop ast.Property) string {
+// property prints a property line. Inside raw (`on`) blocks the keys and
+// values are provider data, so none are keywords and their case is kept;
+// the commas of a list are kept too.
+func property(prop ast.Property, raw bool) string {
 	key := lowerWord(prop.Key)
-	words := []string{key}
+	if raw {
+		key = value(prop.Key)
+	}
+	var b strings.Builder
+	b.WriteString(key)
+	ci := 0
 	for i, v := range prop.Values {
-		if kw, ok := valueKeywords[key][i]; ok && !v.Quoted && strings.EqualFold(v.Text, kw) {
-			words = append(words, kw)
-		} else {
-			words = append(words, value(v))
+		for ci < len(prop.Commas) && prop.Commas[ci].Start < v.Pos.Start {
+			b.WriteString(",")
+			ci++
+		}
+		b.WriteString(" ")
+		switch kw, ok := valueKeywords[key][i]; {
+		case !raw && isOn(prop):
+			b.WriteString(lowerWord(v)) // the cloud
+		case !raw && ok && !v.Quoted && strings.EqualFold(v.Text, kw):
+			b.WriteString(kw)
+		default:
+			b.WriteString(value(v))
 		}
 	}
-	return strings.Join(words, " ")
+	for ; ci < len(prop.Commas); ci++ {
+		b.WriteString(",")
+	}
+	return b.String()
 }
+
+// isOn reports whether prop starts an `on <cloud>` block.
+func isOn(prop ast.Property) bool { return !prop.Key.Quoted && strings.EqualFold(prop.Key.Text, "on") }
 
 // placeComments attaches trailing comments to their code line and merges
 // own-line comments into lines in source order.

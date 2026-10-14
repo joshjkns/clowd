@@ -6,7 +6,6 @@ refs:
   4:17 db -> database Db at 2:10
   5:1 api -> service api at 1:9
   5:17 Db -> database Db at 2:10
-  8:11 Api -> service api at 1:9
 
 diagnostics:
 warning: `API` is declared as `api`
@@ -22,10 +21,3 @@ warning: `db` is declared as `Db`
 4 | API connects to db
   |                 ^^
   = help: write `Db`
-
-warning: `Api` is declared as `api`
- --> case.clowd:8:11
-  |
-8 |   service Api sets x to y
-  |           ^^^
-  = help: write `api`

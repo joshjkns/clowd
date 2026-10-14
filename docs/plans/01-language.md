@@ -103,23 +103,48 @@ still parsed with that verb so the rest of the file checks normally.
 
 ### On (escape hatch)
 
+Settings that belong to one cloud go in an `on <cloud>` block inside the
+resource they change:
+
 ```
-on aws
-  database db sets backup_retention_period to 14
+database db is postgres 16
+  on aws
+    backup_retention_period 14
+
+service api
+  image ghcr.io/me/api:latest
+  on aws
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
+      weight 1
 ```
 
-Overrides are applied only when lowering to that cloud. They use raw provider
-property names on purpose, so they look visibly different from portable code.
-`clowd check` reports them per cloud and verifies the property exists on the
+They are applied only when lowering to that cloud. Keys are raw provider
+argument names on purpose, so they look visibly different from portable
+code, and the formatter keeps their case. `clowd check` lists each block in
+the Overrides section of the matrix and verifies every key exists on the
 generated resource.
 
-Each kind has one resource that overrides set top-level arguments on (on
-AWS: `aws_ecs_service`, `aws_db_instance`, `aws_s3_bucket`, `aws_lb`,
-`aws_sqs_queue`), and only arguments that take a single value: nested
-blocks and lists can't be written as `sets <key> to <value>`. Arguments
-that carry Clowd's own wiring (subnets, security groups, roles) can't be
-overridden either. The value is passed as a string, and the provider
-converts it to the argument's type.
+- A line is `<argument> <value>`, or an argument with an indented block
+  under it for a nested block. A nested block that the provider allows more
+  than once may be written more than once; the first replaces what Clowd
+  generated and the rest add to it. A nested block that appears once is
+  merged into Clowd's, so one field can be changed.
+- A list is written with commas: `<argument> a, b`. A comma needs a space
+  after it; `a,b` is one value.
+- Each kind has one resource the block sets arguments on (on AWS:
+  `aws_ecs_service`, `aws_db_instance`, `aws_s3_bucket`, `aws_lb`,
+  `aws_sqs_queue`), with an allowlist of its arguments and nested blocks.
+  Arguments that carry Clowd's own wiring (subnets, security groups, roles)
+  can't be set, and the error says so.
+- Values are passed as strings, and the provider converts them to the
+  argument's type.
+- A resource has at most one `on` block per cloud.
+
+A top-level `on <cloud>` block holds program-wide settings for that cloud
+instead (see `network` below). The old form `<kind> <name> sets <key> to
+<value>` in a top-level block is an error that shows where the line goes
+now.
 
 ## Resource kinds (MVP)
 
@@ -228,18 +253,19 @@ statement  = use | declare | relate | on_block ;
 
 use        = "use" cloud [ "in" value ] NEWLINE ;
 
-declare    = kind name [ "is" traits ] NEWLINE
-             [ INDENT { property } DEDENT ] ;
+declare    = kind name [ "is" traits ] NEWLINE [ block ] ;
 traits     = trait { ( "," | "and" ) trait } ;
 trait      = word { word } ;
-property   = key value { value } NEWLINE ;
+block      = INDENT { property } DEDENT ;
+property   = key { value } NEWLINE [ block ] ;
+setting    = key { value | "," } NEWLINE [ settings ] ;
+settings   = INDENT { setting } DEDENT ;
 
 relate     = name verb name NEWLINE ;
 verb       = "connects to" | "reads" | "writes"
            | "reads and writes" | "sends to" ;
 
-on_block   = "on" cloud NEWLINE INDENT { override } DEDENT ;
-override   = kind name "sets" raw_key "to" value NEWLINE ;
+on_block   = "on" cloud NEWLINE settings ;
 
 kind       = "service" | "database" | "bucket"
            | "load balancer" | "lb" | "queue" ;

@@ -69,11 +69,7 @@ func (d *dumper) stmt(s Stmt) {
 			d.line(1, "trait %s", d.span(t.Pos))
 			d.values(2, "word", t.Words)
 		}
-		for _, p := range s.Props {
-			d.line(1, "property %s", d.span(p.Pos))
-			d.line(2, "key %s", d.value(p.Key))
-			d.values(2, "value", p.Values)
-		}
+		d.props(1, s.Props)
 	case *Relate:
 		d.line(0, "relate %s", d.span(s.Pos))
 		d.line(1, "from %s", d.ident(s.From))
@@ -82,15 +78,22 @@ func (d *dumper) stmt(s Stmt) {
 	case *On:
 		d.line(0, "on %s", d.span(s.Pos))
 		d.line(1, "cloud %s", d.ident(s.Cloud))
-		for _, o := range s.Overrides {
-			d.line(1, "override %s %s", d.span(o.Pos), o.Kind)
-			d.line(2, "name %s", d.ident(o.Name))
-			d.line(2, "key %s", d.value(o.Key))
-			d.values(2, "value", o.Value)
-		}
+		d.props(1, s.Settings)
 	case *Bad:
 		d.line(0, "bad %s", d.span(s.Pos))
 	default:
 		panic(fmt.Sprintf("ast.Dump: unexpected statement %T", s))
+	}
+}
+
+func (d *dumper) props(indent int, ps []Property) {
+	for _, p := range ps {
+		d.line(indent, "property %s", d.span(p.Pos))
+		d.line(indent+1, "key %s", d.value(p.Key))
+		d.values(indent+1, "value", p.Values)
+		for _, c := range p.Commas {
+			d.line(indent+1, "comma %s", d.span(c))
+		}
+		d.props(indent+1, p.Block)
 	}
 }

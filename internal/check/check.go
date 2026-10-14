@@ -235,45 +235,6 @@ func (c *checker) relate(s *ast.Relate) {
 	c.prog.Relations = append(c.prog.Relations, ir.Relation{From: fn, Verb: v, To: tn, Pos: s.Pos})
 }
 
-func (c *checker) on(s *ast.On) {
-	cl, ok := c.cloud(s.Cloud)
-	if !ok {
-		return
-	}
-	if !slices.ContainsFunc(c.prog.Targets, func(t ir.Target) bool { return t.Cloud == cl }) {
-		c.diags.Add(diag.Warnf(s.Pos, "`on %s` has no effect: this file doesn't `use %s`", cl, cl).
-			Suggest("add `use %s in <region>`, or remove the block", cl))
-	}
-	for _, o := range s.Overrides {
-		d := c.table.Lookup(o.Name.Name)
-		if o.Name.Missing() || d == nil || d.Kind != o.Kind {
-			continue // reported by the parser or resolve
-		}
-		name := d.Name.Name
-		dup := slices.IndexFunc(c.prog.Overrides, func(p ir.Override) bool {
-			return p.Cloud == cl && p.Resource == name && p.Key == o.Key.Text
-		})
-		if dup >= 0 {
-			c.diags.Add(diag.Errorf(o.Key.Pos, "`%s` is already set for `%s` on line %d", o.Key.Text, name, c.line(c.prog.Overrides[dup].Pos)).
-				Suggest("remove one of them"))
-			continue
-		}
-		var words []string
-		for _, v := range o.Value {
-			words = append(words, v.Text)
-		}
-		c.prog.Overrides = append(c.prog.Overrides, ir.Override{
-			Cloud:    cl,
-			Resource: name,
-			Kind:     irKind(d.Kind),
-			Key:      o.Key.Text,
-			KeyPos:   o.Key.Pos,
-			Value:    strings.Join(words, " "),
-			Pos:      o.Pos,
-		})
-	}
-}
-
 // codeList formats words as "`a`, `b` and `c`", joining the last two with
 // conj.
 func codeList(words []string, conj string) string {

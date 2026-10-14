@@ -19,7 +19,7 @@ Relationships
   api connects to db ✓    ✓    ✓
 
 Overrides
-  on aws             ✓    –    –
+  database db on aws ✓    –    –
 
 ✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
 ✓ deployable to aws, gcp · ✗ not deployable to azure
