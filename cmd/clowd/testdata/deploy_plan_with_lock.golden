@@ -7,5 +7,5 @@ Preparing .clowd/build/aws (tofu init)…
 
 --- tofu calls
 tofu init -input=false -no-color
-tofu plan
+tofu plan -no-color
 

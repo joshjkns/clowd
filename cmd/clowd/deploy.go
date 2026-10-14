@@ -377,7 +377,7 @@ func deploy(cmd, usage string, args []string, stdout, stderr io.Writer) int {
 		s.fail("%v; install OpenTofu from https://opentofu.org/docs/intro/install/", err)
 		return exitBadInput
 	}
-	r := &runner.Runner{Tool: tool, Path: path, Dir: b.dir, Stdout: stdout, Stderr: stderr}
+	r := &runner.Runner{Tool: tool, Path: path, Dir: b.dir, Stdout: stdout, Stderr: stderr, NoColor: !s.st.out.Color}
 
 	// Ctrl-C reaches tofu directly, which stops cleanly and releases its
 	// state lock; clowd must outlive it rather than die first.

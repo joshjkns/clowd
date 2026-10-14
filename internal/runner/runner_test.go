@@ -66,13 +66,14 @@ func TestCommands(t *testing.T) {
 	if err := r.Apply(ctx, false, "aws_acm_certificate.web"); err != nil {
 		t.Fatal(err)
 	}
+	r.NoColor = true
 	if err := r.Destroy(ctx, true); err != nil {
 		t.Fatal(err)
 	}
 	want := `init -input=false -no-color TF_IN_AUTOMATION=1
 plan TF_IN_AUTOMATION=1
 apply -target=aws_acm_certificate.web TF_IN_AUTOMATION=1
-destroy -auto-approve TF_IN_AUTOMATION=1
+destroy -auto-approve -no-color TF_IN_AUTOMATION=1
 `
 	if got := calls(t, log); got != want {
 		t.Errorf("calls:\n%s\nwant:\n%s", got, want)

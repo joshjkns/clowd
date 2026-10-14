@@ -21,5 +21,5 @@ Pinned hashicorp/aws 6.14.1 in clowd.lock; commit it.
 
 --- tofu calls
 tofu init -input=false -no-color
-tofu destroy -auto-approve
+tofu destroy -auto-approve -no-color
 
