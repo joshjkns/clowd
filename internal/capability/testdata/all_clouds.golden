@@ -11,8 +11,8 @@ database old: aws ✗  gcp ✗  azure ✗
   gcp unsupported (database version) at 13:17: postgres 11 is not offered; versions are 13, 14, 15, 16 and 17
   azure not implemented (database) at 13:10: 
 database my: aws ✗  gcp ✗  azure ✗
-  aws unsupported (database version) at 14:16: mysql 8 is not offered; versions are 8.0 and 8.4
-  gcp unsupported (database version) at 14:16: mysql 8 is not offered; versions are 8.0 and 8.4
+  aws unsupported (database version) at 14:16: mysql 5.7 is not offered; versions are 8.0 and 8.4
+  gcp unsupported (database version) at 14:16: mysql 5.7 is not offered; versions are 8.0 and 8.4
   azure not implemented (database) at 14:10: 
 database fine: aws ✓  gcp ✓  azure ✗
   azure not implemented (database) at 15:10: 
@@ -92,14 +92,14 @@ warning: not supported on aws and gcp: postgres 11 is not offered; versions are 
 warning: database is not implemented for azure yet
   --> all_clouds.clowd:14:10
    |
-14 | database my is mysql 8
+14 | database my is mysql 5.7
    |          ^^
 
-warning: not supported on aws and gcp: mysql 8 is not offered; versions are 8.0 and 8.4
+warning: not supported on aws and gcp: mysql 5.7 is not offered; versions are 8.0 and 8.4
   --> all_clouds.clowd:14:16
    |
-14 | database my is mysql 8
-   |                ^^^^^^^
+14 | database my is mysql 5.7
+   |                ^^^^^^^^^
 
 warning: database is not implemented for azure yet
   --> all_clouds.clowd:15:10

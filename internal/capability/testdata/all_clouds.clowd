@@ -11,7 +11,7 @@ service worker
   image b
 database db is postgres 16, medium
 database old is postgres 11
-database my is mysql 8
+database my is mysql 5.7
 database fine is mysql 8.4
 database minor is postgres 16.4
 bucket assets is public
