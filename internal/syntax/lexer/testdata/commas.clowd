@@ -1,0 +1,4 @@
+database db is postgres 16, small
+env A a,b
+traits x,, y
+traits x ,y

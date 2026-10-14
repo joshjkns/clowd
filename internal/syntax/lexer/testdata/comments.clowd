@@ -1,0 +1,3 @@
+# a whole-line comment
+bucket a#b is private # trailing comment
+image x#y

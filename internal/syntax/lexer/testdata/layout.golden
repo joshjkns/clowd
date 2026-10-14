@@ -1,0 +1,33 @@
+tokens:
+  1:1-1:8      word "service"
+  1:9-1:12     word "api"
+  1:12-2:1     end of line
+  2:1-2:3      indent
+  2:3-2:8      word "image"
+  2:9-2:10     word "x"
+  2:10-3:1     end of line
+  6:3-6:7      word "port"
+  6:8-6:12     word "8080"
+  6:12-7:1     end of line
+  7:1-7:1      dedent
+  7:1-7:3      word "on"
+  7:4-7:7      word "aws"
+  7:7-8:1      end of line
+  8:1-8:3      indent
+  8:3-8:8      word "outer"
+  8:8-9:1      end of line
+  9:1-9:5      indent
+  9:5-9:10     word "inner"
+  9:10-10:1    end of line
+  10:1-10:7    indent
+  10:7-10:14   word "deepest"
+  10:14-11:1   end of line
+  11:1-11:1    dedent
+  11:1-11:1    dedent
+  11:1-11:1    dedent
+  11:1-11:4    word "top"
+  11:4-12:1    end of line
+  12:1-12:1    end of file
+comments:
+  4:3-4:38     comment "# comment lines don't affect layout"
+  5:7-5:33     comment "# even when oddly indented"

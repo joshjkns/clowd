@@ -1,0 +1,7 @@
+env GREETING "hello world"
+env QUOTED "say \"hi\" \\ bye"
+env BAD "c:\temp"
+env JOINED "a"b
+traits "big one", small
+env OPEN "never closed
+next line

@@ -1,0 +1,4 @@
+service api
+    image x
+  port 8080
+bucket b
