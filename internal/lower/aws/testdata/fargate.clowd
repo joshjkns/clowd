@@ -1,0 +1,24 @@
+use aws in eu-west-2
+
+service exact
+  image a
+  cpu 1
+  memory 4gb
+
+service more_memory
+  image a
+  cpu 0.25
+  memory 4gb
+
+service odd_memory
+  image a
+  cpu 2
+  memory 1500mb
+
+service only_memory
+  image a
+  memory 3gb
+
+service only_cpu
+  image a
+  cpu 4

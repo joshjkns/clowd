@@ -78,3 +78,36 @@ help, like errors in `.clowd` files. Everything else in TOML (floats,
 dates, inline tables, dotted keys, multi-line strings) is rejected as
 unsupported rather than misread, so a file accepted here means the same
 in any TOML parser. If the files ever need more, switch to a library.
+
+## D13 — Overrides set top-level scalar arguments of one resource per kind
+`on <cloud>` overrides name a raw provider argument, so they need a
+resource to land on and a check that the argument exists. Each kind has
+one primary resource per cloud (on AWS: the ECS service, RDS instance, S3
+bucket, ALB and SQS queue), and an allowlist of its single-valued
+arguments, so `clowd check` can say "no such setting" with a suggestion
+instead of failing at plan time. Nested blocks aren't settable by
+`sets <key> to <value>`, which is why the old example (`service api sets
+capacity_provider to FARGATE_SPOT`) could never have worked: Spot needs a
+`capacity_provider_strategy` block and cluster capacity providers. The
+example now uses `database db sets backup_retention_period to 14`.
+Nested-block overrides can be designed later if users need them.
+
+## D14 — Default AWS network: Clowd-made VPC, services in public subnets
+A program with services, databases or load balancers gets its own VPC
+with a public and a private subnet in two zones (the minimum for an ALB
+and an RDS subnet group). Services run in the public subnets with public
+IPs, so they can pull images without a NAT gateway (which costs more per
+month than a small service); their security groups admit only their load
+balancers. Databases are always private. `[aws.network]` in clowd.toml
+can move services behind a NAT gateway (`services = "private"`), change
+the CIDR, or use an existing VPC and subnets. These are deploy settings,
+not infrastructure design, so they stay out of `.clowd` files.
+
+## D15 — `clowd destroy` removes data too
+Buckets are created with `force_destroy` and databases skip the final
+snapshot, so `destroy` removes everything `apply` created. Destroy is
+explicit and OpenTofu asks for confirmation; anything that must survive
+can opt in to protection with an override (`deletion_protection`,
+`skip_final_snapshot`, `force_destroy`). The alternative, destroys that
+fail halfway on a non-empty bucket or need a unique snapshot name each
+time, is worse for the common case of a dev or demo environment.

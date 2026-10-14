@@ -1,0 +1,4 @@
+use aws
+
+service api
+  image nginx

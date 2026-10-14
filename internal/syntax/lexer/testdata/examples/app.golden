@@ -74,13 +74,13 @@ tokens:
   21:4-21:7    word "aws"
   21:7-22:1    end of line
   22:1-22:3    indent
-  22:3-22:10   word "service"
-  22:11-22:14  word "api"
+  22:3-22:11   word "database"
+  22:12-22:14  word "db"
   22:15-22:19  word "sets"
-  22:20-22:37  word "capacity_provider"
-  22:38-22:40  word "to"
-  22:41-22:53  word "FARGATE_SPOT"
-  22:53-23:1   end of line
+  22:20-22:43  word "backup_retention_period"
+  22:44-22:46  word "to"
+  22:47-22:49  word "14"
+  22:49-23:1   end of line
   23:1-23:1    dedent
   23:1-23:1    end of file
 comments:

@@ -87,3 +87,17 @@ func TestFind(t *testing.T) {
 		t.Error("Find found a missing resource")
 	}
 }
+
+func TestJSON(t *testing.T) {
+	got, err := JSON(map[string]any{
+		"Resource": Ref("aws_s3_bucket.b.arn"),
+		"Values":   []any{"a&b", "${not a ref}", 3},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"Resource":"${aws_s3_bucket.b.arn}","Values":["a&b","$${not a ref}",3]}`
+	if string(got) != want {
+		t.Errorf("JSON =\n%s\nwant\n%s", got, want)
+	}
+}

@@ -267,6 +267,7 @@ func (c *checker) on(s *ast.On) {
 			Resource: name,
 			Kind:     irKind(d.Kind),
 			Key:      o.Key.Text,
+			KeyPos:   o.Key.Pos,
 			Value:    strings.Join(words, " "),
 			Pos:      o.Pos,
 		})

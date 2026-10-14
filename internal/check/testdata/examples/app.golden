@@ -24,4 +24,4 @@ load balancer web 14:15
   at visibility 14:22
 relation api connects to db 18:1
 relation api reads and writes uploads 19:1
-override aws service api capacity_provider = "FARGATE_SPOT" 22:3
+override aws database db backup_retention_period = "14" 22:3

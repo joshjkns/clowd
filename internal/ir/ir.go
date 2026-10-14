@@ -308,7 +308,8 @@ type Override struct {
 	Resource string
 	Kind     Kind
 	// Key is the provider property, exactly as written.
-	Key string
+	Key    string
+	KeyPos diag.Span
 	// Value is the value words joined by single spaces.
 	Value string
 	Pos   diag.Span
