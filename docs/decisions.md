@@ -32,3 +32,13 @@ record spans. Hand-written recursive descent gives better errors than a generato
 ## D7 — Edition in `clowd.toml`, not in each file
 Keeps source files clean. Missing config means latest edition. A per-file
 override is reserved for later.
+
+## D8 — Contextual keywords; the lexer only knows words
+The lexer emits words, strings, commas and layout tokens; the parser decides
+what is a keyword from position. Keywords also appear inside values (`to` in
+`scale 2 to 10` and `send / to api`, `on` in `listen on 443`), and users will
+name resources `web`, `jobs` or worse. A keyword-aware lexer would have to guess.
+Contextual keywords also make case-insensitivity, "did you mean" suggestions and
+LSP completion on half-typed lines simpler, because the parser sees the words
+the user actually wrote. Numbers, ranges and durations are words until `check`
+interprets them.
