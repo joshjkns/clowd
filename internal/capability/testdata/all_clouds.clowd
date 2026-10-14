@@ -1,0 +1,39 @@
+use aws in eu-west-2
+use gcp in europe-west2
+use azure in westeurope
+
+service api
+  image a
+  scale 0 to 5
+  memory 64gb
+  env MODE prod
+service worker
+  image b
+database db is postgres 16, medium
+database old is postgres 11
+database my is mysql 8
+database fine is mysql 8.4
+database minor is postgres 16.4
+bucket assets is public
+queue jobs is fifo
+
+load balancer web
+  listen on 443 with tls for api.example.com
+  listen on 8443
+  send / to api
+  send /admin to worker
+
+load balancer inner is internal
+  listen on 9000
+  send / to worker
+
+api connects to db
+api connects to worker
+api reads and writes assets
+worker reads jobs
+api sends to jobs
+
+on aws
+  service api sets capacity_provider to FARGATE_SPOT
+on azure
+  service api sets sku to basic

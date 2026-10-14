@@ -1,0 +1,8 @@
+database db: aws ✓  gcp ✓
+bucket uploads: aws ✓  gcp ✓
+service api: aws ✓  gcp ✓
+load balancer web: aws ✓  gcp ✓
+api connects to db: aws ✓  gcp ✓
+api reads and writes uploads: aws ✓  gcp ✓
+on aws: aws ✓  gcp –
+deployable: aws true  gcp true

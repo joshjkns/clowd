@@ -1,0 +1,4 @@
+service api: aws ✓  gcp ✓
+bucket uploads: aws ✓  gcp ✓
+api reads uploads: aws ✓  gcp ✓
+deployable: aws true  gcp true

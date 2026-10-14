@@ -1,0 +1,9 @@
+use aws in eu-west-2
+use gcp in europe-west2
+
+service api
+  image a
+  scale 2 to 10
+bucket uploads
+
+api reads uploads
