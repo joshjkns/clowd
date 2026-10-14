@@ -91,6 +91,16 @@ Verbs (fixed list for v1):
 
 One target per relate line in v1.
 
+A line whose second word starts a verb is a relationship. This is checked
+before anything else, so a resource may share a name with a statement keyword
+(`queue connects to db`, `on reads uploads`). The cost is that a verb cannot
+be used as a resource name in a declaration: `service reads` is read as an
+unfinished relationship.
+
+Common wrong guesses (`links to`, `uses`, `talks to`, `reads from`,
+`writes to`, ...) are errors that suggest the canonical verb, and the line is
+still parsed with that verb so the rest of the file checks normally.
+
 ### On (escape hatch)
 
 ```
