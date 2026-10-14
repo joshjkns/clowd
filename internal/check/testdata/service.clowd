@@ -68,3 +68,10 @@ service with_traits is public
 
 service with_traits2 is fast
   image a
+
+service synonym_bad
+  img a b
+
+service zero_zero
+  image a
+  scale 0 to 0

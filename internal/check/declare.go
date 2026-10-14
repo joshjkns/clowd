@@ -88,15 +88,25 @@ func (c *checker) traits(d *ast.Declare, h *ir.Header, groups []traitGroup) {
 		}
 		return
 	}
-	chosen := map[string]string{} // group key → word
+	chosen := map[string]string{} // group key → trait as written, e.g. "postgres 16"
 	for _, t := range d.Traits {
 		first := t.Words[0]
 		word := strings.ToLower(first.Text)
+		version := ""
+		if first.Quoted {
+			// Accepted, like a quoted name, so the rest still checks.
+			c.diags.Add(diag.Errorf(first.Pos, "traits aren't quoted").Suggest("write `%s`", first.Text))
+		}
 		if canon, ok := traitSynonyms[d.Kind][word]; ok {
 			c.diags.Add(diag.Errorf(first.Pos, "unknown %s trait `%s`", d.Kind, first.Text).Suggest("write `%s`", canon))
 			word = canon
+		} else if name, v, ok := splitVersion(word); ok && len(t.Words) == 1 {
+			if canon, ok := traitSynonyms[d.Kind][name]; ok {
+				// `pg16`
+				c.diags.Add(diag.Errorf(first.Pos, "unknown %s trait `%s`", d.Kind, first.Text).Suggest("write `%s %s`", canon, v))
+				word, version = canon, v
+			}
 		}
-		version := ""
 		gi := slices.IndexFunc(groups, func(g traitGroup) bool { return slices.Contains(g.words, word) })
 		if gi < 0 {
 			name, v, joined := joinedVersion(word, groups)
@@ -126,19 +136,33 @@ func (c *checker) traits(d *ast.Declare, h *ir.Header, groups []traitGroup) {
 				continue
 			}
 		}
+		written := strings.TrimSpace(word + " " + version)
 		if prev, ok := chosen[g.key]; ok {
-			if prev == word {
-				c.diags.Add(diag.Warnf(t.Pos, "`%s` is repeated", word).Suggest("remove it"))
-			} else {
-				c.diags.Add(diag.Errorf(t.Pos, "`%s` contradicts `%s`", word, prev).
+			switch {
+			case prev == written:
+				c.diags.Add(diag.Warnf(t.Pos, "`%s` is repeated", written).Suggest("remove it"))
+			case g.versioned && strings.Fields(prev)[0] == word:
+				c.diags.Add(diag.Errorf(t.Pos, "`%s` contradicts `%s`", written, prev).
+					Suggest("a %s has one version", d.Kind))
+			default:
+				c.diags.Add(diag.Errorf(t.Pos, "`%s` contradicts `%s`", written, prev).
 					Suggest("a %s takes one of %s", d.Kind, codeList(g.words, "or")))
 			}
 			continue
 		}
-		chosen[g.key] = word
+		chosen[g.key] = written
 		h.Spans[g.key] = t.Pos
 		g.set(word, version)
 	}
+}
+
+// splitVersion splits `pg16` into `pg` and `16`.
+func splitVersion(word string) (name, version string, ok bool) {
+	i := strings.IndexAny(word, "0123456789")
+	if i <= 0 || !validVersion(word[i:]) {
+		return "", "", false
+	}
+	return word[:i], word[i:], true
 }
 
 // joinedVersion splits `postgres16` into `postgres` and `16`.
@@ -300,7 +324,8 @@ func (c *checker) required(d *ast.Declare, h *ir.Header, key, example string) {
 		return
 	}
 	for _, p := range d.Props {
-		if strings.EqualFold(p.Key.Text, key) {
+		k := strings.ToLower(p.Key.Text)
+		if k == key || propSynonyms[k] == key {
 			return // present but invalid; already reported
 		}
 	}
@@ -381,6 +406,11 @@ func (c *checker) hasTraitError(d *ast.Declare, g traitGroup) bool {
 		w := strings.ToLower(t.Words[0].Text)
 		if _, ok := traitSynonyms[d.Kind][w]; ok {
 			continue
+		}
+		if name, _, ok := splitVersion(w); ok {
+			if _, ok := traitSynonyms[d.Kind][name]; ok {
+				continue // `pg16`: accepted as postgres
+			}
 		}
 		if slices.Contains(g.words, w) {
 			return true // a bad version
