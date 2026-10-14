@@ -52,6 +52,7 @@ coverage.
 cmd/clowd/              CLI entrypoint (main package)
 internal/
   diag/                 diagnostics: severity, span, message, suggestion
+  term/                 terminal styling: ANSI colour, NO_COLOR, --color
   syntax/
     token/              token kinds and spans
     lexer/              source → tokens (indent-aware)

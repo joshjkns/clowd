@@ -1,15 +1,20 @@
 exit 1
 --- stdout
-                        aws  gcp
-service api             ✗    ✓    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
-service worker          ✓    ✓
-queue jobs              ✓    ⚠    gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
-load balancer web       ✓    ✗    gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
-api sends to jobs       ✓    ✓
-worker reads jobs       ✓    ⚠    gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
-api connects to worker  ✗    ✗    aws, gcp: service connects to service not implemented yet
+testdata/undeployable.clowd → aws (eu-west-2), gcp (europe-west2)
 
-Deployable: aws ✗  gcp ✗
+Resources                 aws  gcp
+  service api             ✗    ✓    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
+  service worker          ✓    ✓
+  queue jobs              ✓    ⚠    gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
+  load balancer web       ✓    ✗    gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
+
+Relationships
+  api sends to jobs       ✓    ✓
+  worker reads jobs       ✓    ⚠    gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
+  api connects to worker  ✗    ✗    aws, gcp: service connects to service not implemented yet
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✗ not deployable to aws, gcp
 --- stderr
 warning: not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
  --> testdata/undeployable.clowd:6:3

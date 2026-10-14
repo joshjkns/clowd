@@ -2,3 +2,4 @@ exit 2
 --- stdout
 --- stderr
 clowd: open testdata/nope.clowd: no such file or directory
+✗ 1 file could not be formatted

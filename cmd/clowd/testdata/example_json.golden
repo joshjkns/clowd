@@ -15,6 +15,7 @@ exit 0
       },
       "rows": [
         {
+          "section": "resources",
           "label": "database db",
           "pos": {
             "line": 6,
@@ -34,6 +35,7 @@ exit 0
           }
         },
         {
+          "section": "resources",
           "label": "bucket uploads",
           "pos": {
             "line": 7,
@@ -53,6 +55,7 @@ exit 0
           }
         },
         {
+          "section": "resources",
           "label": "service api",
           "pos": {
             "line": 9,
@@ -72,6 +75,7 @@ exit 0
           }
         },
         {
+          "section": "resources",
           "label": "load balancer web",
           "pos": {
             "line": 14,
@@ -91,6 +95,7 @@ exit 0
           }
         },
         {
+          "section": "relationships",
           "label": "api connects to db",
           "pos": {
             "line": 18,
@@ -110,6 +115,7 @@ exit 0
           }
         },
         {
+          "section": "relationships",
           "label": "api reads and writes uploads",
           "pos": {
             "line": 19,
@@ -129,6 +135,7 @@ exit 0
           }
         },
         {
+          "section": "overrides",
           "label": "on aws",
           "pos": {
             "line": 22,

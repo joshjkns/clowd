@@ -33,6 +33,7 @@ go run ./cmd/clowd fmt --check examples/app.clowd
 ```
 cmd/clowd/          CLI entrypoint
 internal/diag/      shared diagnostics (severity, span, message, suggestion)
+internal/term/      terminal colour for CLI output (auto, NO_COLOR, --color)
 internal/syntax/    token, lexer, ast, parser
 internal/resolve/   name resolution
 internal/spell/     "did you mean" edit distance

@@ -15,6 +15,7 @@ exit 1
       },
       "rows": [
         {
+          "section": "resources",
           "label": "service api",
           "pos": {
             "line": 4,
@@ -46,6 +47,7 @@ exit 1
           }
         },
         {
+          "section": "resources",
           "label": "service worker",
           "pos": {
             "line": 8,
@@ -65,6 +67,7 @@ exit 1
           }
         },
         {
+          "section": "resources",
           "label": "queue jobs",
           "pos": {
             "line": 11,
@@ -96,6 +99,7 @@ exit 1
           }
         },
         {
+          "section": "resources",
           "label": "load balancer web",
           "pos": {
             "line": 13,
@@ -127,6 +131,7 @@ exit 1
           }
         },
         {
+          "section": "relationships",
           "label": "api sends to jobs",
           "pos": {
             "line": 17,
@@ -146,6 +151,7 @@ exit 1
           }
         },
         {
+          "section": "relationships",
           "label": "worker reads jobs",
           "pos": {
             "line": 18,
@@ -177,6 +183,7 @@ exit 1
           }
         },
         {
+          "section": "relationships",
           "label": "api connects to worker",
           "pos": {
             "line": 19,

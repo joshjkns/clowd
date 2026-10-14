@@ -1,13 +1,20 @@
 exit 0
 --- stdout
-                              aws  gcp
-database db                   ✓    ✓
-bucket uploads                ✓    ✓
-service api                   ✓    ✓
-load balancer web             ✓    ✓
-api connects to db            ✓    ✓
-api reads and writes uploads  ✓    ✓
-on aws                        ✓    –
+../../examples/app.clowd → aws (eu-west-2), gcp (europe-west2)
 
-Deployable: aws ✓  gcp ✓
+Resources                       aws  gcp
+  database db                   ✓    ✓
+  bucket uploads                ✓    ✓
+  service api                   ✓    ✓
+  load balancer web             ✓    ✓
+
+Relationships
+  api connects to db            ✓    ✓
+  api reads and writes uploads  ✓    ✓
+
+Overrides
+  on aws                        ✓    –
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws, gcp
 --- stderr

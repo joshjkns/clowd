@@ -1,0 +1,20 @@
+exit 0
+--- stdout
+../../examples/app.clowd → aws (eu-west-2), gcp (europe-west2)
+
+Resources                       aws  gcp
+  database db                   ✓    ✓
+  bucket uploads                ✓    ✓
+  service api                   ✓    ✓
+  load balancer web             ✓    ✓
+
+Relationships
+  api connects to db            ✓    ✓
+  api reads and writes uploads  ✓    ✓
+
+Overrides
+  on aws                        ✓    –
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws, gcp
+--- stderr

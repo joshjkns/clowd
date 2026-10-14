@@ -2,10 +2,12 @@ exit 2
 --- stdout
 --- stderr
 invalid value "oracle" for flag -target: unknown cloud "oracle" (clouds are aws, gcp and azure)
-Usage: clowd check [--target cloud] [--json] [file.clowd ...]
+Usage: clowd check [--target cloud] [--json] [--color mode] [file.clowd ...]
 
 With no files, checks every .clowd file in the current directory.
 
+  -color auto
+    	colour output: auto (when writing to a terminal and NO_COLOR is unset), always or never
   -json
     	print machine-readable JSON
   -target cloud
