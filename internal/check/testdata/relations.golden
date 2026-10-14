@@ -1,0 +1,116 @@
+target aws eu-west-2 1:1
+service api 3:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 4:3
+service worker 5:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  at image 6:3
+database db 7:10
+  engine postgres <default>
+  size small
+  at engine 7:16
+bucket uploads 8:8
+  public false
+queue jobs 9:7
+  fifo false
+load balancer web 10:15
+  internal false
+  listen 80
+  route / -> api
+  at listen 11:3
+  at send 12:3
+relation api connects to db 14:1
+relation api connects to worker 15:1
+relation api reads uploads 16:1
+relation api writes uploads 17:1
+relation api reads and writes uploads 18:1
+relation api reads jobs 19:1
+relation api sends to jobs 20:1
+relation worker reads jobs 21:1
+
+diagnostics:
+warning: `api connects to db` is already declared on line 14
+  --> relations.clowd:23:1
+   |
+23 | api connects to db
+   | ^^^^^^^^^^^^^^^^^^
+   = help: remove one of them
+
+error: `api` can't relate to itself
+  --> relations.clowd:24:1
+   |
+24 | api connects to api
+   | ^^^^^^^^^^^^^^^^^^^
+
+error: only a service can start a relationship; `db` is a database
+  --> relations.clowd:25:1
+   |
+25 | db connects to api
+   | ^^
+   = help: relationships go from the service: `api connects to db`
+
+error: only a service can start a relationship; `uploads` is a bucket
+  --> relations.clowd:26:1
+   |
+26 | uploads reads db
+   | ^^^^^^^
+
+error: only a service can start a relationship; `web` is a load balancer
+  --> relations.clowd:27:1
+   |
+27 | web connects to api
+   | ^^^
+   = help: route to it with `send / to api` in the load balancer's block
+
+error: `writes` doesn't apply to a queue
+  --> relations.clowd:28:5
+   |
+28 | api writes jobs
+   |     ^^^^^^
+   = help: to publish to a queue, write `api sends to jobs`
+
+error: `reads and writes` doesn't apply to a queue
+  --> relations.clowd:29:5
+   |
+29 | api reads and writes jobs
+   |     ^^^^^^^^^^^^^^^^
+   = help: write `api reads jobs` and `api sends to jobs` on separate lines
+
+error: `connects to` doesn't apply to a queue
+  --> relations.clowd:30:5
+   |
+30 | api connects to jobs
+   |     ^^^^^^^^^^^
+   = help: write `api reads jobs` to consume or `api sends to jobs` to publish
+
+error: `sends to` doesn't apply to a bucket
+  --> relations.clowd:31:5
+   |
+31 | api sends to uploads
+   |     ^^^^^^^^
+   = help: write `api writes uploads`
+
+error: `connects to` doesn't apply to a bucket
+  --> relations.clowd:32:5
+   |
+32 | api connects to uploads
+   |     ^^^^^^^^^^^
+   = help: say what access it needs: `api reads uploads`, `api writes uploads` or `api reads and writes uploads`
+
+error: `reads` doesn't apply to a database
+  --> relations.clowd:33:5
+   |
+33 | api reads db
+   |     ^^^^^
+   = help: write `api connects to db`
+
+error: `connects to` doesn't apply to a load balancer
+  --> relations.clowd:34:5
+   |
+34 | api connects to web
+   |     ^^^^^^^^^^^
+   = help: load balancers send traffic to services with `send <path> to <service>`, not the other way round

@@ -1,0 +1,70 @@
+use aws in eu-west-2
+
+service minimal
+  image nginx
+
+service full
+  image ghcr.io/me/api:latest
+  port 3000
+  scale 0 to 10
+  cpu 0.25
+  memory 2gb
+  env LOG_LEVEL debug
+  env GREETING "hello world"
+  env EMPTY ""
+
+service fixed
+  image a
+  scale 3
+  cpu 1
+  memory 512MB
+
+service noimage
+  port 80
+
+service bad_values
+  image a b
+  port http
+  port 8081
+  scale 2-10
+  cpu 500m
+  memory 512
+  env LOG_LEVEL=debug
+  env 1BAD x
+  env A
+  env B hello world
+  env LOG_LEVEL info
+
+service bad_scale
+  image a
+  scale 10 to 2
+
+service bad_scale2
+  image a
+  scale 0
+
+service bad_scale3
+  image a
+  scale 3 to 3
+
+service bad_scale4
+  image a
+  scale lots
+
+service bad_cpu
+  image a
+  cpu 3
+  memory 1.5gb
+
+service unknown_props
+  image a
+  replicas 3
+  prot 80
+  colour blue
+  memory
+
+service with_traits is public
+  image a
+
+service with_traits2 is fast
+  image a

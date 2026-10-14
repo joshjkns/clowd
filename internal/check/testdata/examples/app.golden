@@ -1,0 +1,27 @@
+target aws eu-west-2 3:1
+target gcp europe-west2 4:1
+database db 6:10
+  engine postgres 16
+  size small
+  at engine 6:16
+  at size 6:29
+bucket uploads 7:8
+  public false
+  at visibility 7:19
+service api 9:9
+  image "ghcr.io/me/api:latest"
+  port 8080
+  scale 2 to 10
+  at image 10:3
+  at port 11:3
+  at scale 12:3
+load balancer web 14:15
+  internal false
+  listen 443 tls api.example.com
+  route / -> api
+  at listen 15:3
+  at send 16:3
+  at visibility 14:22
+relation api connects to db 18:1
+relation api reads and writes uploads 19:1
+override aws service api capacity_provider = "FARGATE_SPOT" 22:3

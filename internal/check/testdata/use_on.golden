@@ -1,0 +1,72 @@
+target aws eu-west-2 1:1
+target gcp <default> 2:1
+target azure westeurope 3:1
+service api 9:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 10:3
+database db 11:10
+  engine postgres <default>
+  size small
+  at engine 11:16
+override aws service api capacity_provider = "FARGATE_SPOT" 14:3
+override aws database db multi_az = "true" 15:3
+override gcp service api max_instance_request_concurrency = "80" 19:3
+
+diagnostics:
+error: `aws` is already a target on line 1
+ --> use_on.clowd:4:1
+  |
+4 | use AWS in us-east-1
+  | ^^^^^^^^^^^^^^^^^^^^
+  = help: deploying one cloud to several regions is not supported yet; remove one of the `use aws` lines
+
+error: `aws` is already a target on line 1
+ --> use_on.clowd:5:1
+  |
+5 | use amazon in us-east-1
+  | ^^^^^^^^^^^^^^^^^^^^^^^
+  = help: deploying one cloud to several regions is not supported yet; remove one of the `use aws` lines
+
+error: unknown cloud `amazon`
+ --> use_on.clowd:5:5
+  |
+5 | use amazon in us-east-1
+  |     ^^^^^^
+  = help: write `aws`
+
+error: `gcp` is already a target on line 2
+ --> use_on.clowd:6:1
+  |
+6 | use gpc in europe-west2
+  | ^^^^^^^^^^^^^^^^^^^^^^^
+  = help: deploying one cloud to several regions is not supported yet; remove one of the `use gcp` lines
+
+error: unknown cloud `gpc`
+ --> use_on.clowd:6:5
+  |
+6 | use gpc in europe-west2
+  |     ^^^
+  = help: did you mean `gcp`?
+
+error: unknown cloud `digitalocean`
+ --> use_on.clowd:7:5
+  |
+7 | use digitalocean
+  |     ^^^^^^^^^^^^
+  = help: clouds are `aws`, `gcp` and `azure`
+
+error: `capacity_provider` is already set for `api` on line 14
+  --> use_on.clowd:16:20
+   |
+16 |   service api sets capacity_provider to FARGATE
+   |                    ^^^^^^^^^^^^^^^^^
+   = help: remove one of them
+
+error: unknown cloud `oracle`
+  --> use_on.clowd:21:4
+   |
+21 | on oracle
+   |    ^^^^^^
+   = help: clouds are `aws`, `gcp` and `azure`

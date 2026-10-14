@@ -1,0 +1,7 @@
+use aws in eu-west-2
+
+service api
+  image a
+
+on gcp
+  service api sets max_instance_request_concurrency to 80

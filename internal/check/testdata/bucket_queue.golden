@@ -1,0 +1,72 @@
+target gcp europe-west2 1:1
+bucket a 3:8
+  public false
+bucket b 4:8
+  public false
+  at visibility 4:13
+bucket c 5:8
+  public true
+  at visibility 5:13
+bucket d 6:8
+  public true
+  at visibility 6:13
+bucket e 7:8
+  public false
+  at visibility 7:13
+bucket f 8:8
+  public false
+bucket g 9:8
+  public false
+queue q 12:7
+  fifo false
+queue fq 13:7
+  fifo true
+  at fifo 13:13
+queue oq 14:7
+  fifo true
+  at fifo 14:13
+queue sq 15:7
+  fifo false
+
+diagnostics:
+error: `private` contradicts `public`
+ --> bucket_queue.clowd:6:24
+  |
+6 | bucket d is public and private
+  |                        ^^^^^^^
+  = help: a bucket takes one of `private` or `public`
+
+error: unknown bucket trait `internal`
+ --> bucket_queue.clowd:7:13
+  |
+7 | bucket e is internal
+  |             ^^^^^^^^
+  = help: write `private`
+
+error: unknown bucket trait `encrypted`
+ --> bucket_queue.clowd:8:13
+  |
+8 | bucket f is encrypted
+  |             ^^^^^^^^^
+  = help: a bucket's traits are `private` and `public`
+
+error: unknown bucket property `public`
+  --> bucket_queue.clowd:10:3
+   |
+10 |   public true
+   |   ^^^^^^
+   = help: `public` is a trait: `bucket g is public`
+
+error: unknown queue trait `ordered`
+  --> bucket_queue.clowd:14:13
+   |
+14 | queue oq is ordered
+   |             ^^^^^^^
+   = help: write `fifo`
+
+error: unknown queue trait `standard`
+  --> bucket_queue.clowd:15:13
+   |
+15 | queue sq is standard
+   |             ^^^^^^^^
+   = help: a queue's traits are `fifo`

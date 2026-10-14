@@ -1,0 +1,34 @@
+use aws in eu-west-2
+
+service api
+  image a
+service worker
+  image b
+database db is postgres
+bucket uploads
+queue jobs
+load balancer web
+  listen on 80
+  send / to api
+
+api connects to db
+api connects to worker
+api reads uploads
+api writes uploads
+api reads and writes uploads
+api reads jobs
+api sends to jobs
+worker reads jobs
+
+api connects to db
+api connects to api
+db connects to api
+uploads reads db
+web connects to api
+api writes jobs
+api reads and writes jobs
+api connects to jobs
+api sends to uploads
+api connects to uploads
+api reads db
+api connects to web

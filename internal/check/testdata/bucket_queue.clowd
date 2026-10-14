@@ -1,0 +1,15 @@
+use gcp in europe-west2
+
+bucket a
+bucket b is private
+bucket c is public
+bucket d is public and private
+bucket e is internal
+bucket f is encrypted
+bucket g
+  public true
+
+queue q
+queue fq is fifo
+queue oq is ordered
+queue sq is standard
