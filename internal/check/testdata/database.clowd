@@ -19,3 +19,7 @@ database unknown is postgres, fast
 database props is postgres
   size small
   port 5432
+database twover is postgres 16, postgres 12
+database twover2 is postgres 16, postgres
+database twice is postgres 16, postgres 16
+database pgjoined is pg16

@@ -65,6 +65,22 @@ database props 19:10
   engine postgres <default>
   size small
   at engine 19:19
+database twover 22:10
+  engine postgres 16
+  size small
+  at engine 22:20
+database twover2 23:10
+  engine postgres 16
+  size small
+  at engine 23:21
+database twice 24:10
+  engine postgres 16
+  size small
+  at engine 24:19
+database pgjoined 25:10
+  engine postgres 16
+  size small
+  at engine 25:22
 
 diagnostics:
 error: database `noengine` needs an engine
@@ -123,7 +139,7 @@ error: unexpected `beta` after `postgres`
    |                               ^^^^
    = help: separate traits with `,` or `and`
 
-error: `mysql` contradicts `postgres`
+error: `mysql 8` contradicts `postgres 16`
   --> database.clowd:15:33
    |
 15 | database contra is postgres 16, mysql 8
@@ -164,3 +180,31 @@ error: unknown database property `port`
 21 |   port 5432
    |   ^^^^
    = help: a database has no properties
+
+error: `postgres 12` contradicts `postgres 16`
+  --> database.clowd:22:33
+   |
+22 | database twover is postgres 16, postgres 12
+   |                                 ^^^^^^^^^^^
+   = help: a database has one version
+
+error: `postgres` contradicts `postgres 16`
+  --> database.clowd:23:34
+   |
+23 | database twover2 is postgres 16, postgres
+   |                                  ^^^^^^^^
+   = help: a database has one version
+
+warning: `postgres 16` is repeated
+  --> database.clowd:24:32
+   |
+24 | database twice is postgres 16, postgres 16
+   |                                ^^^^^^^^^^^
+   = help: remove it
+
+error: unknown database trait `pg16`
+  --> database.clowd:25:22
+   |
+25 | database pgjoined is pg16
+   |                      ^^^^
+   = help: write `postgres 16`

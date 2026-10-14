@@ -8,6 +8,7 @@ package resolve
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/joshjkns/clowd/internal/diag"
@@ -118,6 +119,10 @@ func verbTargetKind(v ast.Verb) ast.Kind {
 	return ast.Database
 }
 
+// sendKeys are `send` and the wrong guesses check accepts in its place, so
+// a target written after `route` is still resolved and reported.
+var sendKeys = []string{"send", "route", "forward"}
+
 // sends resolves the target of `send <path> to <name>` in a load balancer.
 // Only the well-formed shape is resolved; check reports malformed ones.
 func (r *resolver) sends(d *ast.Declare) {
@@ -125,7 +130,8 @@ func (r *resolver) sends(d *ast.Declare) {
 		return
 	}
 	for _, p := range d.Props {
-		if !strings.EqualFold(p.Key.Text, "send") || len(p.Values) != 3 || !isWord(p.Values[1], "to") {
+		key := strings.ToLower(p.Key.Text)
+		if !slices.Contains(sendKeys, key) || len(p.Values) != 3 || !isWord(p.Values[1], "to") {
 			continue
 		}
 		target := p.Values[2]

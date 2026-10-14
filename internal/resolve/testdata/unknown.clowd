@@ -16,3 +16,6 @@ load balancer web
 on gcp
   service ap sets max_instances to 3
   service queue sets x to y
+
+lb web2
+  route / to apu
