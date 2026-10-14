@@ -47,6 +47,8 @@ type checked struct {
 	file   *diag.File
 	diags  diag.List
 	report *capability.Report // nil when the file has errors
+	// err is set when the file could not be read; file then has only a name.
+	err error
 }
 
 func runCheck(args []string, stdout, stderr io.Writer) int {
@@ -79,8 +81,10 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 	for _, path := range paths {
 		src, err := os.ReadFile(path)
 		if err != nil {
-			fmt.Fprintf(stderr, "clowd: %v\n", err)
-			return exitBadInput
+			// Keep going, so the other files are still checked and --json
+			// still prints a result for every file.
+			results = append(results, checked{file: diag.NewFile(path, ""), err: err})
+			continue
 		}
 		results = append(results, checkFile(diag.NewFile(path, string(src)), targets))
 	}
@@ -150,6 +154,10 @@ func checkFile(f *diag.File, targets []ir.Cloud) checked {
 // ---- human output ----
 
 func writeHuman(stdout, stderr io.Writer, r checked, header bool) {
+	if r.err != nil {
+		fmt.Fprintf(stderr, "clowd: %v\n", r.err)
+		return
+	}
 	if len(r.diags) > 0 {
 		_ = diag.RenderAll(stderr, r.file, r.diags)
 		fmt.Fprintln(stderr)
@@ -294,6 +302,8 @@ type jsonFile struct {
 	Deployable  jsonClouds `json:"deployable"`
 	Rows        []jsonRow  `json:"rows"`
 	Diagnostics []jsonDiag `json:"diagnostics"`
+	// Error is set when the file could not be read.
+	Error string `json:"error,omitempty"`
 }
 
 // jsonClouds maps a cloud name to whether it is deployable.
@@ -347,6 +357,9 @@ func writeJSON(w io.Writer, results []checked) error {
 			Deployable:  jsonClouds{},
 			Rows:        []jsonRow{},
 			Diagnostics: []jsonDiag{},
+		}
+		if r.err != nil {
+			jf.Error = r.err.Error()
 		}
 		for _, d := range r.diags {
 			jf.Diagnostics = append(jf.Diagnostics, jsonDiag{

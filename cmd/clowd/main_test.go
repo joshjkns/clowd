@@ -34,6 +34,7 @@ func TestCLI(t *testing.T) {
 		{"no_targets", []string{"check", "testdata/no_targets.clowd"}, exitOK},
 		{"several_files", []string{"check", "testdata/no_targets.clowd", "testdata/undeployable.clowd"}, exitFailure},
 		{"missing_file", []string{"check", "testdata/nope.clowd"}, exitBadInput},
+		{"missing_file_json", []string{"check", "--json", "testdata/no_targets.clowd", "testdata/nope.clowd"}, exitBadInput},
 		{"bad_target", []string{"check", "--target", "oracle", "../../examples/app.clowd"}, exitBadInput},
 		{"unknown_command", []string{"deploy"}, exitBadInput},
 		{"no_args", nil, exitBadInput},

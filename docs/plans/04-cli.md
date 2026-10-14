@@ -45,8 +45,9 @@ clowd check [--target cloud] [--json] [file.clowd ...]
 - `--json` prints `{"files": [...]}` with, per file, `path`, `ok`,
   `clouds`, `deployable`, `rows` (label, position, a cell per cloud with
   level and findings) and `diagnostics` (severity, message, suggestion,
-  1-based `line`/`column`/`endLine`/`endColumn`). Fields are only ever
-  added. Levels are `supported`, `emulated`, `not implemented`,
+  1-based `line`/`column`/`endLine`/`endColumn`), plus `error` for a file
+  that could not be read (the other files are still checked). Fields are
+  only ever added. Levels are `supported`, `emulated`, `not implemented`,
   `unsupported` and `not applicable`.
 
 ## Project files
