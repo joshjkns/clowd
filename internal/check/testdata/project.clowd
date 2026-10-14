@@ -1,0 +1,21 @@
+use aws in eu-west-2
+use gcp
+
+project Shop_1
+  edition 2025
+  tag team payments
+  tag Team x
+  tag team again
+  tag owner "Josh J"
+  tag only
+  state s3
+  public yes
+  on aws
+    x y
+
+project again
+  edition 2026
+
+# A service may share the project's name: the project isn't a resource.
+service shop
+  image a

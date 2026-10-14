@@ -1,9 +1,0 @@
-name "default"
-edition 2026
-runtime ""
-state.backend "local"
-aws.network.services "public"
-aws.network.cidr "10.0.0.0/16"
-aws.network.vpc ""
-aws.network.public_subnets []
-aws.network.private_subnets []

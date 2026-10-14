@@ -50,4 +50,4 @@ error: unknown statement `hello`
   |
 6 | hello
   | ^^^^^
-  = help: statements start with `use`, `on` or a resource kind (`service`, `database`, `bucket`, `load balancer`, `queue`), or relate two names: `api connects to db`
+  = help: statements start with `use`, `on`, `project`, `network` or a resource kind (`service`, `database`, `bucket`, `load balancer`, `queue`), or relate two names: `api connects to db`

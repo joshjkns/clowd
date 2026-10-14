@@ -49,6 +49,10 @@ var matrix = map[Feature]map[ir.Cloud]Entry{
 	SendsToQueue:       {ir.AWS: ok, ir.GCP: ok},
 
 	Overrides: {ir.AWS: ok, ir.GCP: ok},
+
+	ProjectTags:    {ir.AWS: ok, ir.GCP: ok},
+	PrivateNetwork: {ir.AWS: ok, ir.GCP: ok},
+	NetworkCIDR:    {ir.AWS: ok, ir.GCP: ok},
 }
 
 // products are what each kind becomes, for hovers and docs.

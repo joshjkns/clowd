@@ -2,21 +2,22 @@
 
 Three different things get versioned, and each lives in a different place.
 
-## 1. Language edition — `clowd.toml`
+## 1. Language edition — the `project` declaration
 
-```toml
-edition = 2026
+```
+project shop
+  edition 2026
 ```
 
 - The file extension says "this is Clowd"; the edition says *which* Clowd.
   It exists so a future breaking change (renaming a verb, changing what a
   property means) does not silently change old files.
-- Lives in the project config, not in every `.clowd` file (like Rust editions in
-  `Cargo.toml` or the `go` line in `go.mod`).
-- `clowd init` writes it. No config → assume the latest edition.
-- Optional per-file override, reserved but not in the MVP: an `edition 2026`
-  first line.
-- Until there is a second edition, this is invisible.
+- Lives in the project's one `project` declaration, not on every
+  resource (like the `go` line in `go.mod`). It used to be in
+  `clowd.toml`, which is gone (D17).
+- Optional: no `edition` means the latest.
+- Until there is a second edition, this is invisible. When there is one,
+  `clowd init` will start writing it.
 
 ## 2. Resource versions — in the source
 

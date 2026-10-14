@@ -2,12 +2,12 @@ $ clowd build
 exit 2
 --- stdout
 --- stderr
-error: unknown setting `region` in clowd.toml
- --> clowd.toml:2:1
+error: clowd.toml is no longer read; project settings are written in the .clowd file
+ --> clowd.toml:1:1
   |
-2 | region = "eu-west-2"
-  | ^^^^^^
-  = help: the region is set in the .clowd file: `use aws in <region>`
+1 | name = "shop"
+  | ^
+  = help: `name = "x"` is now `project x`, with `edition` in its block; `services = "private"` is `network is private`, with `cidr` in its block; `vpc` and the subnets go in an `on aws` block under `network`; `runtime` is `--runtime` or CLOWD_RUNTIME. Then delete clowd.toml
 
 clowd.toml: 1 error
 

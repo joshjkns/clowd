@@ -159,8 +159,10 @@ func (p *printer) code() []line {
 func (p *printer) declare(d *ast.Declare) string {
 	var b strings.Builder
 	b.WriteString(p.kind(d.Kind, d.KindPos))
-	b.WriteString(" ")
-	b.WriteString(d.Name.Name)
+	if d.Kind.Named() {
+		b.WriteString(" ")
+		b.WriteString(d.Name.Name)
+	}
 	for i, t := range d.Traits {
 		switch {
 		case i == 0:

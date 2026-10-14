@@ -79,7 +79,7 @@ func (c *checker) traits(d *ast.Declare, h *ir.Header, groups []traitGroup) {
 		if len(d.Traits) > 0 {
 			sp := d.Traits[0].Pos.Join(d.Traits[len(d.Traits)-1].Pos)
 			e := diag.Errorf(sp, "a %s has no traits", d.Kind)
-			if w := strings.ToLower(d.Traits[0].Words[0].Text); w == "public" || w == "internal" || w == "private" {
+			if w := strings.ToLower(d.Traits[0].Words[0].Text); d.Kind == ast.Service && (w == "public" || w == "internal" || w == "private") {
 				e = e.Suggest("to expose a service, put a load balancer in front of it: `send / to %s`", d.Name.Name)
 			} else {
 				e = e.Suggest("settings go in an indented block below the declaration, such as `  port 8080`")
@@ -234,7 +234,12 @@ func (c *checker) props(d *ast.Declare, h *ir.Header, specs map[string]propSpec,
 	for _, p := range d.Props {
 		key := strings.ToLower(p.Key.Text)
 		if key == "on" && !p.Key.Quoted {
-			c.onBlock(d, h, p)
+			if d.Kind.IsResource() {
+				c.onBlock(d, h, p)
+			} else {
+				c.diags.Add(diag.Errorf(p.Pos, "a %s has no `on` block", d.Kind).
+					Suggest("program-wide settings for one cloud go in a top-level `on <cloud>` block"))
+			}
 			continue
 		}
 		if p.HasBlock() {
@@ -276,7 +281,7 @@ func (c *checker) unknownProp(d *ast.Declare, p ast.Property, specs map[string]p
 	key := strings.ToLower(p.Key.Text)
 	e := diag.Errorf(p.Key.Pos, "unknown %s property `%s`", d.Kind, p.Key.Text)
 	is := func(trait string) diag.Diagnostic {
-		return e.Suggest("`%s` is a trait: `%s %s is %s`", trait, d.Kind, d.Name.Name, trait)
+		return e.Suggest("`%s` is a trait: `%s is %s`", trait, head(d), trait)
 	}
 	for _, g := range groups {
 		if slices.Contains(g.words, key) {
@@ -294,6 +299,14 @@ func (c *checker) unknownProp(d *ast.Declare, p ast.Property, specs map[string]p
 		return e.Suggest("did you mean `%s`?", guess)
 	}
 	return e.Suggest("a %s's properties are %s", d.Kind, codeList(names, "and"))
+}
+
+// head is how a declaration starts: `service api`, or `network`.
+func head(d *ast.Declare) string {
+	if !d.Kind.Named() {
+		return d.Kind.String()
+	}
+	return d.Kind.String() + " " + d.Name.Name
 }
 
 // setFrom stores the result of parse in dst if it is valid.

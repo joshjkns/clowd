@@ -1,0 +1,6 @@
+$ clowd init infra
+exit 2
+--- stdout
+--- stderr
+clowd: infra/site.clowd already exists; this is a Clowd project
+

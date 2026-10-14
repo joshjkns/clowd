@@ -28,22 +28,19 @@ import (
 // hasBackend reports whether Clowd can deploy to c.
 func hasBackend(c ir.Cloud) bool { return c == ir.AWS }
 
-// awsOptions maps project settings to the AWS backend's.
-func awsOptions(p *project.Project, source string) aws.Options {
-	n := p.Config.AWS.Network
+// awsOptions are the deploy settings the AWS backend needs besides the
+// program.
+func awsOptions(p *project.Project, prog *ir.Program, source string) aws.Options {
 	return aws.Options{
-		Project:         p.Config.Name,
+		Project:         p.Name(prog.Project.Name),
 		Source:          source,
 		ProviderVersion: p.Lock.Version("aws"),
-		Network: aws.Network{
-			PrivateServices: n.Services == "private",
-			CIDR:            n.CIDR,
-			VPC:             n.VPC,
-			PublicSubnets:   n.PublicSubnets,
-			PrivateSubnets:  n.PrivateSubnets,
-		},
 	}
 }
+
+// runtimeEnv names the environment variable that picks the tool, like
+// --runtime; the flag wins.
+const runtimeEnv = "CLOWD_RUNTIME"
 
 // deployFlags are the flags shared by build, plan, apply and destroy.
 type deployFlags struct {
@@ -51,8 +48,9 @@ type deployFlags struct {
 	targets targetsFlag
 	color   term.Mode
 	verbose bool
-	json    bool // build only
-	yes     bool // apply and destroy only
+	json    bool   // build only
+	yes     bool   // apply and destroy only
+	runtime string // plan, apply and destroy
 }
 
 func newDeployFlags(cmd, usage string, stderr io.Writer) *deployFlags {
@@ -66,6 +64,9 @@ func newDeployFlags(cmd, usage string, stderr io.Writer) *deployFlags {
 		d.fs.BoolVar(&d.json, "json", false, "print machine-readable JSON")
 	case "apply", "destroy":
 		d.fs.BoolVar(&d.yes, "yes", false, "don't ask for confirmation")
+	}
+	if cmd != "build" {
+		d.fs.StringVar(&d.runtime, "runtime", "", "the `tool` to run, tofu or terraform (default: $"+runtimeEnv+", else tofu if installed, else terraform)")
 	}
 	d.fs.Usage = func() {
 		fmt.Fprint(stderr, usage)
@@ -96,23 +97,10 @@ func open(args []string, d *deployFlags, stdout, stderr io.Writer) (*session, in
 		return nil, exitBadInput
 	}
 	s := &session{stdout: stdout, stderr: stderr, st: styles{out: term.For(stdout, d.color), err: term.For(stderr, d.color)}}
-	proj, src, diags, err := project.Load(".")
-	if err != nil {
-		s.fail("%v", err)
-		return nil, exitBadInput
-	}
-	if len(diags) > 0 {
-		_ = diag.RenderAllStyled(stderr, src, diags, s.st.err)
-		if diags.HasErrors() {
-			fmt.Fprintf(stderr, "\n%s: %s\n", s.st.err.Bold(src.Name), s.st.err.Error(count(diags)))
-			return nil, exitBadInput
-		}
-	}
-	s.proj = proj
 
 	switch len(paths) {
 	case 0:
-		found := sourceFiles(proj.Root)
+		found := sourceFiles(".")
 		switch len(found) {
 		case 0:
 			s.fail("no .clowd file in this project; run `clowd init` or pass a file")
@@ -132,6 +120,23 @@ func open(args []string, d *deployFlags, stdout, stderr io.Writer) (*session, in
 		s.fail("pass one .clowd file: a project deploys one program")
 		return nil, exitBadInput
 	}
+
+	// The project is the directory holding the file: its lock and build
+	// output live next to it.
+	proj, src, diags, err := project.Load(filepath.Dir(paths[0]))
+	if err != nil {
+		s.fail("%v", err)
+		return nil, exitBadInput
+	}
+	if len(diags) > 0 {
+		_ = diag.RenderAllStyled(stderr, src, diags, s.st.err)
+		if diags.HasErrors() {
+			fmt.Fprintf(stderr, "\n%s: %s\n", s.st.err.Bold(src.Name), s.st.err.Error(count(diags)))
+			return nil, exitBadInput
+		}
+	}
+	s.proj = proj
+
 	text, err := os.ReadFile(paths[0])
 	if err != nil {
 		s.fail("%v", err)
@@ -237,7 +242,7 @@ func (s *session) build(cloud ir.Cloud) (*built, int) {
 		s.fail("%s isn't deployable to %s; run `clowd check` for details", s.file.Name, cloud)
 		return nil, exitFailure
 	}
-	res := aws.Lower(s.prog, awsOptions(s.proj, filepath.Base(s.file.Name)))
+	res := aws.Lower(s.prog, awsOptions(s.proj, s.prog, filepath.Base(s.file.Name)))
 	s.render(append(append(slices.Clone(s.diags), rep.Diagnostics()...), res.Diags...))
 	if res.Diags.HasErrors() {
 		fmt.Fprintf(s.stderr, "%s: %s\n", s.st.err.Bold(s.file.Name), s.st.err.Error(count(res.Diags)))
@@ -315,19 +320,19 @@ func runBuild(args []string, stdout, stderr io.Writer) int {
 
 // ---- plan, apply, destroy ----
 
-const planUsage = `Usage: clowd plan [--target cloud] [file.clowd]
+const planUsage = `Usage: clowd plan [--target cloud] [--runtime tool] [file.clowd]
 
 Builds the project for one cloud and shows what apply would change.
 
 `
 
-const applyUsage = `Usage: clowd apply [--target cloud] [--yes] [file.clowd]
+const applyUsage = `Usage: clowd apply [--target cloud] [--runtime tool] [--yes] [file.clowd]
 
 Builds the project for one cloud and deploys it.
 
 `
 
-const destroyUsage = `Usage: clowd destroy [--target cloud] [--yes] [file.clowd]
+const destroyUsage = `Usage: clowd destroy [--target cloud] [--runtime tool] [--yes] [file.clowd]
 
 Destroys everything the last apply to a cloud created, including data in
 databases and buckets.
@@ -372,7 +377,15 @@ func deploy(cmd, usage string, args []string, stdout, stderr io.Writer) int {
 		return code
 	}
 
-	tool, path, err := runner.Find(s.proj.Config.Runtime)
+	runtime := d.runtime
+	if runtime == "" {
+		runtime = os.Getenv(runtimeEnv)
+	}
+	if runtime != "" && runtime != "tofu" && runtime != "terraform" {
+		s.fail("the runtime is tofu or terraform, not %q", runtime)
+		return exitBadInput
+	}
+	tool, path, err := runner.Find(runtime)
 	if err != nil {
 		s.fail("%v; install OpenTofu from https://opentofu.org/docs/intro/install/", err)
 		return exitBadInput
@@ -547,13 +560,25 @@ func (s *session) summary(ctx context.Context, r *runner.Runner, cloud ir.Cloud)
 
 const initUsage = `Usage: clowd init [dir]
 
-Creates clowd.toml, a starter app.clowd (unless the directory has .clowd
-files already), and ignores .clowd/ in .gitignore.
+Creates a starter app.clowd and ignores .clowd/ in .gitignore. Refuses to
+run where there are .clowd files already.
 `
 
-const starter = `# Describe your infrastructure, then run ` + "`clowd check`" + ` and ` + "`clowd apply`" + `.
+// starter is the app.clowd `clowd init` writes. It names the project
+// explicitly, so renaming the directory later doesn't rename (and so
+// replace) everything deployed.
+func starter(name string) string {
+	return `# Describe your infrastructure, then run ` + "`clowd check`" + ` and ` + "`clowd apply`" + `.
 
 use aws in eu-west-2
+
+# The project's name prefixes everything deployed.
+project ` + name + `
+
+# Uncomment to run services behind a NAT gateway instead of giving them
+# public addresses, or to choose the network's address block:
+# network is private
+#   cidr 10.0.0.0/16
 
 service app
   image nginx:latest
@@ -563,6 +588,7 @@ load balancer web
   listen on 80
   send / to app
 `
+}
 
 func runInit(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("init", flag.ContinueOnError)
@@ -600,9 +626,8 @@ func runInit(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return failf("%v", err)
 	}
-	config := filepath.Join(dir, project.ConfigFile)
-	if _, err := os.Stat(config); err == nil {
-		return failf("%s already exists; this is a Clowd project", config)
+	if found := sourceFiles(dir); len(found) > 0 {
+		return failf("%s already exists; this is a Clowd project", found[0])
 	}
 
 	var created []string
@@ -614,13 +639,8 @@ func runInit(args []string, stdout, stderr io.Writer) int {
 		created = append(created, path)
 		return nil
 	}
-	if err := write(project.ConfigFile, project.InitConfig(project.DefaultName(abs))); err != nil {
+	if err := write("app.clowd", starter(project.DefaultName(abs))); err != nil {
 		return failf("%v", err)
-	}
-	if len(sourceFiles(dir)) == 0 {
-		if err := write("app.clowd", starter); err != nil {
-			return failf("%v", err)
-		}
 	}
 	if changed, err := ignoreWorkDir(filepath.Join(dir, ".gitignore")); err != nil {
 		return failf("%v", err)

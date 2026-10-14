@@ -17,7 +17,6 @@ import (
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
 	"github.com/joshjkns/clowd/internal/lower/aws"
-	"github.com/joshjkns/clowd/internal/project"
 	"github.com/joshjkns/clowd/internal/term"
 )
 
@@ -121,19 +120,9 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 	return code
 }
 
-// projectFiles are the .clowd files in the project's root directory (the
-// one with clowd.toml, or the working directory), relative to the working
-// directory.
+// projectFiles are the .clowd files in the working directory.
 func projectFiles() []string {
-	root, err := project.Root(".")
-	if err != nil {
-		return nil
-	}
-	found := sourceFiles(root)
-	for i, f := range found {
-		found[i] = rel(f)
-	}
-	return found
+	return sourceFiles(".")
 }
 
 // sourceFiles lists the .clowd files in dir. The glob alone would also

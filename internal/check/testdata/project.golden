@@ -1,0 +1,74 @@
+target aws eu-west-2 1:1
+target gcp <default> 2:1
+project "" edition 0
+  tag team="payments" 6:3
+  tag owner="Josh J" 9:3
+service shop 20:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 21:3
+
+diagnostics:
+error: `Shop_1` can't be a project name
+ --> project.clowd:4:9
+  |
+4 | project Shop_1
+  |         ^^^^^^
+  = help: use up to 20 lowercase letters, digits and dashes, starting with a letter
+
+error: there is no edition 2025
+ --> project.clowd:5:11
+  |
+5 |   edition 2025
+  |           ^^^^
+  = help: write `edition 2026`
+
+error: `Team` can't be a tag key
+ --> project.clowd:7:7
+  |
+7 |   tag Team x
+  |       ^^^^
+  = help: tag keys are up to 63 lowercase letters, digits, `_` and `-`, starting with a letter, so every cloud accepts them
+
+error: tag `team` is already set on line 6
+ --> project.clowd:8:7
+  |
+8 |   tag team again
+  |       ^^^^
+  = help: remove one of them
+
+error: `tag` takes a key and a value
+  --> project.clowd:10:7
+   |
+10 |   tag only
+   |       ^^^^
+   = help: write `tag <key> <value>`, such as `tag team payments`; quote values with spaces
+
+error: the `s3` state backend is not implemented yet
+  --> project.clowd:11:9
+   |
+11 |   state s3
+   |         ^^
+   = help: state is kept in .clowd/ for now: `state local`
+
+error: unknown project property `public`
+  --> project.clowd:12:3
+   |
+12 |   public yes
+   |   ^^^^^^
+   = help: a project's properties are `edition`, `state` and `tag`
+
+error: a project has no `on` block
+  --> project.clowd:13:3
+   |
+13 |   on aws
+   |   ^^^^^^
+   = help: program-wide settings for one cloud go in a top-level `on <cloud>` block
+
+error: a program has one project, and it is declared on line 4
+  --> project.clowd:16:1
+   |
+16 | project again
+   | ^^^^^^^
+   = help: merge the two declarations

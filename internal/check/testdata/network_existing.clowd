@@ -1,0 +1,8 @@
+use aws in eu-west-2
+
+on aws
+  network
+    public_subnets subnet-a, subnet-b
+
+on aws
+  network yes

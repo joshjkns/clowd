@@ -2,6 +2,7 @@ package capability
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -49,6 +50,10 @@ const (
 	SendsToQueue       Feature = "service sends to queue"
 
 	Overrides Feature = "provider overrides"
+
+	ProjectTags    Feature = "project tags"
+	PrivateNetwork Feature = "private network"
+	NetworkCIDR    Feature = "network address block"
 )
 
 func (f Feature) isKind() bool {
@@ -183,6 +188,58 @@ func relationFeature(p *ir.Program, rel ir.Relation) (Feature, bool) {
 		return SendsToQueue, true
 	}
 	return "", false
+}
+
+// programFeatures lists what the project and network declarations ask
+// for, each as a row label and its uses; rows without uses are left out.
+func programFeatures(p *ir.Program) (rows []struct {
+	label string
+	pos   diag.Span
+	uses  []use
+}) {
+	add := func(label string, pos diag.Span, uses []use) {
+		if len(uses) > 0 {
+			rows = append(rows, struct {
+				label string
+				pos   diag.Span
+				uses  []use
+			}{label, pos, uses})
+		}
+	}
+	pr := p.Project
+	var uses []use
+	for _, t := range pr.Tags {
+		uses = append(uses, use{feature: ProjectTags, pos: t.Pos, check: tagCheck(t.Value)})
+	}
+	label := "project"
+	if pr.Name != "" {
+		label += " " + pr.Name
+	}
+	add(label, pr.Pos, uses)
+
+	n := p.Network
+	uses = nil
+	if n.Private {
+		uses = append(uses, use{feature: PrivateNetwork, pos: n.At("services")})
+	}
+	if n.CIDR != "" {
+		uses = append(uses, use{feature: NetworkCIDR, pos: n.At("cidr")})
+	}
+	add("network", n.Pos, uses)
+	return rows
+}
+
+// gcpLabelValue is what GCP accepts as a label value.
+var gcpLabelValue = regexp.MustCompile(`^[a-z0-9_-]{0,63}$`)
+
+// tagCheck returns a check that a cloud accepts value as a tag value.
+func tagCheck(value string) func(ir.Cloud) Entry {
+	return func(cloud ir.Cloud) Entry {
+		if cloud == ir.GCP && !gcpLabelValue.MatchString(value) {
+			return Entry{Level: Unsupported, Note: "label values are up to 63 lowercase letters, digits, `_` and `-`"}
+		}
+		return Lookup(ProjectTags, cloud)
+	}
 }
 
 // memoryCheck returns a check that a cloud's services can have mib of

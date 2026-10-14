@@ -50,7 +50,9 @@ func key(name string) string { return strings.ToLower(name) }
 func Resolve(src *diag.File, f *ast.File) (*Table, diag.List) {
 	r := &resolver{src: src, t: &Table{byKey: map[string]*ast.Declare{}}}
 	for _, s := range f.Stmts {
-		if d, ok := s.(*ast.Declare); ok {
+		// The project and the network aren't resources: nothing refers to
+		// them, so a service may share the project's name.
+		if d, ok := s.(*ast.Declare); ok && d.Kind.IsResource() {
 			r.declare(d)
 		}
 	}

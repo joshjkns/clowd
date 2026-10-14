@@ -14,7 +14,7 @@
 //
 // Relationships add the wiring: security group rules, IAM policy
 // statements and environment variables. Services get a cluster and a
-// network (see Network) shared by the whole program.
+// network shared by the whole program.
 //
 // Lowering trusts its input: the program has passed check and the
 // capability matrix says it is deployable to AWS, so anything the matrix
@@ -45,28 +45,14 @@ const ProviderConstraint = "~> 6.0"
 // Options are the deploy settings that aren't part of the program.
 type Options struct {
 	// Project prefixes every physical name, so projects can share an
-	// account. It must be a valid project name (see internal/project).
+	// account. It is the program's project name, or the default the CLI
+	// picks when the program has none (see check.ValidProjectName).
 	Project string
 	// Source is the .clowd file's name, for the generated file's header.
 	Source string
 	// ProviderVersion pins the provider ("6.14.1"); empty uses
 	// ProviderConstraint.
 	ProviderVersion string
-	Network         Network
-}
-
-// Network says where resources are placed.
-type Network struct {
-	// PrivateServices runs services in private subnets behind a NAT
-	// gateway instead of in public subnets with public IPs.
-	PrivateServices bool
-	// CIDR is the block for the VPC Clowd creates. Empty means 10.0.0.0/16.
-	CIDR string
-	// VPC, when set, is an existing VPC; the subnets are then its subnets,
-	// two or more each, in different availability zones.
-	VPC            string
-	PublicSubnets  []string
-	PrivateSubnets []string
 }
 
 // Result is a lowered program.
@@ -135,7 +121,13 @@ func (l *lowerer) provider() {
 			region = t.Region
 		}
 	}
-	conf := tfjson.Body{"default_tags": tfjson.Body{"tags": map[string]string{"clowd:project": l.opts.Project}}}
+	// The project's tags go on every resource through the provider's
+	// default tags, next to the one Clowd uses to find what it made.
+	tagSet := map[string]string{"clowd:project": l.opts.Project}
+	for _, t := range l.p.Project.Tags {
+		tagSet[t.Key] = t.Value
+	}
+	conf := tfjson.Body{"default_tags": tfjson.Body{"tags": tagSet}}
 	if region != "" {
 		conf["region"] = region
 	}

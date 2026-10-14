@@ -45,7 +45,7 @@ internal/lower/     IR → provider resources, one package per cloud
 internal/emit/      .tf.json output
 internal/format/    clowd fmt
 internal/lsp/       language server
-internal/project/   clowd.toml / clowd.lock
+internal/project/   project directory, clowd.lock
 internal/runner/    tofu/terraform invocation
 editors/            VS Code extension, tree-sitter grammar
 examples/           example .clowd files (also end-to-end fixtures)

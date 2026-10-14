@@ -43,7 +43,7 @@ coverage.
 - Default runtime is `tofu`; `terraform` should also work from the same output.
 - Each target cloud gets its own root module in `.clowd/build/<cloud>/` with its
   own state.
-- State backend is configured in `clowd.toml` (local by default; S3/GCS later).
+- The state backend is a `project` setting (local by default; S3/GCS later).
 - Provider versions are pinned in `clowd.lock`.
 
 ## Repo layout
@@ -70,7 +70,7 @@ internal/
   emit/tfjson/          resources → .tf.json
   format/               canonical formatter (clowd fmt)
   lsp/                  language server
-  project/              clowd.toml + clowd.lock loading
+  project/              project directory + clowd.lock loading
   runner/               invokes tofu / terraform
 editors/
   vscode/               VS Code extension (TextMate grammar + LSP client)

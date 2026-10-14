@@ -1,105 +1,13 @@
 package project
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/joshjkns/clowd/internal/diag"
-	"github.com/joshjkns/clowd/internal/golden"
+	"github.com/joshjkns/clowd/internal/check"
 )
-
-// TestConfigGolden decodes each testdata/*.toml and records the settings
-// and the rendered diagnostics.
-func TestConfigGolden(t *testing.T) {
-	inputs, err := filepath.Glob("testdata/*.toml")
-	if err != nil || len(inputs) == 0 {
-		t.Fatalf("no inputs: %v", err)
-	}
-	for _, in := range inputs {
-		name := strings.TrimSuffix(filepath.Base(in), ".toml")
-		t.Run(name, func(t *testing.T) {
-			src, err := os.ReadFile(in)
-			if err != nil {
-				t.Fatal(err)
-			}
-			f := diag.NewFile(filepath.Base(in), string(src))
-			c := Config{Name: "default", Edition: LatestEdition, State: State{Backend: defaultBackend}}
-			c.AWS.Network = Network{Services: defaultServices, CIDR: defaultCIDR}
-			diags := c.decode(f)
-
-			var b strings.Builder
-			n := c.AWS.Network
-			fmt.Fprintf(&b, "name %q\nedition %d\nruntime %q\nstate.backend %q\n", c.Name, c.Edition, c.Runtime, c.State.Backend)
-			fmt.Fprintf(&b, "aws.network.services %q\naws.network.cidr %q\naws.network.vpc %q\n", n.Services, n.CIDR, n.VPC)
-			fmt.Fprintf(&b, "aws.network.public_subnets %q\naws.network.private_subnets %q\n", n.PublicSubnets, n.PrivateSubnets)
-			if len(diags) > 0 {
-				b.WriteString("\ndiagnostics:\n")
-				diags.Sort()
-				_ = diag.RenderAll(&b, f, diags)
-			}
-			golden.Check(t, strings.TrimSuffix(in, ".toml")+".golden", b.String())
-		})
-	}
-}
-
-func TestTOMLValues(t *testing.T) {
-	tests := []struct {
-		src  string
-		want string
-	}{
-		{`a = "x\ty\"z\u00e9"`, "a string \"x\\ty\\\"zé\""},
-		{`a = 'C:\path'`, `a string "C:\\path"`},
-		{`a = 1_000`, "a int 1000"},
-		{`a = -5`, "a int -5"},
-		{`a = true`, "a bool true"},
-		{`a = []`, "a array []"},
-		{"a = [\n  1,\n  2, # two\n]", "a array [1 2]"},
-		{`"quoted key" = 1`, "quoted key int 1"},
-		{"[t]\na = 1\n[t.u]\nb = 2", "t.a int 1\nt.u.b int 2"},
-	}
-	for _, tt := range tests {
-		doc, diags := parseTOML(diag.NewFile("t.toml", tt.src))
-		if len(diags) > 0 {
-			t.Errorf("%q: unexpected diagnostics: %v", tt.src, diags)
-			continue
-		}
-		var got []string
-		for _, e := range doc.entries {
-			got = append(got, e.path+" "+show(e.value))
-		}
-		if g := strings.Join(got, "\n"); g != tt.want {
-			t.Errorf("%q:\ngot  %s\nwant %s", tt.src, g, tt.want)
-		}
-	}
-}
-
-func show(v value) string {
-	switch v.kind {
-	case stringValue:
-		return fmt.Sprintf("string %q", v.str)
-	case intValue:
-		return fmt.Sprintf("int %d", v.num)
-	case boolValue:
-		return fmt.Sprintf("bool %t", v.bool)
-	}
-	var items []string
-	for _, it := range v.items {
-		items = append(items, strings.TrimPrefix(show(it), "int "))
-	}
-	return "array [" + strings.Join(items, " ") + "]"
-}
-
-func TestQuoteRoundTrips(t *testing.T) {
-	for _, s := range []string{"", "plain", `a"b\c`, "tab\tnew\nline", "\x01"} {
-		doc, diags := parseTOML(diag.NewFile("t.toml", "a = "+quote(s)))
-		if len(diags) > 0 || len(doc.entries) != 1 || doc.entries[0].value.str != s {
-			t.Errorf("quote(%q) = %s did not round-trip: %v", s, quote(s), diags)
-		}
-	}
-}
 
 func TestDefaultName(t *testing.T) {
 	tests := map[string]string{
@@ -114,31 +22,25 @@ func TestDefaultName(t *testing.T) {
 		if got != strings.TrimRight(want, "-") {
 			t.Errorf("DefaultName(%q) = %q, want %q", dir, got, want)
 		}
-		if !nameRE.MatchString(got) || len(got) > maxNameLen {
+		if !check.ValidProjectName(got) {
 			t.Errorf("DefaultName(%q) = %q is not a valid project name", dir, got)
 		}
 	}
 }
 
 func TestLoad(t *testing.T) {
-	root := t.TempDir()
-	sub := filepath.Join(root, "infra", "deep")
-	if err := os.MkdirAll(sub, 0o755); err != nil {
+	dir := filepath.Join(t.TempDir(), "My App")
+	if err := os.Mkdir(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	write(t, filepath.Join(root, ConfigFile), "name = \"shop\"\n[aws.network]\nservices = \"private\"\n")
-
-	p, _, diags, err := Load(sub)
-	if err != nil || len(diags) > 0 {
-		t.Fatalf("Load: %v %v", err, diags)
+	p, src, diags, err := Load(dir)
+	if err != nil || len(diags) > 0 || src != nil {
+		t.Fatalf("Load: %v %v %v", src, diags, err)
 	}
-	if !p.HasConfig || p.Root != root || p.Config.Name != "shop" || p.Config.AWS.Network.Services != "private" {
-		t.Errorf("Load from a subdirectory: %+v", p)
+	if p.Root != dir || p.Name("") != "my-app" || p.Name("shop") != "shop" {
+		t.Errorf("Load: %+v, names %q %q", p, p.Name(""), p.Name("shop"))
 	}
-	if p.Config.AWS.Network.CIDR != defaultCIDR || p.Config.State.Backend != defaultBackend {
-		t.Errorf("defaults not kept: %+v", p.Config)
-	}
-	if got, want := p.BuildDir("aws"), filepath.Join(root, ".clowd", "build", "aws"); got != want {
+	if got, want := p.BuildDir("aws"), filepath.Join(dir, ".clowd", "build", "aws"); got != want {
 		t.Errorf("BuildDir = %s, want %s", got, want)
 	}
 
@@ -150,7 +52,7 @@ func TestLoad(t *testing.T) {
 	if wrote, err := p.WriteLock(lock); err != nil || wrote {
 		t.Errorf("WriteLock rewrote an unchanged lock: %v %v", wrote, err)
 	}
-	p, _, diags, err = Load(root)
+	p, _, diags, err = Load(dir)
 	if err != nil || len(diags) > 0 {
 		t.Fatalf("Load after lock: %v %v", err, diags)
 	}
@@ -159,43 +61,52 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-func TestLoadWithoutConfig(t *testing.T) {
-	dir := filepath.Join(t.TempDir(), "My App")
-	if err := os.Mkdir(dir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	p, _, diags, err := Load(dir)
-	if err != nil || len(diags) > 0 {
-		t.Fatalf("Load: %v %v", err, diags)
-	}
-	if p.HasConfig || p.Root != dir || p.Config.Name != "my-app" || p.Config.Edition != LatestEdition {
-		t.Errorf("defaults: %+v", p)
+func TestLockEncoding(t *testing.T) {
+	got := string(Lock{Providers: map[string]Provider{
+		"random": {Source: "hashicorp/random", Version: "3.7.2"},
+		"aws":    {Source: "hashicorp/aws", Version: "6.14.1"},
+	}}.Encode())
+	want := `{
+  "//": "Generated by clowd: provider versions pinned for every build. Commit this file; don't edit it.",
+  "providers": {
+    "aws": {
+      "source": "hashicorp/aws",
+      "version": "6.14.1"
+    },
+    "random": {
+      "source": "hashicorp/random",
+      "version": "3.7.2"
+    }
+  }
+}
+`
+	if got != want {
+		t.Errorf("Encode =\n%s\nwant\n%s", got, want)
 	}
 }
 
 func TestLoadReportsBadFiles(t *testing.T) {
-	dir := t.TempDir()
-	write(t, filepath.Join(dir, ConfigFile), "edition = 2030\n")
-	_, src, diags, err := Load(dir)
-	if err != nil || !diags.HasErrors() || src == nil || src.Name != ConfigFile {
-		t.Errorf("bad config: %v %v %v", src, diags, err)
+	tests := []struct {
+		name, file, text, want string
+	}{
+		{"old config", "clowd.toml", "name = \"shop\"\n", "clowd.toml is no longer read"},
+		{"lock not json", LockFile, "[providers.aws]\nsource = \"hashicorp/aws\"\n", "not valid JSON"},
+		{"lock missing version", LockFile, `{"providers": {"aws": {"source": "hashicorp/aws"}}}`, "needs a source and a version"},
+		{"lock unknown field", LockFile, `{"providers": {}, "extra": 1}`, "not a lock file"},
+		{"lock wrong type", LockFile, `{"providers": {"aws": 1}}`, "where a project.Provider belongs"},
 	}
-
-	write(t, filepath.Join(dir, ConfigFile), "")
-	write(t, filepath.Join(dir, LockFile), "[providers.aws]\nsource = \"hashicorp/aws\"\n")
-	_, src, diags, err = Load(dir)
-	if err != nil || !diags.HasErrors() || src == nil || src.Name != LockFile {
-		t.Errorf("bad lock: %v %v %v", src, diags, err)
-	}
-}
-
-func TestInitConfigLoads(t *testing.T) {
-	var c Config
-	if diags := c.decode(diag.NewFile(ConfigFile, InitConfig("shop"))); len(diags) > 0 {
-		t.Errorf("InitConfig doesn't load: %v", diags)
-	}
-	if c.Name != "shop" || c.Edition != LatestEdition {
-		t.Errorf("InitConfig decoded to %+v", c)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			write(t, filepath.Join(dir, tt.file), tt.text)
+			_, src, diags, err := Load(dir)
+			if err != nil || !diags.HasErrors() || src == nil || filepath.Base(src.Name) != tt.file {
+				t.Fatalf("Load: %v %v %v", src, diags, err)
+			}
+			if msg := diags[0].Message; !strings.Contains(msg, tt.want) {
+				t.Errorf("message %q doesn't contain %q", msg, tt.want)
+			}
+		})
 	}
 }
 

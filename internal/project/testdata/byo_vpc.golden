@@ -1,9 +1,0 @@
-name "shop"
-edition 2026
-runtime ""
-state.backend "local"
-aws.network.services "public"
-aws.network.cidr "10.0.0.0/16"
-aws.network.vpc "vpc-0123"
-aws.network.public_subnets ["subnet-a" "subnet-b"]
-aws.network.private_subnets ["subnet-c" "subnet-d"]

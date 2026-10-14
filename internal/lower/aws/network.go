@@ -7,7 +7,7 @@ import (
 	"github.com/joshjkns/clowd/internal/ir"
 )
 
-// defaultCIDR is the VPC block when Options.Network.CIDR is empty.
+// defaultCIDR is the VPC block when the program sets no `cidr`.
 const defaultCIDR = "10.0.0.0/16"
 
 // zones is how many availability zones the created network spans: two is
@@ -24,10 +24,10 @@ const zones = 2
 // security groups only admit their load balancers. Private services need
 // the NAT gateway, so it is created only for them.
 func (l *lowerer) network() {
-	n := l.opts.Network
-	if n.VPC != "" {
-		vpc := l.cfg.DataSource("aws_vpc", "main", tfjson.Body{"id": n.VPC})
-		l.net = network{vpc: n.VPC, cidr: ref(vpc, "cidr_block"), public: n.PublicSubnets, private: n.PrivateSubnets}
+	n := l.p.Network
+	if e := n.ExistingOn(ir.AWS); e != nil {
+		vpc := l.cfg.DataSource("aws_vpc", "main", tfjson.Body{"id": e.VPC})
+		l.net = network{vpc: e.VPC, cidr: ref(vpc, "cidr_block"), public: e.PublicSubnets, private: e.PrivateSubnets}
 		return
 	}
 	cidr := n.CIDR
@@ -77,7 +77,7 @@ func (l *lowerer) network() {
 		"gateway_id":             ref(igw, "id"),
 	})
 	privateRoutes := routes("private", private)
-	if n.PrivateServices && l.has(ir.ServiceKind) {
+	if n.Private && l.has(ir.ServiceKind) {
 		eip := l.cfg.Resource("aws_eip", "nat", tfjson.Body{
 			"domain": "vpc",
 			"tags":   tags(l.physical(255, "nat")),
@@ -104,7 +104,7 @@ func (l *lowerer) network() {
 
 // serviceSubnets are where services run.
 func (l *lowerer) serviceSubnets() any {
-	if l.opts.Network.PrivateServices {
+	if l.p.Network.Private {
 		return l.net.private
 	}
 	return l.net.public

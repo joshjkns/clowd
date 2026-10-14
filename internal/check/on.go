@@ -146,8 +146,7 @@ func (c *checker) on(s *ast.On) {
 		if c.oldOverride(cl, p) {
 			continue
 		}
-		c.diags.Add(diag.Errorf(p.Key.Pos, "unknown `on %s` setting `%s`", cl, p.Key.Text).
-			Suggest("settings for one resource go inside its declaration, under `on %s`", cl))
+		c.cloudSetting(cl, p)
 	}
 }
 

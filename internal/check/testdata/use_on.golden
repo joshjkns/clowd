@@ -163,4 +163,4 @@ error: unknown `on aws` setting `frobnicate`
    |
 44 |   frobnicate yes
    |   ^^^^^^^^^^
-   = help: settings for one resource go inside its declaration, under `on aws`
+   = help: settings here are `network`; settings for one resource go inside its declaration, under `on aws`

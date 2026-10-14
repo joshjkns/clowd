@@ -6,7 +6,7 @@ Single binary: `clowd`.
 
 | Command | What it does |
 |---|---|
-| `clowd init` | Create `clowd.toml` and a starter `app.clowd` |
+| `clowd init` | Create a starter `app.clowd` |
 | `clowd check [file]` | Parse, check, and show the per-cloud capability matrix |
 | `clowd fmt [file...]` | Format in place (`--check` to only report) |
 | `clowd build [--target c]` | Compile to `.clowd/build/<cloud>/main.tf.json` |
@@ -18,8 +18,9 @@ Single binary: `clowd`.
 
 ## Conventions
 
-- With no file argument, commands use the files found via `clowd.toml`
-  (or `*.clowd` in the current directory if there is no config).
+- With no file argument, commands use the `*.clowd` files in the current
+  directory. A project is the directory holding its `.clowd` file; there
+  is no config file (D17).
 - `--target` is required for `plan` / `apply` / `destroy` when the file has more
   than one `use` line. Deploying to several clouds at once is deliberate, never
   implicit.
@@ -57,8 +58,7 @@ clowd check [--target cloud] [--json] [file.clowd ...]
 - Columns are the file's `use` clouds; `--target aws,azure` (or repeated
   `--target`) checks other clouds instead. Flags may come before or after
   files.
-- No file argument means every `*.clowd` in the project directory (the
-  nearest one up with `clowd.toml`, or the current directory), each
+- No file argument means every `*.clowd` in the current directory, each
   checked on its own.
 - Diagnostics go to stderr with source snippets; the matrix goes to stdout,
   under a header naming the file and its clouds and regions, in sections
@@ -102,17 +102,18 @@ clowd fmt [--check] [file.clowd ...]
 clowd init [dir]
 ```
 
-Writes `clowd.toml` (with the project name taken from the directory), a
-starter `app.clowd` unless the directory already has `.clowd` files, and
-adds `.clowd/` to `.gitignore`. Refuses to run where `clowd.toml` exists.
+Writes a starter `app.clowd` and adds `.clowd/` to `.gitignore`. The
+starter declares `project <name>`, with the name taken from the
+directory, so renaming the directory later doesn't rename everything
+deployed. Refuses to run where there are `.clowd` files already.
 
 ## `clowd build`, `plan`, `apply`, `destroy`
 
 ```
 clowd build   [--target cloud] [--json] [file.clowd]
-clowd plan    [--target cloud] [file.clowd]
-clowd apply   [--target cloud] [--yes] [file.clowd]
-clowd destroy [--target cloud] [--yes] [file.clowd]
+clowd plan    [--target cloud] [--runtime tool] [file.clowd]
+clowd apply   [--target cloud] [--runtime tool] [--yes] [file.clowd]
+clowd destroy [--target cloud] [--runtime tool] [--yes] [file.clowd]
 ```
 
 - A project deploys one program. With no file argument the project
@@ -139,29 +140,25 @@ clowd destroy [--target cloud] [--yes] [file.clowd]
 - `destroy` uses the configuration last built for that cloud, which is
   what the state was made from, even if the file has changed since. With
   nothing built it has nothing to do. It removes data too (D15).
-- The tool is `runtime` from `clowd.toml`, else `tofu`, else `terraform`.
+- The tool is `--runtime`, else `$CLOWD_RUNTIME`, else `tofu` if it is
+  installed, else `terraform`. It is a property of the machine, not of the
+  project: two people can use different tools on the same state (D1).
+- The project's name prefixes every deployed name. It is the `project`
+  declaration's name, else the directory's.
 - State is local, in `.clowd/build/<cloud>/`: deleting `.clowd/` loses
   track of what was deployed. Remote state backends come later.
 
-## `clowd.toml`
+## Project settings
 
-| Setting | Default | |
-|---|---|---|
-| `name` | the directory's name | prefixes every deployed name; ≤ 20 of `a-z0-9-` |
-| `edition` | `2026` | 06-versioning.md |
-| `runtime` | `tofu`, else `terraform` | |
-| `[state] backend` | `"local"` | the only backend so far |
-| `[aws.network] services` | `"public"` | `"private"` runs services behind a NAT gateway (D14) |
-| `[aws.network] cidr` | `"10.0.0.0/16"` | the VPC Clowd creates |
-| `[aws.network] vpc`, `public_subnets`, `private_subnets` | — | use an existing VPC; two or more subnets each |
-
-Mistakes are reported like source errors, with "did you mean" help.
+Everything about a project is written in its `.clowd` file (D17): the
+`project` and `network` declarations, and an `on aws` `network` block for
+an existing VPC (01-language.md). A `clowd.toml` from an earlier version is
+an error that says where each of its settings went.
 
 ## Project files
 
 | File | Written by | Purpose |
 |---|---|---|
-| `*.clowd` | user | infrastructure |
-| `clowd.toml` | `clowd init`, user | edition, state backend, defaults |
-| `clowd.lock` | CLI | pinned provider versions |
+| `*.clowd` | `clowd init`, user | infrastructure and project settings |
+| `clowd.lock` | CLI | pinned provider versions, as JSON |
 | `.clowd/` | CLI | build output and tofu working dirs (gitignored) |

@@ -9,7 +9,7 @@ import (
 	"runtime/debug"
 	"strconv"
 
-	"github.com/joshjkns/clowd/internal/project"
+	"github.com/joshjkns/clowd/internal/check"
 )
 
 // Exit codes (04-cli.md).
@@ -23,7 +23,7 @@ const (
 const colorUsage = "colour output: `auto` (when writing to a terminal and NO_COLOR is unset), always or never"
 
 // edition is the newest language edition this binary supports (06-versioning.md).
-var edition = strconv.Itoa(project.LatestEdition)
+var edition = strconv.Itoa(check.LatestEdition)
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))

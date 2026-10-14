@@ -30,6 +30,18 @@ func Dump(src *diag.File, p *Program) string {
 		}
 		line(0, "target %s %s %s", t.Cloud, region, pos(t.Pos))
 	}
+	if pr := p.Project; pr.Name != "" || len(pr.Tags) > 0 || pr.Edition != 0 {
+		line(0, "project %q edition %d", pr.Name, pr.Edition)
+		for _, t := range pr.Tags {
+			line(1, "tag %s=%q %s", t.Key, t.Value, pos(t.Pos))
+		}
+	}
+	if n := p.Network; n.Pos != (diag.Span{}) || len(n.Existing) > 0 {
+		line(0, "network private %t cidr %q", n.Private, n.CIDR)
+		for _, e := range n.Existing {
+			line(1, "existing %s %s public %q private %q %s", e.Cloud, e.VPC, e.PublicSubnets, e.PrivateSubnets, pos(e.Pos))
+		}
+	}
 	for _, r := range p.Resources {
 		h := r.Meta()
 		line(0, "%s %s %s", r.Kind(), h.Name, pos(h.Pos))

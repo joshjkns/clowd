@@ -253,7 +253,7 @@ func (p *parser) statement() ast.Stmt {
 	}
 
 	p.report(diag.Errorf(first.Span, "unknown statement %s", quote(first)).
-		Suggest("statements start with `use`, `on` or a resource kind (%s), or relate two names: `api connects to db`", kindList()))
+		Suggest("statements start with `use`, `on`, `project`, `network` or a resource kind (%s), or relate two names: `api connects to db`", kindList()))
 	return p.bad()
 }
 
@@ -270,6 +270,9 @@ func kindList() string {
 	for _, k := range kinds {
 		if k.value == ast.LoadBalancer && len(k.words) == 1 {
 			continue // `lb` is an alias; don't advertise both
+		}
+		if !k.value.IsResource() {
+			continue
 		}
 		s = append(s, "`"+strings.Join(k.words, " ")+"`")
 	}
@@ -345,7 +348,11 @@ func (p *parser) declare(kind ast.Kind, n int) ast.Stmt {
 	d := &ast.Declare{Kind: kind}
 	d.KindPos = p.consume(n)
 
-	if p.tok().Is("is") && isValue(p.peek(1)) {
+	if !kind.Named() {
+		// A word after `network` is a trait missing its `is`, reported
+		// below.
+		d.Name = ast.Ident{Pos: p.here()}
+	} else if p.tok().Is("is") && isValue(p.peek(1)) {
 		// `service is public`: the name is missing, not called `is`.
 		p.report(diag.Errorf(p.here(), "expected a name after `%s`", kind).
 			Suggest("for example `%s api is ...`", kind))
@@ -360,8 +367,12 @@ func (p *parser) declare(kind ast.Kind, n int) ast.Stmt {
 	case !p.atEOL():
 		// `bucket uploads private`: parse the words as traits so later
 		// stages see what was meant.
-		p.report(diag.Errorf(p.lineSpan(p.i), "unexpected %s after the name", quote(p.tok())).
-			Suggest("traits go after `is`: `%s %s is %s`", kind, d.Name.Name, p.tok().Text))
+		head, after := fmt.Sprintf("%s %s", kind, d.Name.Name), "the name"
+		if !kind.Named() {
+			head, after = kind.String(), "`"+kind.String()+"`"
+		}
+		p.report(diag.Errorf(p.lineSpan(p.i), "unexpected %s after %s", quote(p.tok()), after).
+			Suggest("traits go after `is`: `%s is %s`", head, p.tok().Text))
 		d.Traits = p.traits(token.Token{})
 	}
 	d.Pos = p.endStmt(d.KindPos)
