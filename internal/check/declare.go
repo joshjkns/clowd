@@ -385,6 +385,12 @@ func (c *checker) database(d *ast.Declare, h ir.Header) *ir.Database {
 		{key: "engine", words: []string{"postgres", "mysql"}, versioned: true, set: func(w, v string) {
 			db.Engine = map[string]ir.Engine{"postgres": ir.Postgres, "mysql": ir.MySQL}[w]
 			db.Version = v
+			if w == "mysql" && v != "" && !strings.Contains(v, ".") {
+				// MySQL's release lines are major.minor (8.0 and 8.4 differ),
+				// so a bare major version is ambiguous.
+				c.diags.Add(diag.Errorf(db.At("engine"), "`mysql %s` is ambiguous", v).
+					Suggest("give the release line, such as `mysql %s.0` or `mysql %s.4`", v, v))
+			}
 		}},
 		{key: "size", words: []string{"small", "medium", "large"}, set: func(w, _ string) {
 			db.Size = map[string]ir.Size{"small": ir.Small, "medium": ir.Medium, "large": ir.Large}[w]

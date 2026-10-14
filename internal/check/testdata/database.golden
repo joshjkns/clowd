@@ -81,6 +81,10 @@ database pgjoined 25:10
   engine postgres 16
   size small
   at engine 25:22
+database my8 26:10
+  engine mysql 8
+  size small
+  at engine 26:17
 
 diagnostics:
 error: database `noengine` needs an engine
@@ -208,3 +212,10 @@ error: unknown database trait `pg16`
 25 | database pgjoined is pg16
    |                      ^^^^
    = help: write `postgres 16`
+
+error: `mysql 8` is ambiguous
+  --> database.clowd:26:17
+   |
+26 | database my8 is mysql 8
+   |                 ^^^^^^^
+   = help: give the release line, such as `mysql 8.0` or `mysql 8.4`
