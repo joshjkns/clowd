@@ -110,6 +110,25 @@ func TestExamples(t *testing.T) {
 	}
 }
 
+// TestDBName guards against RDS rejecting the database name: `db` is
+// reserved for Postgres, which broke deploying examples/app.clowd.
+func TestDBName(t *testing.T) {
+	tests := map[string]string{
+		"db":                    "db_db",
+		"users":                 "users_db",
+		"order":                 "order_db", // a MySQL keyword
+		"users_db":              "users_db",
+		"user-db":               "user_db",
+		"Main":                  "main_db",
+		strings.Repeat("a", 70): strings.Repeat("a", 60) + "_db",
+	}
+	for in, want := range tests {
+		if got := dbName(in); got != want || len(got) > maxDBName {
+			t.Errorf("dbName(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestPhysical(t *testing.T) {
 	l := &lowerer{opts: Options{Project: "shop"}}
 	tests := []struct {

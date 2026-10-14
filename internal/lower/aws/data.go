@@ -28,8 +28,24 @@ func dbPort(e ir.Engine) int {
 }
 
 // dbName is the database created inside the instance; both engines take
-// letters, digits and underscores.
-func dbName(name string) string { return strings.ReplaceAll(id(name), "-", "_") }
+// letters, digits and underscores, up to 63 of them. It always ends in
+// `_db`: RDS rejects reserved words (`db` itself for Postgres, hundreds
+// of keywords for MySQL), and no keyword ends that way, so the suffix
+// avoids them all without a list to keep up to date. Services read the
+// name from <NAME>_NAME, so its exact form doesn't matter to them.
+func dbName(name string) string {
+	n := strings.ReplaceAll(id(name), "-", "_")
+	if n == "db" || !strings.HasSuffix(n, "_db") {
+		n += "_db"
+	}
+	if len(n) > maxDBName {
+		n = strings.TrimRight(n[:maxDBName-len("_db")], "_") + "_db"
+	}
+	return n
+}
+
+// maxDBName is the longest database name both engines accept.
+const maxDBName = 63
 
 // database lowers d to an RDS instance in the private subnets, reachable
 // only from the services that connect to it.

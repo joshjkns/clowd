@@ -178,7 +178,7 @@
     },
     "aws_ecs_task_definition": {
       "api": {
-        "container_definitions": "[{\"environment\":[{\"name\":\"DB_HOST\",\"value\":\"${aws_db_instance.db.address}\"},{\"name\":\"DB_PORT\",\"value\":\"5432\"},{\"name\":\"DB_NAME\",\"value\":\"db\"},{\"name\":\"DB_USER\",\"value\":\"clowd\"}],\"essential\":true,\"image\":\"a\",\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"${aws_cloudwatch_log_group.api.name}\",\"awslogs-region\":\"${data.aws_region.current.region}\",\"awslogs-stream-prefix\":\"api\"}},\"name\":\"api\",\"portMappings\":[{\"containerPort\":8080,\"protocol\":\"tcp\"}],\"secrets\":[{\"name\":\"DB_PASSWORD\",\"valueFrom\":\"${aws_db_instance.db.master_user_secret[0].secret_arn}:password::\"}]}]",
+        "container_definitions": "[{\"environment\":[{\"name\":\"DB_HOST\",\"value\":\"${aws_db_instance.db.address}\"},{\"name\":\"DB_PORT\",\"value\":\"5432\"},{\"name\":\"DB_NAME\",\"value\":\"db_db\"},{\"name\":\"DB_USER\",\"value\":\"clowd\"}],\"essential\":true,\"image\":\"a\",\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"${aws_cloudwatch_log_group.api.name}\",\"awslogs-region\":\"${data.aws_region.current.region}\",\"awslogs-stream-prefix\":\"api\"}},\"name\":\"api\",\"portMappings\":[{\"containerPort\":8080,\"protocol\":\"tcp\"}],\"secrets\":[{\"name\":\"DB_PASSWORD\",\"valueFrom\":\"${aws_db_instance.db.master_user_secret[0].secret_arn}:password::\"}]}]",
         "cpu": "256",
         "execution_role_arn": "${aws_iam_role.api_execution.arn}",
         "family": "shop-api",
@@ -264,7 +264,7 @@
       "db": {
         "allocated_storage": 20,
         "copy_tags_to_snapshot": true,
-        "db_name": "db",
+        "db_name": "db_db",
         "db_subnet_group_name": "${aws_db_subnet_group.db.name}",
         "engine": "postgres",
         "identifier": "shop-db",

@@ -19,11 +19,18 @@ Each phase ends with something runnable and tested.
 - `internal/format`, `clowd fmt` (+ `--check`)
 - **Done when:** `fmt` is idempotent on all examples.
 
-## Phase 4 — AWS deploy
+## Phase 4 — AWS deploy ✓
 - `internal/lower/aws`, `internal/emit/tfjson`, `internal/runner`, `internal/project`
 - `clowd init`, `build`, `plan`, `apply`, `destroy`
 - **Done when:** `examples/app.clowd` deploys to a real AWS account and is
   reachable through the load balancer.
+- Verified 2026-10-14 in eu-west-2: the example with a public nginx image
+  in place of its placeholder, and a port 80 listener in place of TLS for
+  `api.example.com` (a domain nobody can validate). `apply` created all
+  of it, the load balancer answered 200, and `destroy` removed it. The
+  first attempt found the reserved database name fixed alongside.
+  The TLS path (certificate, DNS records, two-step apply) still needs a
+  run against a real domain.
 
 ## Phase 5 — Editor
 - `internal/lsp`: diagnostics → hover → completion → formatting
