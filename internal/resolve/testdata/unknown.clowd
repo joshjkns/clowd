@@ -1,0 +1,18 @@
+service api
+database db
+bucket uploads
+
+api connects to dbb
+api reads uplods
+api connects to cache
+api sends to jobs
+worker reads uploads
+
+load balancer web
+  send / to apii
+  send / to frontend
+  send /x api
+
+on gcp
+  service ap sets max_instances to 3
+  service queue sets x to y

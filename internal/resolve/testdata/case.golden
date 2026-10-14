@@ -1,0 +1,31 @@
+decls:
+  1:9 service api
+  2:10 database Db
+refs:
+  4:1 API -> service api at 1:9
+  4:17 db -> database Db at 2:10
+  5:1 api -> service api at 1:9
+  5:17 Db -> database Db at 2:10
+  8:11 Api -> service api at 1:9
+
+diagnostics:
+warning: `API` is declared as `api`
+ --> case.clowd:4:1
+  |
+4 | API connects to db
+  | ^^^
+  = help: write `api`
+
+warning: `db` is declared as `Db`
+ --> case.clowd:4:17
+  |
+4 | API connects to db
+  |                 ^^
+  = help: write `Db`
+
+warning: `Api` is declared as `api`
+ --> case.clowd:8:11
+  |
+8 |   service Api sets x to y
+  |           ^^^
+  = help: write `api`

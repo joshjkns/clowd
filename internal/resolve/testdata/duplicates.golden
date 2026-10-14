@@ -1,0 +1,28 @@
+decls:
+  1:9 service api
+  4:8 bucket uploads
+refs:
+  7:1 api -> service api at 1:9
+  7:17 api -> service api at 1:9
+
+diagnostics:
+error: `api` is already declared as a service on line 1
+ --> duplicates.clowd:2:10
+  |
+2 | database api
+  |          ^^^
+  = help: give each resource its own name
+
+error: `Api` differs only by case from `api` on line 1
+ --> duplicates.clowd:3:9
+  |
+3 | service Api
+  |         ^^^
+  = help: names are case-insensitive, so these are the same name; rename one of them
+
+error: `uploads` is already declared as a bucket on line 4
+ --> duplicates.clowd:5:8
+  |
+5 | bucket uploads
+  |        ^^^^^^^
+  = help: give each resource its own name

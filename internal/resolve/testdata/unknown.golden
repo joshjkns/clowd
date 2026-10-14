@@ -1,0 +1,84 @@
+decls:
+  1:9 service api
+  2:10 database db
+  3:8 bucket uploads
+  11:15 load balancer web
+refs:
+  5:1 api -> service api at 1:9
+  5:17 dbb -> <unresolved>
+  6:1 api -> service api at 1:9
+  6:11 uplods -> <unresolved>
+  7:1 api -> service api at 1:9
+  7:17 cache -> <unresolved>
+  8:1 api -> service api at 1:9
+  8:14 jobs -> <unresolved>
+  9:1 worker -> <unresolved>
+  9:14 uploads -> bucket uploads at 3:8
+  12:13 apii -> <unresolved>
+  13:13 frontend -> <unresolved>
+  17:11 ap -> <unresolved>
+  18:11 queue -> <unresolved>
+
+diagnostics:
+error: no resource named `dbb`
+ --> unknown.clowd:5:17
+  |
+5 | api connects to dbb
+  |                 ^^^
+  = help: did you mean `db`?
+
+error: no resource named `uplods`
+ --> unknown.clowd:6:11
+  |
+6 | api reads uplods
+  |           ^^^^^^
+  = help: did you mean `uploads`?
+
+error: no resource named `cache`
+ --> unknown.clowd:7:17
+  |
+7 | api connects to cache
+  |                 ^^^^^
+  = help: declare it, for example `database cache`
+
+error: no resource named `jobs`
+ --> unknown.clowd:8:14
+  |
+8 | api sends to jobs
+  |              ^^^^
+  = help: declare it, for example `queue jobs`
+
+error: no resource named `worker`
+ --> unknown.clowd:9:1
+  |
+9 | worker reads uploads
+  | ^^^^^^
+  = help: declare it, for example `service worker`
+
+error: no resource named `apii`
+  --> unknown.clowd:12:13
+   |
+12 |   send / to apii
+   |             ^^^^
+   = help: did you mean `api`?
+
+error: no resource named `frontend`
+  --> unknown.clowd:13:13
+   |
+13 |   send / to frontend
+   |             ^^^^^^^^
+   = help: declare it, for example `service frontend`
+
+error: no resource named `ap`
+  --> unknown.clowd:17:11
+   |
+17 |   service ap sets max_instances to 3
+   |           ^^
+   = help: did you mean `api`?
+
+error: no resource named `queue`
+  --> unknown.clowd:18:11
+   |
+18 |   service queue sets x to y
+   |           ^^^^^
+   = help: declare it, for example `service queue`

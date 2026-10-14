@@ -1,0 +1,7 @@
+service api
+database db
+
+on aws
+  service db sets multi_az to true
+  database api sets x to y
+  bucket db sets x to y

@@ -1,0 +1,12 @@
+decls:
+  3:10 database db
+refs:
+  4:1 api -> <unresolved>
+
+diagnostics:
+error: no resource named `api`
+ --> broken.clowd:4:1
+  |
+4 | api connects to
+  | ^^^
+  = help: declare it, for example `service api`
