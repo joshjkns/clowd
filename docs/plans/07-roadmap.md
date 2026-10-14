@@ -15,7 +15,7 @@ Each phase ends with something runnable and tested.
 - `clowd check` with the matrix table and `--json`
 - **Done when:** `clowd check examples/app.clowd` prints the matrix.
 
-## Phase 3 — Formatter
+## Phase 3 — Formatter ✓
 - `internal/format`, `clowd fmt` (+ `--check`)
 - **Done when:** `fmt` is idempotent on all examples.
 

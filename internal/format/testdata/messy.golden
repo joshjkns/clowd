@@ -1,0 +1,33 @@
+# Header comment, separated from the first statement.
+
+use aws in eu-west-2
+use gcp in europe-west2
+
+database db is postgres 16, small
+bucket uploads is private # trailing comment
+lb edge is public and internal
+queue jobs is fifo
+
+service api
+  image ghcr.io/me/api:latest
+  # a comment inside the block, at the wrong indent
+  port 8080
+  scale 2 to 10
+  env GREETING "say \"hi\", C:\\"
+  env MODE Debug
+  # indented too far, still the end of the block
+
+load balancer web
+  listen on 443 with tls for api.example.com
+  send / to api
+
+api connects to db
+api reads and writes uploads
+# workers
+api sends to jobs
+
+on aws
+  service api sets capacity_provider to FARGATE_SPOT # spot is cheaper
+  lb edge sets idle_timeout to 120
+
+# Trailing comment at the end of the file.
