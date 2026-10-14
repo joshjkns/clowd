@@ -326,7 +326,7 @@ error: `access_logs` is a block
           "enabled": "true"
         },
         "copy_tags_to_snapshot": true,
-        "db_name": "db",
+        "db_name": "db_db",
         "db_subnet_group_name": "${aws_db_subnet_group.db.name}",
         "deletion_protection": "true",
         "engine": "postgres",

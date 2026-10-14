@@ -301,6 +301,10 @@ name in upper case with `-` as `_` (`db` → `DB`, `user-files` →
 | any verb to a bucket | `<NAME>_BUCKET` (the bucket's name) |
 | `reads` / `sends to` a queue | `<NAME>_QUEUE_URL` |
 
+`<NAME>_NAME` is the database created inside the instance: the resource's
+name in lower case with `-` as `_`, ending in `_db` (`db` → `db_db`,
+`users` → `users_db`), so it is never a word the engine reserves.
+
 The password is a secret: it is generated and stored by the cloud, never
 written in the configuration or state, and given to the service at start.
 A service's own `env` of the same name wins, with a warning.
