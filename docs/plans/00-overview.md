@@ -23,7 +23,7 @@ api connects to db
 api reads and writes uploads
 
 on aws
-  service api sets capacity_provider to FARGATE_SPOT
+  database db sets backup_retention_period to 14
 ```
 
 ## The problem

@@ -1,0 +1,5 @@
+use aws in eu-west-2
+
+bucket user_files
+bucket user-files
+queue a-really-long-queue-name-that-goes-on-and-on-and-on-past-every-limit-aws-has

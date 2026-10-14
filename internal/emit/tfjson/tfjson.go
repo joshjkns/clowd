@@ -272,3 +272,21 @@ func convertSlice[T any](s []T) ([]any, error) {
 	}
 	return out, nil
 }
+
+// JSON encodes v as a JSON document inside a template, for arguments that
+// take JSON text (IAM policies, ECS container definitions) but need
+// references. Literal strings in v are escaped and Expr values interpolate,
+// so `{"Resource": Ref("aws_s3_bucket.b.arn")}` becomes the bucket's ARN
+// when the configuration is applied. References must evaluate to strings
+// that need no JSON escaping, which ARNs, names and hostnames don't.
+func JSON(v any) (Expr, error) {
+	c, err := convert(v)
+	if err != nil {
+		return "", err
+	}
+	var buf bytes.Buffer
+	if err := encode(&buf, c); err != nil {
+		return "", err
+	}
+	return Expr(buf.String()), nil
+}

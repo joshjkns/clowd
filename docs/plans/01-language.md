@@ -105,13 +105,21 @@ still parsed with that verb so the rest of the file checks normally.
 
 ```
 on aws
-  service api sets capacity_provider to FARGATE_SPOT
+  database db sets backup_retention_period to 14
 ```
 
 Overrides are applied only when lowering to that cloud. They use raw provider
 property names on purpose, so they look visibly different from portable code.
 `clowd check` reports them per cloud and verifies the property exists on the
 generated resource.
+
+Each kind has one resource that overrides set top-level arguments on (on
+AWS: `aws_ecs_service`, `aws_db_instance`, `aws_s3_bucket`, `aws_lb`,
+`aws_sqs_queue`), and only arguments that take a single value: nested
+blocks and lists can't be written as `sets <key> to <value>`. Arguments
+that carry Clowd's own wiring (subnets, security groups, roles) can't be
+overridden either. The value is passed as a string, and the provider
+converts it to the argument's type.
 
 ## Resource kinds (MVP)
 
@@ -184,6 +192,23 @@ data stores are passive.
 
 To publish to a queue use `sends to`, never `writes` (one canonical phrasing);
 the checker suggests the right verb for each wrong pairing.
+
+### What a relationship gives a service
+
+Besides network access and permissions, a relationship sets environment
+variables in the service, named after the target: `<NAME>` is the target's
+name in upper case with `-` as `_` (`db` → `DB`, `user-files` →
+`USER_FILES`). They are the same on every cloud.
+
+| Relationship | Variables |
+|---|---|
+| `connects to` a database | `<NAME>_HOST`, `<NAME>_PORT`, `<NAME>_NAME`, `<NAME>_USER`, `<NAME>_PASSWORD` |
+| any verb to a bucket | `<NAME>_BUCKET` (the bucket's name) |
+| `reads` / `sends to` a queue | `<NAME>_QUEUE_URL` |
+
+The password is a secret: it is generated and stored by the cloud, never
+written in the configuration or state, and given to the service at start.
+A service's own `env` of the same name wins, with a warning.
 
 ### Clouds
 

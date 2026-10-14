@@ -141,7 +141,7 @@ exit 0
             "line": 22,
             "column": 3,
             "endLine": 22,
-            "endColumn": 53
+            "endColumn": 49
           },
           "cells": {
             "aws": {

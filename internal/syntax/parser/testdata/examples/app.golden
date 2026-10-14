@@ -59,7 +59,7 @@ relate 19:1-19:29
   to "uploads" 19:22-19:29
 on 21:1-21:7
   cloud "aws" 21:4-21:7
-  override 22:3-22:53 service
-    name "api" 22:11-22:14
-    key "capacity_provider" 22:20-22:37
-    value "FARGATE_SPOT" 22:41-22:53
+  override 22:3-22:49 database
+    name "db" 22:12-22:14
+    key "backup_retention_period" 22:20-22:43
+    value "14" 22:47-22:49
