@@ -8,15 +8,37 @@ use digitalocean
 
 service api
   image a
+  port 8080
+    nested x
+  on aws
+    platform_version LATEST
+    platform_version 1.4.0
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
+      weight 1
+    capacity_provider_strategy
+      capacity_provider FARGATE
+      base 1
+    tags_all a, b c
+    broken a,
+    leading , a
+    deployment_circuit_breaker x
+      enable true
+    empty
+  on gcp
+    max_instance_request_concurrency 80
+  on aws
+    enable_execute_command true
+  on oracle
+    x y
+  on
+  on aws gcp
+  on gcp
 database db is postgres
+  on aws
+    multi_az true
 
 on aws
-  service api sets capacity_provider to FARGATE_SPOT
   database db sets multi_az to true
-  service api sets capacity_provider to FARGATE
-
-on gcp
-  service api sets max_instance_request_concurrency to 80
-
-on oracle
-  service api sets x to y
+  load balancer web sets idle_timeout
+  frobnicate yes

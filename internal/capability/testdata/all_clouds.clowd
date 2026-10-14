@@ -7,6 +7,10 @@ service api
   scale 0 to 5
   memory 64gb
   env MODE prod
+  on aws
+    platform_version LATEST
+  on azure
+    sku basic
 service worker
   image b
 database db is postgres 16, medium
@@ -32,8 +36,3 @@ api connects to worker
 api reads and writes assets
 worker reads jobs
 api sends to jobs
-
-on aws
-  service api sets capacity_provider to FARGATE_SPOT
-on azure
-  service api sets sku to basic

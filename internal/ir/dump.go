@@ -82,8 +82,23 @@ func Dump(src *diag.File, p *Program) string {
 	for _, rel := range p.Relations {
 		line(0, "relation %s %s %s %s", rel.From, rel.Verb, rel.To, pos(rel.Pos))
 	}
+	var settings func(indent int, ss []Setting)
+	settings = func(indent int, ss []Setting) {
+		for _, s := range ss {
+			switch {
+			case s.Block != nil:
+				line(indent, "%s %s", s.Key, pos(s.Pos))
+				settings(indent+1, s.Block)
+			case s.List != nil:
+				line(indent, "%s = %q %s", s.Key, s.List, pos(s.Pos))
+			default:
+				line(indent, "%s = %q %s", s.Key, s.Value, pos(s.Pos))
+			}
+		}
+	}
 	for _, o := range p.Overrides {
-		line(0, "override %s %s %s %s = %q %s", o.Cloud, o.Kind, o.Resource, o.Key, o.Value, pos(o.Pos))
+		line(0, "override %s %s %s %s", o.Cloud, o.Kind, o.Resource, pos(o.Pos))
+		settings(1, o.Settings)
 	}
 	return b.String()
 }

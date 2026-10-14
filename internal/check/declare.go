@@ -233,6 +233,15 @@ func (c *checker) props(d *ast.Declare, h *ir.Header, specs map[string]propSpec,
 	seen := map[string]diag.Span{}
 	for _, p := range d.Props {
 		key := strings.ToLower(p.Key.Text)
+		if key == "on" && !p.Key.Quoted {
+			c.onBlock(d, h, p)
+			continue
+		}
+		if p.HasBlock() {
+			first := p.Block[0].Pos
+			c.diags.Add(diag.Errorf(first, "`%s` doesn't take an indented block", key).
+				Suggest("indent this line like the other properties of `%s`", d.Name.Name))
+		}
 		spec, ok := specs[key]
 		if !ok {
 			if canon, isSyn := propSynonyms[key]; isSyn {

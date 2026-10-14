@@ -366,28 +366,37 @@ func (p *parser) declare(kind ast.Kind, n int) ast.Stmt {
 	}
 	d.Pos = p.endStmt(d.KindPos)
 	p.finishLine()
+	d.Props = p.block(false)
+	return d
+}
 
-	if p.tok().Kind == token.Indent {
-		p.next()
-		for {
-			switch p.tok().Kind {
-			case token.Dedent:
-				p.next()
-				return d
-			case token.EOF:
-				return d
-			case token.Indent:
-				p.report(diag.Errorf(p.lineSpan(p.i+1), "unexpected indentation").
-					Suggest("properties are all indented to the same level"))
-				p.skipBlock()
-			default:
-				if prop, ok := p.property(); ok {
-					d.Props = append(d.Props, prop)
-				}
+// block parses the indented block of properties that follows a line, if
+// there is one. raw is set inside `on` blocks, whose settings may be comma
+// lists; it carries down into nested blocks.
+func (p *parser) block(raw bool) []ast.Property {
+	if p.tok().Kind != token.Indent {
+		return nil
+	}
+	p.next()
+	var props []ast.Property
+	for {
+		switch p.tok().Kind {
+		case token.Dedent:
+			p.next()
+			return props
+		case token.EOF:
+			return props
+		case token.Indent:
+			// property consumes the block after its line, even a broken
+			// one, so this is only reachable on malformed layout.
+			p.report(diag.Errorf(p.lineSpan(p.i+1), "unexpected indentation"))
+			p.skipBlock()
+		default:
+			if prop, ok := p.property(raw); ok {
+				props = append(props, prop)
 			}
 		}
 	}
-	return d
 }
 
 // traits parses a trait list: words separated by `,` or `and`. after is the
@@ -429,8 +438,10 @@ func (p *parser) traits(after token.Token) []ast.Trait {
 	return traits
 }
 
-// property parses one `<key> <value...>` line in a declaration block.
-func (p *parser) property() (ast.Property, bool) {
+// property parses one `<key> <value...>` line and the block under it.
+// Within raw (`on`) blocks commas separate list items; elsewhere they are
+// an error. An `on` property starts a raw block.
+func (p *parser) property(raw bool) (ast.Property, bool) {
 	t := p.tok()
 	switch t.Kind {
 	case token.Word:
@@ -438,7 +449,7 @@ func (p *parser) property() (ast.Property, bool) {
 		p.report(diag.Errorf(t.Span, "property names can't be quoted"))
 	default:
 		p.report(diag.Errorf(t.Span, "expected a property name, got %s", quote(t)))
-		p.skipLine()
+		p.bad()
 		return ast.Property{}, false
 	}
 	p.next()
@@ -446,6 +457,10 @@ func (p *parser) property() (ast.Property, bool) {
 	for !p.atEOL() {
 		v := p.next()
 		if v.Kind == token.Comma {
+			if raw {
+				prop.Commas = append(prop.Commas, v.Span)
+				continue
+			}
 			p.report(diag.Errorf(v.Span, "unexpected `,` in the value of `%s`", t.Text).
 				Suggest("quote values that contain commas: `\"a, b\"`"))
 			continue
@@ -454,6 +469,7 @@ func (p *parser) property() (ast.Property, bool) {
 	}
 	prop.Pos = p.endStmt(prop.Pos)
 	p.skipLine()
+	prop.Block = p.block(raw || (t.Kind == token.Word && t.Is("on")))
 	return prop, true
 }
 
@@ -491,7 +507,9 @@ func (p *parser) relate() ast.Stmt {
 	return s
 }
 
-// on parses an `on <cloud>` block of overrides.
+// on parses a top-level `on <cloud>` block of program-wide settings. Its
+// settings are raw: they may be comma lists. check reports the old
+// `<kind> <name> sets <key> to <value>` form, which parses as a setting.
 func (p *parser) on() ast.Stmt {
 	start := p.next().Span
 	s := &ast.On{}
@@ -500,88 +518,10 @@ func (p *parser) on() ast.Stmt {
 	p.finishLine()
 
 	if p.tok().Kind != token.Indent {
-		p.report(diag.Errorf(s.Pos, "expected an indented block of overrides after `on %s`", s.Cloud.Name).
-			Suggest("indent the overrides below it, e.g. `  service api sets <property> to <value>`"))
+		p.report(diag.Errorf(s.Pos, "expected an indented block of settings after `on %s`", s.Cloud.Name).
+			Suggest("settings for one resource go inside its declaration, under `  on %s`", strings.ToLower(s.Cloud.Name)))
 		return s
 	}
-	p.next()
-	for {
-		switch p.tok().Kind {
-		case token.Dedent:
-			p.next()
-			return s
-		case token.EOF:
-			return s
-		case token.Indent:
-			p.report(diag.Errorf(p.lineSpan(p.i+1), "unexpected indentation").
-				Suggest("overrides are all indented to the same level"))
-			p.skipBlock()
-		default:
-			if o, ok := p.override(); ok {
-				s.Overrides = append(s.Overrides, o)
-			}
-		}
-	}
-}
-
-const overrideForm = "<kind> <name> sets <property> to <value>"
-
-// override parses `<kind> <name> sets <key> to <value...>`. On error it skips
-// the line and returns false.
-func (p *parser) override() (ast.Override, bool) {
-	first := p.tok()
-	o := ast.Override{}
-	k, n := match(p, 0, kinds)
-	if n == 0 {
-		gk, ok := guessKind(first.Text)
-		if !ok || first.Kind != token.Word {
-			p.report(diag.Errorf(p.lineSpan(p.i), "expected an override").
-				Suggest("write `%s`", overrideForm))
-			p.skipLine()
-			return o, false
-		}
-		p.report(diag.Errorf(first.Span, "unknown resource kind %s", quote(first)).
-			Suggest("did you mean `%s`?", gk))
-		k, n = gk, 1
-	}
-	o.Kind = k
-	o.KindPos = p.consume(n)
-	o.Name = p.name(fmt.Sprintf("a name after `%s`", k), "")
-
-	fail := func(want string) (ast.Override, bool) {
-		p.report(diag.Errorf(p.here(), "expected %s", want).Suggest("write `%s`", overrideForm))
-		p.skipLine()
-		return o, false
-	}
-	if o.Name.Missing() {
-		p.skipLine()
-		return o, false
-	}
-	if !p.tok().Is("sets") {
-		return fail(fmt.Sprintf("`sets` after `%s %s`", k, o.Name.Name))
-	}
-	p.next()
-	if p.tok().Kind != token.Word {
-		return fail("a provider property after `sets`")
-	}
-	o.Key = value(p.next())
-	if !p.tok().Is("to") {
-		return fail(fmt.Sprintf("`to` after `%s`", o.Key.Text))
-	}
-	p.next()
-	for !p.atEOL() {
-		v := p.next()
-		if v.Kind == token.Comma {
-			p.report(diag.Errorf(v.Span, "unexpected `,` in an override value").
-				Suggest("quote values that contain commas: `\"a, b\"`"))
-			continue
-		}
-		o.Value = append(o.Value, value(v))
-	}
-	if len(o.Value) == 0 {
-		return fail("a value after `to`")
-	}
-	o.Pos = p.endStmt(o.KindPos)
-	p.skipLine()
-	return o, true
+	s.Settings = p.block(true)
+	return s
 }

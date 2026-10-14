@@ -4,12 +4,13 @@ service api 3:9
   port 8080
   scale 1 to 1
   at image 4:3
-override gcp service api max_instance_request_concurrency = "80" 7:3
+override gcp service api 5:3
+  max_instance_request_concurrency = "80" 6:5
 
 diagnostics:
 warning: `on gcp` has no effect: this file doesn't `use gcp`
- --> on_untargeted.clowd:6:1
+ --> on_untargeted.clowd:5:3
   |
-6 | on gcp
-  | ^^^^^^
+5 |   on gcp
+  |   ^^^^^^
   = help: add `use gcp in <region>`, or remove the block

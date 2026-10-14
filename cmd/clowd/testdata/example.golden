@@ -13,7 +13,7 @@ Relationships
   api reads and writes uploads  ✓    ✓
 
 Overrides
-  on aws                        ✓    –
+  database db on aws            ✓    –
 
 ✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
 ✓ deployable to aws, gcp

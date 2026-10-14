@@ -227,20 +227,14 @@ func Evaluate(p *ir.Program, clouds []ir.Cloud) *Report {
 			add(SectionRelationships, fmt.Sprintf("%s %s %s", rel.From, rel.Verb, rel.To), rel.Pos, []use{{feature: f, pos: rel.Pos}})
 		}
 	}
-	for _, cloud := range overrideClouds(p) {
-		row := Row{Section: SectionOverrides, Label: fmt.Sprintf("on %s", cloud)}
-		first := true
-		for _, o := range p.Overrides {
-			if o.Cloud == cloud && first {
-				row.Pos, first = o.Pos, false
-			}
-		}
+	for _, o := range p.Overrides {
+		row := Row{Section: SectionOverrides, Label: fmt.Sprintf("%s %s on %s", o.Kind, o.Resource, o.Cloud), Pos: o.Pos}
 		for _, c := range clouds {
-			if c != cloud {
+			if c != o.Cloud {
 				row.Cells = append(row.Cells, Cell{Level: NotApplicable})
 				continue
 			}
-			row.Cells = append(row.Cells, evaluate([]use{{feature: Overrides, pos: row.Pos}}, c))
+			row.Cells = append(row.Cells, evaluate([]use{{feature: Overrides, pos: o.Pos}}, c))
 		}
 		rep.Rows = append(rep.Rows, row)
 	}
@@ -265,17 +259,4 @@ func evaluate(uses []use, cloud ir.Cloud) Cell {
 		}
 	}
 	return cell
-}
-
-// overrideClouds returns the clouds with overrides, in first-use order.
-func overrideClouds(p *ir.Program) []ir.Cloud {
-	var out []ir.Cloud
-	seen := map[ir.Cloud]bool{}
-	for _, o := range p.Overrides {
-		if !seen[o.Cloud] {
-			seen[o.Cloud] = true
-			out = append(out, o.Cloud)
-		}
-	}
-	return out
 }

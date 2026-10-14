@@ -60,10 +60,6 @@ func Resolve(src *diag.File, f *ast.File) (*Table, diag.List) {
 			r.relate(s)
 		case *ast.Declare:
 			r.sends(s)
-		case *ast.On:
-			for _, o := range s.Overrides {
-				r.override(o)
-			}
 		}
 	}
 	r.diags.Sort()
@@ -136,17 +132,6 @@ func (r *resolver) sends(d *ast.Declare) {
 		}
 		target := p.Values[2]
 		r.ref(target.Text, target.Pos, ast.Service)
-	}
-}
-
-func (r *resolver) override(o ast.Override) {
-	if o.Name.Missing() {
-		return
-	}
-	d := r.ref(o.Name.Name, o.Name.Pos, o.Kind)
-	if d != nil && d.Kind != o.Kind {
-		r.diags.Add(diag.Errorf(o.KindPos, "`%s` is a %s, not a %s", d.Name.Name, d.Kind, o.Kind).
-			Suggest("write `%s %s sets ...`", d.Kind, d.Name.Name))
 	}
 }
 

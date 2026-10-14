@@ -3,6 +3,3 @@ database Db
 
 API connects to db
 api connects to Db
-
-on aws
-  service Api sets x to y

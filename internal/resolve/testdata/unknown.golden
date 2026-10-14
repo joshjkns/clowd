@@ -3,7 +3,7 @@ decls:
   2:10 database db
   3:8 bucket uploads
   11:15 load balancer web
-  20:4 load balancer web2
+  16:4 load balancer web2
 refs:
   5:1 api -> service api at 1:9
   5:17 dbb -> <unresolved>
@@ -17,9 +17,7 @@ refs:
   9:14 uploads -> bucket uploads at 3:8
   12:13 apii -> <unresolved>
   13:13 frontend -> <unresolved>
-  17:11 ap -> <unresolved>
-  18:11 queue -> <unresolved>
-  21:14 apu -> <unresolved>
+  17:14 apu -> <unresolved>
 
 diagnostics:
 error: no resource named `dbb`
@@ -71,23 +69,9 @@ error: no resource named `frontend`
    |             ^^^^^^^^
    = help: declare it, for example `service frontend`
 
-error: no resource named `ap`
-  --> unknown.clowd:17:11
-   |
-17 |   service ap sets max_instances to 3
-   |           ^^
-   = help: did you mean `api`?
-
-error: no resource named `queue`
-  --> unknown.clowd:18:11
-   |
-18 |   service queue sets x to y
-   |           ^^^^^
-   = help: declare it, for example `service queue`
-
 error: no resource named `apu`
-  --> unknown.clowd:21:14
+  --> unknown.clowd:17:14
    |
-21 |   route / to apu
+17 |   route / to apu
    |              ^^^
    = help: did you mean `api`?

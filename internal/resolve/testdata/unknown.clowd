@@ -13,9 +13,5 @@ load balancer web
   send / to frontend
   send /x api
 
-on gcp
-  service ap sets max_instances to 3
-  service queue sets x to y
-
 lb web2
   route / to apu

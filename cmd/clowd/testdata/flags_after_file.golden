@@ -13,7 +13,7 @@ Relationships
   api reads and writes uploads  ✓      ✗      azure: service reads or writes bucket not implemented yet
 
 Overrides
-  on aws                        ✓      –
+  database db on aws            ✓      –
 
 ✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
 ✓ deployable to aws · ✗ not deployable to azure
@@ -25,32 +25,32 @@ warning: database is not implemented for azure yet
   |          ^^
 
 warning: bucket is not implemented for azure yet
- --> ../../examples/app.clowd:7:8
-  |
-7 | bucket uploads is private
-  |        ^^^^^^^
+  --> ../../examples/app.clowd:10:8
+   |
+10 | bucket uploads is private
+   |        ^^^^^^^
 
 warning: service is not implemented for azure yet
- --> ../../examples/app.clowd:9:9
-  |
-9 | service api
-  |         ^^^
+  --> ../../examples/app.clowd:12:9
+   |
+12 | service api
+   |         ^^^
 
 warning: load balancer is not implemented for azure yet
-  --> ../../examples/app.clowd:14:15
+  --> ../../examples/app.clowd:17:15
    |
-14 | load balancer web is public
+17 | load balancer web is public
    |               ^^^
 
 warning: service connects to database is not implemented for azure yet
-  --> ../../examples/app.clowd:18:1
+  --> ../../examples/app.clowd:21:1
    |
-18 | api connects to db
+21 | api connects to db
    | ^^^^^^^^^^^^^^^^^^
 
 warning: service reads or writes bucket is not implemented for azure yet
-  --> ../../examples/app.clowd:19:1
+  --> ../../examples/app.clowd:22:1
    |
-19 | api reads and writes uploads
+22 | api reads and writes uploads
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

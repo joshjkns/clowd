@@ -6,13 +6,24 @@ service api 9:9
   port 8080
   scale 1 to 1
   at image 10:3
-database db 11:10
+  at port 11:3
+database db 37:10
   engine postgres <default>
   size small
-  at engine 11:16
-override aws service api capacity_provider = "FARGATE_SPOT" 14:3
-override aws database db multi_az = "true" 15:3
-override gcp service api max_instance_request_concurrency = "80" 19:3
+  at engine 37:16
+override aws service api 13:3
+  platform_version = "LATEST" 14:5
+  capacity_provider_strategy 16:5
+    capacity_provider = "FARGATE_SPOT" 17:7
+    weight = "1" 18:7
+  capacity_provider_strategy 19:5
+    capacity_provider = "FARGATE" 20:7
+    base = "1" 21:7
+  tags_all = ["a" "b c"] 22:5
+override gcp service api 28:3
+  max_instance_request_concurrency = "80" 29:5
+override aws database db 38:3
+  multi_az = "true" 39:5
 
 diagnostics:
 error: `aws` is already a target on line 1
@@ -57,16 +68,99 @@ error: unknown cloud `digitalocean`
   |     ^^^^^^^^^^^^
   = help: clouds are `aws`, `gcp` and `azure`
 
-error: `capacity_provider` is already set for `api` on line 14
-  --> use_on.clowd:16:20
+error: `port` doesn't take an indented block
+  --> use_on.clowd:12:5
    |
-16 |   service api sets capacity_provider to FARGATE
-   |                    ^^^^^^^^^^^^^^^^^
+12 |     nested x
+   |     ^^^^^^^^
+   = help: indent this line like the other properties of `api`
+
+error: `platform_version` is already set on line 14
+  --> use_on.clowd:15:5
+   |
+15 |     platform_version 1.4.0
+   |     ^^^^^^^^^^^^^^^^^^^^^^
    = help: remove one of them
 
-error: unknown cloud `oracle`
-  --> use_on.clowd:21:4
+error: expected a value after `,`
+  --> use_on.clowd:23:13
    |
-21 | on oracle
-   |    ^^^^^^
+23 |     broken a,
+   |             ^
+   = help: remove the trailing comma
+
+error: expected a value before `,`
+  --> use_on.clowd:24:13
+   |
+24 |     leading , a
+   |             ^
+
+error: `deployment_circuit_breaker` has a block, so it takes no value on its line
+  --> use_on.clowd:25:32
+   |
+25 |     deployment_circuit_breaker x
+   |                                ^
+   = help: put each setting of `deployment_circuit_breaker` on its own line in the block
+
+error: expected a value after `empty`
+  --> use_on.clowd:27:10
+   |
+27 |     empty
+   |          ^
+   = help: write `empty <value>`, or indent a block of settings under it
+
+error: `api` already has an `on aws` block on line 13
+  --> use_on.clowd:30:3
+   |
+30 |   on aws
+   |   ^^^^^^
+   = help: merge them into one block
+
+error: unknown cloud `oracle`
+  --> use_on.clowd:32:6
+   |
+32 |   on oracle
+   |      ^^^^^^
    = help: clouds are `aws`, `gcp` and `azure`
+
+error: expected a cloud after `on`
+  --> use_on.clowd:34:5
+   |
+34 |   on
+   |     ^
+   = help: for example `on aws`
+
+error: `on` takes one cloud
+  --> use_on.clowd:35:10
+   |
+35 |   on aws gcp
+   |          ^^^
+   = help: put the settings in an indented block under `on aws`
+
+error: expected an indented block of gcp settings under `on gcp`
+  --> use_on.clowd:36:3
+   |
+36 |   on gcp
+   |   ^^^^^^
+   = help: indent provider settings below it, such as `    <argument> <value>`
+
+error: settings for one resource go inside its declaration
+  --> use_on.clowd:42:3
+   |
+42 |   database db sets multi_az to true
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: under `database db`, write `  on aws` and below it `    multi_az true`
+
+error: settings for one resource go inside its declaration
+  --> use_on.clowd:43:3
+   |
+43 |   load balancer web sets idle_timeout
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: under `load balancer web`, write `  on aws` and below it `    <argument> <value>`
+
+error: unknown `on aws` setting `frobnicate`
+  --> use_on.clowd:44:3
+   |
+44 |   frobnicate yes
+   |   ^^^^^^^^^^
+   = help: settings for one resource go inside its declaration, under `on aws`

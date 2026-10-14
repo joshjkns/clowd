@@ -14,6 +14,10 @@ service api
   port 8080
   scale 2 to 10
   env GREETING "say \"hi\", C:\\"
+  on aws
+    Platform_Version LATEST # raw values keep their case
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
   env MODE Debug
   # indented too far, still the end of the block
 
@@ -27,7 +31,7 @@ api reads and writes uploads
 api sends to jobs
 
 on aws
-  service api sets capacity_provider to FARGATE_SPOT # spot is cheaper
-  lb edge sets idle_timeout to 120
+  network
+    public_subnets subnet-a, subnet-b, subnet-c # an existing VPC's
 
 # Trailing comment at the end of the file.

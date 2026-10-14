@@ -111,3 +111,17 @@ can opt in to protection with an override (`deletion_protection`,
 `skip_final_snapshot`, `force_destroy`). The alternative, destroys that
 fail halfway on a non-empty bucket or need a unique snapshot name each
 time, is worse for the common case of a dev or demo environment.
+
+## D16 — Overrides live inside the resource, and can set nested blocks
+`on <cloud>` blocks go inside the declaration they change, with one
+`<argument> <value>` per line, instead of top-level
+`<kind> <name> sets <key> to <value>` lines. The setting sits where a
+reader looks for it, without repeating the kind and name, and the
+grammar change behind it (a property may have an indented block) lets
+an argument have a block under it. That closes the gap D13 left open:
+nested blocks such as `capacity_provider_strategy` can now be set,
+checked against the same allowlist as top-level arguments. Keys stay raw
+provider names, so they still look different from portable code (D4).
+A top-level `on <cloud>` block remains for settings that apply to the
+whole program. The old form is an error that shows the new one; no
+edition has shipped, so no files break.

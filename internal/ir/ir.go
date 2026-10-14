@@ -301,16 +301,28 @@ type Relation struct {
 	Pos  diag.Span
 }
 
-// Override is a raw provider setting from an `on <cloud>` block.
+// Override is an `on <cloud>` block inside a resource: raw provider
+// settings applied only when lowering to Cloud.
 type Override struct {
 	Cloud Cloud
-	// Resource is the target's declared name.
+	// Resource is the resource's declared name.
 	Resource string
 	Kind     Kind
-	// Key is the provider property, exactly as written.
+	Settings []Setting
+	// Pos is the `on <cloud>` line.
+	Pos diag.Span
+}
+
+// Setting is one raw line in an `on` block: a provider argument and its
+// value, or a nested block of settings.
+type Setting struct {
+	// Key is the provider argument, exactly as written.
 	Key    string
 	KeyPos diag.Span
-	// Value is the value words joined by single spaces.
+	// Value is the value words joined by single spaces. List is set
+	// instead for a comma list, and Block for a nested block.
 	Value string
+	List  []string
+	Block []Setting
 	Pos   diag.Span
 }

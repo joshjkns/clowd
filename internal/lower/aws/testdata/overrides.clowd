@@ -2,22 +2,48 @@ use aws in eu-west-2
 
 service api
   image a
+  on aws
+    enable_execute_command true
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
+      weight 3
+    capacity_provider_strategy
+      capacity_provider FARGATE
+      base 1
+      weight 1
+    deployment_circuit_breaker
+      rollback false
+    capacity_provider FARGATE_SPOT
+    network_configuration
+      assign_public_ip false
+    platform_version
+      x y
 
 database db is postgres
+  on aws
+    backup_retention_period 14
+    Deletion_Protection true
+    multi_azz true
+    blue_green_update
+      enabled true
+      colour blue
+    instance_class db.t4g.large, db.t4g.xlarge
+
 bucket files
+  on aws
+    versioning true
+
 queue jobs
+  on aws
+    visibility_timeout_seconds 120
 
 load balancer web
   listen on 80
   send / to api
-
-on aws
-  service api sets capacity_provider to FARGATE_SPOT
-  service api sets enable_execute_command to true
-  database db sets backup_retention_period to 14
-  database db sets Deletion_Protection to true
-  database db sets multi_azz to true
-  bucket files sets versioning to true
-  queue jobs sets visibility_timeout_seconds to 120
-  load balancer web sets idle_timeout to 300
-  load balancer web sets subnets to x
+  on aws
+    idle_timeout 300
+    subnets x
+    access_logs
+      bucket my-logs
+      enabled true
+    access_logs true
