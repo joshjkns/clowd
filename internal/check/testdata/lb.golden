@@ -1,0 +1,187 @@
+target aws eu-west-2 1:1
+service api 3:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 4:3
+service admin 5:9
+  image "b"
+  port 8080
+  scale 1 to 1
+  at image 6:3
+database db 7:10
+  engine postgres <default>
+  size small
+  at engine 7:16
+load balancer web 9:15
+  internal false
+  listen 443 tls api.example.com
+  listen 80
+  route / -> api
+  route /admin -> admin
+  at listen 10:3
+  at send 12:3
+  at visibility 9:22
+load balancer internal_lb 15:4
+  internal true
+  listen 8080
+  route / -> api
+  at listen 16:3
+  at send 17:3
+  at visibility 15:19
+load balancer bad 19:15
+  internal true
+  listen 9000
+  route /x -> api
+  at listen 27:3
+  at send 34:3
+  at visibility 19:22
+load balancer empty 37:15
+  internal false
+load balancer norules 39:15
+  internal false
+  listen 80
+  at listen 40:3
+load balancer synonym_route 42:15
+  internal false
+  listen 80
+  at listen 43:3
+
+diagnostics:
+error: unknown load balancer trait `private`
+  --> lb.clowd:19:22
+   |
+19 | load balancer bad is private
+   |                      ^^^^^^^
+   = help: write `internal`
+
+error: expected `on` before the port
+  --> lb.clowd:20:10
+   |
+20 |   listen 443
+   |          ^^^
+   = help: write `listen on 443`
+
+error: `https` is not a port
+  --> lb.clowd:21:13
+   |
+21 |   listen on https
+   |             ^^^^^
+   = help: a listener port is a number from 1 to 65535
+
+error: TLS needs a domain for its certificate
+  --> lb.clowd:22:22
+   |
+22 |   listen on 443 with tls
+   |                      ^^^
+   = help: write `listen on 443 with tls for api.example.com`
+
+error: expected `for` before the domain
+  --> lb.clowd:23:26
+   |
+23 |   listen on 443 with tls api.example.com
+   |                          ^^^^^^^^^^^^^^^
+   = help: write `listen on 443 with tls for api.example.com`
+
+error: a domain doesn't include `https://`
+  --> lb.clowd:24:30
+   |
+24 |   listen on 443 with tls for https://api.example.com/
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: write `api.example.com`
+
+error: `not_a_domain` is not a domain name
+  --> lb.clowd:25:30
+   |
+25 |   listen on 443 with tls for not_a_domain
+   |                              ^^^^^^^^^^^^
+   = help: for example `api.example.com`
+
+error: unexpected `using tls`
+  --> lb.clowd:26:18
+   |
+26 |   listen on 8443 using tls
+   |                  ^^^^^^^^^
+   = help: write `listen on <port>` or `listen on <port> with tls for <domain>`
+
+error: port 9000 is already used on line 27
+  --> lb.clowd:28:3
+   |
+28 |   listen on 9000
+   |   ^^^^^^^^^^^^^^
+   = help: remove one of them
+
+error: expected `to` before the service
+  --> lb.clowd:29:10
+   |
+29 |   send / api
+   |          ^^^
+   = help: write `send / to api`
+
+error: can't read `api` as a route
+  --> lb.clowd:30:8
+   |
+30 |   send api
+   |        ^^^
+   = help: write `send <path> to <service>`, such as `send / to api`
+
+error: paths don't take wildcards
+  --> lb.clowd:31:8
+   |
+31 |   send /api/* to api
+   |        ^^^^^^
+   = help: paths match by prefix, so write `send /api to api`
+
+error: paths don't take wildcards
+  --> lb.clowd:32:8
+   |
+32 |   send * to api
+   |        ^
+   = help: paths match by prefix, so write `send / to api`
+
+error: `db` is a database; a load balancer can only send to a service
+  --> lb.clowd:33:13
+   |
+33 |   send / to db
+   |             ^^
+
+error: `/x` is already routed on line 34
+  --> lb.clowd:35:8
+   |
+35 |   send /x to admin
+   |        ^^
+   = help: send each path to one service
+
+error: load balancer `empty` needs `listen`
+  --> lb.clowd:37:15
+   |
+37 | load balancer empty
+   |               ^^^^^
+   = help: add it in an indented block: `  listen on 443 with tls for api.example.com`
+
+error: load balancer `empty` needs `send`
+  --> lb.clowd:37:15
+   |
+37 | load balancer empty
+   |               ^^^^^
+   = help: add it in an indented block: `  send / to api`
+
+error: load balancer `norules` needs `send`
+  --> lb.clowd:39:15
+   |
+39 | load balancer norules
+   |               ^^^^^^^
+   = help: add it in an indented block: `  send / to api`
+
+error: unknown load balancer property `route`
+  --> lb.clowd:44:3
+   |
+44 |   route / to db
+   |   ^^^^^
+   = help: write `send`
+
+error: `db` is a database; a load balancer can only send to a service
+  --> lb.clowd:44:14
+   |
+44 |   route / to db
+   |              ^^

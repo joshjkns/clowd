@@ -7,7 +7,8 @@
   → lexer      tokens incl. NEWLINE / INDENT / DEDENT, every token has a span
   → parser     AST with spans + error nodes; never stops at the first error
   → resolve    symbol table: names → declarations, case warnings, duplicates
-  → check      kinds, traits, properties, relate verbs valid for the kinds
+  → check      kinds, traits, properties, relate verbs valid for the kinds,
+               building the IR as it goes (D9)
   → ir         cloud-neutral typed graph of resources and relations
   → capability per target cloud: supported / emulated / unsupported / not yet
   → lower      per cloud: IR → concrete provider resources (aws, gcp, ...)
@@ -57,7 +58,8 @@ internal/
     ast/                AST node types
     parser/             tokens → AST, error-tolerant
   resolve/              name resolution, symbol table
-  check/                semantic checks on the resolved AST
+  spell/                edit distance for "did you mean" suggestions
+  check/                semantic checks on the resolved AST; builds the IR
   ir/                   cloud-neutral resource graph
   capability/           capability matrix (data) + evaluation per target
   lower/

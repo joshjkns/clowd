@@ -42,3 +42,20 @@ Contextual keywords also make case-insensitivity, "did you mean" suggestions and
 LSP completion on half-typed lines simpler, because the parser sees the words
 the user actually wrote. Numbers, ranges and durations are words until `check`
 interprets them.
+
+## D9 — Check builds the IR in the same pass
+Validating a value means interpreting it: `scale 2 to 10` has to become a
+range to know the minimum is not above the maximum, and `listen on 443 with
+tls for api.example.com` has to be taken apart to know it is well formed.
+Doing that once in `check` and handing the result to `ir` means the IR can
+never disagree with what check accepted. The packages stay separate (`check`
+imports `ir`; `ir` imports neither the AST nor check), so lowering still
+sees only the IR. Invalid pieces are left out or defaulted, so the IR is
+always usable by the LSP on broken files.
+
+## D10 — Azure is a known cloud before it has a backend
+`use azure` is valid and shows as "not implemented" in the capability
+matrix rather than failing as an unknown cloud. That is the honest answer
+(the language supports it; Clowd doesn't yet), it matches the example in
+03-check.md, and it means adding the backend later changes no user files.
+

@@ -1,0 +1,221 @@
+target aws eu-west-2 1:1
+database a 3:10
+  engine postgres 16
+  size small
+  at engine 3:15
+  at size 3:28
+database b 4:10
+  engine mysql 8.0
+  size large
+  at engine 4:15
+  at size 4:29
+database c 5:10
+  engine postgres <default>
+  size small
+  at engine 5:15
+database d 6:10
+  engine postgres 15
+  size medium
+  at engine 6:23
+  at size 6:15
+database noengine 8:10
+  engine <none> <default>
+  size small
+database noengine2 9:10
+  engine <none> <default>
+  size small
+  at size 9:23
+database typo 10:10
+  engine <none> <default>
+  size small
+database syn 11:10
+  engine postgres 16
+  size small
+  at engine 11:17
+  at size 11:32
+database joined 12:10
+  engine postgres 16
+  size small
+  at engine 12:20
+database badver 13:10
+  engine <none> <default>
+  size small
+database extra 14:10
+  engine <none> <default>
+  size small
+database contra 15:10
+  engine postgres 16
+  size small
+  at engine 15:20
+database contra2 16:10
+  engine postgres <default>
+  size small
+  at engine 16:21
+  at size 16:31
+database repeat 17:10
+  engine postgres <default>
+  size small
+  at engine 17:20
+  at size 17:30
+database unknown 18:10
+  engine postgres <default>
+  size small
+  at engine 18:21
+database props 19:10
+  engine postgres <default>
+  size small
+  at engine 19:19
+database twover 22:10
+  engine postgres 16
+  size small
+  at engine 22:20
+database twover2 23:10
+  engine postgres 16
+  size small
+  at engine 23:21
+database twice 24:10
+  engine postgres 16
+  size small
+  at engine 24:19
+database pgjoined 25:10
+  engine postgres 16
+  size small
+  at engine 25:22
+database my8 26:10
+  engine mysql 8
+  size small
+  at engine 26:17
+
+diagnostics:
+error: database `noengine` needs an engine
+ --> database.clowd:8:10
+  |
+8 | database noengine
+  |          ^^^^^^^^
+  = help: for example `database noengine is postgres 16`
+
+error: database `noengine2` needs an engine
+ --> database.clowd:9:10
+  |
+9 | database noengine2 is small
+  |          ^^^^^^^^^
+  = help: for example `database noengine2 is postgres 16`
+
+error: unknown database trait `postgress`
+  --> database.clowd:10:18
+   |
+10 | database typo is postgress 16
+   |                  ^^^^^^^^^
+   = help: did you mean `postgres`?
+
+error: unknown database trait `postgresql`
+  --> database.clowd:11:17
+   |
+11 | database syn is postgresql 16, tiny
+   |                 ^^^^^^^^^^
+   = help: write `postgres`
+
+error: unknown database trait `tiny`
+  --> database.clowd:11:32
+   |
+11 | database syn is postgresql 16, tiny
+   |                                ^^^^
+   = help: write `small`
+
+error: unknown database trait `postgres16`
+  --> database.clowd:12:20
+   |
+12 | database joined is postgres16
+   |                    ^^^^^^^^^^
+   = help: put a space before the version: `postgres 16`
+
+error: `latest` is not a version
+  --> database.clowd:13:29
+   |
+13 | database badver is postgres latest
+   |                             ^^^^^^
+   = help: write a version number, such as `postgres 16`
+
+error: unexpected `beta` after `postgres`
+  --> database.clowd:14:31
+   |
+14 | database extra is postgres 16 beta
+   |                               ^^^^
+   = help: separate traits with `,` or `and`
+
+error: `mysql 8` contradicts `postgres 16`
+  --> database.clowd:15:33
+   |
+15 | database contra is postgres 16, mysql 8
+   |                                 ^^^^^^^
+   = help: a database takes one of `postgres` or `mysql`
+
+error: `large` contradicts `small`
+  --> database.clowd:16:38
+   |
+16 | database contra2 is postgres, small, large
+   |                                      ^^^^^
+   = help: a database takes one of `small`, `medium` or `large`
+
+warning: `small` is repeated
+  --> database.clowd:17:37
+   |
+17 | database repeat is postgres, small, small
+   |                                     ^^^^^
+   = help: remove it
+
+error: unknown database trait `fast`
+  --> database.clowd:18:31
+   |
+18 | database unknown is postgres, fast
+   |                               ^^^^
+   = help: a database's traits are `postgres`, `mysql`, `small`, `medium` and `large`
+
+error: unknown database property `size`
+  --> database.clowd:20:3
+   |
+20 |   size small
+   |   ^^^^
+   = help: `small` is a trait: `database props is small`
+
+error: unknown database property `port`
+  --> database.clowd:21:3
+   |
+21 |   port 5432
+   |   ^^^^
+   = help: a database has no properties
+
+error: `postgres 12` contradicts `postgres 16`
+  --> database.clowd:22:33
+   |
+22 | database twover is postgres 16, postgres 12
+   |                                 ^^^^^^^^^^^
+   = help: a database has one version
+
+error: `postgres` contradicts `postgres 16`
+  --> database.clowd:23:34
+   |
+23 | database twover2 is postgres 16, postgres
+   |                                  ^^^^^^^^
+   = help: a database has one version
+
+warning: `postgres 16` is repeated
+  --> database.clowd:24:32
+   |
+24 | database twice is postgres 16, postgres 16
+   |                                ^^^^^^^^^^^
+   = help: remove it
+
+error: unknown database trait `pg16`
+  --> database.clowd:25:22
+   |
+25 | database pgjoined is pg16
+   |                      ^^^^
+   = help: write `postgres 16`
+
+error: `mysql 8` is ambiguous
+  --> database.clowd:26:17
+   |
+26 | database my8 is mysql 8
+   |                 ^^^^^^^
+   = help: give the release line, such as `mysql 8.0` or `mysql 8.4`

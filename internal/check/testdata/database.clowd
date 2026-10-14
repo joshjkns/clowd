@@ -1,0 +1,26 @@
+use aws in eu-west-2
+
+database a is postgres 16, small
+database b is mysql 8.0 and large
+database c is postgres
+database d is medium, postgres 15
+
+database noengine
+database noengine2 is small
+database typo is postgress 16
+database syn is postgresql 16, tiny
+database joined is postgres16
+database badver is postgres latest
+database extra is postgres 16 beta
+database contra is postgres 16, mysql 8
+database contra2 is postgres, small, large
+database repeat is postgres, small, small
+database unknown is postgres, fast
+database props is postgres
+  size small
+  port 5432
+database twover is postgres 16, postgres 12
+database twover2 is postgres 16, postgres
+database twice is postgres 16, postgres 16
+database pgjoined is pg16
+database my8 is mysql 8

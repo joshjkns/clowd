@@ -1,0 +1,44 @@
+use aws in eu-west-2
+
+service api
+  image a
+service admin
+  image b
+database db is postgres
+
+load balancer web is public
+  listen on 443 with tls for api.example.com
+  listen on 80
+  send / to api
+  send /admin to admin
+
+lb internal_lb is internal
+  listen on 8080
+  send / to api
+
+load balancer bad is private
+  listen 443
+  listen on https
+  listen on 443 with tls
+  listen on 443 with tls api.example.com
+  listen on 443 with tls for https://api.example.com/
+  listen on 443 with tls for not_a_domain
+  listen on 8443 using tls
+  listen on 9000
+  listen on 9000
+  send / api
+  send api
+  send /api/* to api
+  send * to api
+  send / to db
+  send /x to api
+  send /x to admin
+
+load balancer empty
+
+load balancer norules
+  listen on 80
+
+load balancer synonym_route
+  listen on 80
+  route / to db

@@ -1,0 +1,13 @@
+service api 1:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 2:3
+
+diagnostics:
+warning: this file has no `use` line, so it deploys nowhere
+ --> no_use.clowd:1:1
+  |
+1 | service api
+  | ^
+  = help: add a target, for example `use aws in eu-west-2`

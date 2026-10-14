@@ -1,0 +1,276 @@
+target aws eu-west-2 1:1
+service minimal 3:9
+  image "nginx"
+  port 8080
+  scale 1 to 1
+  at image 4:3
+service full 6:9
+  image "ghcr.io/me/api:latest"
+  port 3000
+  scale 0 to 10
+  cpu 250m
+  memory 2048MiB
+  env LOG_LEVEL="debug"
+  env GREETING="hello world"
+  env EMPTY=""
+  at cpu 10:3
+  at env 12:3
+  at image 7:3
+  at memory 11:3
+  at port 8:3
+  at scale 9:3
+service fixed 16:9
+  image "a"
+  port 8080
+  scale 3 to 3
+  cpu 1000m
+  memory 512MiB
+  at cpu 19:3
+  at image 17:3
+  at memory 20:3
+  at scale 18:3
+service noimage 22:9
+  image ""
+  port 80
+  scale 1 to 1
+  at port 23:3
+service bad_values 25:9
+  image ""
+  port 8080
+  scale 1 to 1
+  env LOG_LEVEL="info"
+  at env 36:3
+service bad_scale 38:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 39:3
+service bad_scale2 42:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 43:3
+service bad_scale3 46:9
+  image "a"
+  port 8080
+  scale 3 to 3
+  at image 47:3
+  at scale 48:3
+service bad_scale4 50:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 51:3
+service bad_cpu 54:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 55:3
+service unknown_props 59:9
+  image "a"
+  port 8080
+  scale 3 to 3
+  at image 60:3
+  at scale 61:3
+service with_traits 66:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 67:3
+service with_traits2 69:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 70:3
+service synonym_bad 72:9
+  image ""
+  port 8080
+  scale 1 to 1
+service zero_zero 75:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 76:3
+
+diagnostics:
+error: service `noimage` needs `image`
+  --> service.clowd:22:9
+   |
+22 | service noimage
+   |         ^^^^^^^
+   = help: add it in an indented block: `  image ghcr.io/me/api:latest`
+
+error: `image` takes one value
+  --> service.clowd:26:11
+   |
+26 |   image a b
+   |           ^
+   = help: for example `image ghcr.io/me/api:latest`; quote values that contain spaces
+
+error: `http` is not a port
+  --> service.clowd:27:8
+   |
+27 |   port http
+   |        ^^^^
+   = help: a port is a number from 1 to 65535
+
+error: `port` is already set on line 27
+  --> service.clowd:28:3
+   |
+28 |   port 8081
+   |   ^^^^^^^^^
+   = help: remove one of them
+
+error: ranges are written with `to`
+  --> service.clowd:29:9
+   |
+29 |   scale 2-10
+   |         ^^^^
+   = help: write `scale <count>` or `scale <min> to <max>`, such as `scale 2 to 10`
+
+error: `cpu` is not written in millicores
+  --> service.clowd:30:7
+   |
+30 |   cpu 500m
+   |       ^^^^
+   = help: write `cpu 0.5`
+
+error: `512` is not an amount of memory
+  --> service.clowd:31:10
+   |
+31 |   memory 512
+   |          ^^^
+   = help: add a unit: `512mb` or `512gb`
+
+error: `env` takes a name and a value separated by a space
+  --> service.clowd:32:7
+   |
+32 |   env LOG_LEVEL=debug
+   |       ^^^^^^^^^^^^^^^
+   = help: write `env LOG_LEVEL debug`
+
+error: `1BAD` is not a valid environment variable name
+  --> service.clowd:33:7
+   |
+33 |   env 1BAD x
+   |       ^^^^
+   = help: use letters, digits and `_`, not starting with a digit, such as `LOG_LEVEL`
+
+error: expected a value after `A`
+  --> service.clowd:34:8
+   |
+34 |   env A
+   |        ^
+   = help: write `env A <value>`; use `""` for an empty value
+
+error: `env` takes one value
+  --> service.clowd:35:9
+   |
+35 |   env B hello world
+   |         ^^^^^^^^^^^
+   = help: quote values that contain spaces: `env B "hello world"`
+
+error: the minimum (10) is larger than the maximum (2)
+  --> service.clowd:40:9
+   |
+40 |   scale 10 to 2
+   |         ^^^^^^^
+   = help: write `scale 2 to 10`
+
+error: a service needs at least one instance
+  --> service.clowd:44:9
+   |
+44 |   scale 0
+   |         ^
+   = help: to scale to zero when idle, write `scale 0 to <max>`
+
+warning: `3 to 3` is a fixed count
+  --> service.clowd:48:9
+   |
+48 |   scale 3 to 3
+   |         ^^^^^^
+   = help: write `scale 3`
+
+error: `lots` is not an instance count
+  --> service.clowd:52:9
+   |
+52 |   scale lots
+   |         ^^^^
+   = help: write `scale <count>` or `scale <min> to <max>`, such as `scale 2 to 10`
+
+error: 3 vCPUs is not an available size
+  --> service.clowd:56:7
+   |
+56 |   cpu 3
+   |       ^
+   = help: `cpu` is in vCPUs: 0.25, 0.5, 1, 2, 4 or 8
+
+error: `1.5gb` is not an amount of memory
+  --> service.clowd:57:10
+   |
+57 |   memory 1.5gb
+   |          ^^^^^
+   = help: write a whole number of `mb` or `gb`, such as `memory 512mb`
+
+error: unknown service property `replicas`
+  --> service.clowd:61:3
+   |
+61 |   replicas 3
+   |   ^^^^^^^^
+   = help: write `scale`
+
+error: unknown service property `prot`
+  --> service.clowd:62:3
+   |
+62 |   prot 80
+   |   ^^^^
+   = help: did you mean `port`?
+
+error: unknown service property `colour`
+  --> service.clowd:63:3
+   |
+63 |   colour blue
+   |   ^^^^^^
+   = help: a service's properties are `cpu`, `env`, `image`, `memory`, `port` and `scale`
+
+error: expected a value after `memory`
+  --> service.clowd:64:9
+   |
+64 |   memory
+   |         ^
+   = help: for example `memory 512mb`
+
+error: a service has no traits
+  --> service.clowd:66:24
+   |
+66 | service with_traits is public
+   |                        ^^^^^^
+   = help: to expose a service, put a load balancer in front of it: `send / to with_traits`
+
+error: a service has no traits
+  --> service.clowd:69:25
+   |
+69 | service with_traits2 is fast
+   |                         ^^^^
+   = help: settings go in an indented block below the declaration, such as `  port 8080`
+
+error: unknown service property `img`
+  --> service.clowd:73:3
+   |
+73 |   img a b
+   |   ^^^
+   = help: write `image`
+
+error: `img` takes one value
+  --> service.clowd:73:9
+   |
+73 |   img a b
+   |         ^
+   = help: for example `image ghcr.io/me/api:latest`; quote values that contain spaces
+
+error: a service needs at least one instance
+  --> service.clowd:77:9
+   |
+77 |   scale 0 to 0
+   |         ^^^^^^
+   = help: to scale to zero when idle, write `scale 0 to <max>`

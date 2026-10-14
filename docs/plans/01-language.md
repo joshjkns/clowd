@@ -126,6 +126,71 @@ generated resource.
 The full per-cloud support table lives in the capability matrix (see 03-check.md),
 not here.
 
+### Kind reference
+
+Values are interpreted by `check` from the property they appear in. Anything
+left out takes the default shown. Keys and keyword values (`to`, `on`,
+`with tls for`) are case-insensitive.
+
+**`service`** — no traits; to expose one, route to it from a load balancer.
+
+| Property | Form | Default |
+|---|---|---|
+| `image` | one value, e.g. `ghcr.io/me/api:latest` | required |
+| `port` | `1`–`65535` | `8080` |
+| `scale` | `<n>` or `<min> to <max>`; `0 to <max>` scales to zero when idle | `1` |
+| `cpu` | vCPUs: `0.25`, `0.5`, `1`, `2`, `4`, `8` | cloud default |
+| `memory` | whole `mb` or `gb` (binary: `1gb` = `1024mb`) | cloud default |
+| `env` | `env <NAME> <value>`, repeatable; quote values with spaces | — |
+
+**`database`** — traits only, no properties.
+
+| Trait group | Values | Default |
+|---|---|---|
+| engine | `postgres [<version>]`, `mysql [<version>]` | required |
+| size | `small`, `medium`, `large` | `small` |
+
+A missing version means the backend's default for that engine. Versions are
+numbers like `16` or `8.0`; which ones a cloud offers is in the capability
+matrix. Postgres versions are majors (`16`, or `16.4` to pin a minor). MySQL
+versions name a release line (`8.0`, `8.4`), so a bare `mysql 8` is an error.
+
+**`bucket`** — trait `private` (default) or `public`.
+
+**`queue`** — trait `fifo` (ordered, exactly-once); standard by default.
+
+**`load balancer`** — trait `public` (default) or `internal`.
+
+| Property | Form | |
+|---|---|---|
+| `listen` | `listen on <port> [with tls for <domain>]`, repeatable | at least one |
+| `send` | `send <path> to <service>`, repeatable | at least one |
+
+Paths start with `/` and match by prefix (`/` matches everything; no
+wildcards). Each port and each path appears once.
+
+### Which relationships apply
+
+Only services start relationships. Load balancers route with `send`, and
+data stores are passive.
+
+| Verb | Target kinds |
+|---|---|
+| `connects to` | `database`, `service` |
+| `reads` | `bucket`, `queue` (consume) |
+| `writes` | `bucket` |
+| `reads and writes` | `bucket` |
+| `sends to` | `queue` |
+
+To publish to a queue use `sends to`, never `writes` (one canonical phrasing);
+the checker suggests the right verb for each wrong pairing.
+
+### Clouds
+
+`use` and `on` take `aws`, `gcp` or `azure`. Each cloud appears in at most
+one `use` line (one region per cloud for now). An `on` block for a cloud
+the file doesn't `use` is a warning, since it has no effect.
+
 ## Grammar (EBNF draft)
 
 The lexer emits `WORD`, `STRING`, `COMMA`, `NEWLINE`, `INDENT` and `DEDENT`
