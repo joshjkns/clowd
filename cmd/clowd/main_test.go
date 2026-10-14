@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -36,6 +37,10 @@ func TestCLI(t *testing.T) {
 		{"missing_file", []string{"check", "testdata/nope.clowd"}, exitBadInput},
 		{"missing_file_json", []string{"check", "--json", "testdata/no_targets.clowd", "testdata/nope.clowd"}, exitBadInput},
 		{"bad_target", []string{"check", "--target", "oracle", "../../examples/app.clowd"}, exitBadInput},
+		{"fmt_check_formatted", []string{"fmt", "--check", "../../examples/app.clowd"}, exitOK},
+		{"fmt_check_unformatted", []string{"fmt", "../../examples/app.clowd", "--check", "testdata/unformatted.clowd"}, exitFailure},
+		{"fmt_check_errors", []string{"fmt", "--check", "testdata/errors.clowd", "testdata/unformatted.clowd"}, exitBadInput},
+		{"fmt_missing_file", []string{"fmt", "--check", "testdata/nope.clowd"}, exitBadInput},
 		{"unknown_command", []string{"deploy"}, exitBadInput},
 		{"no_args", nil, exitBadInput},
 	}
@@ -76,6 +81,42 @@ func TestExamplesPass(t *testing.T) {
 		if _, stderr, code := runCLI("check", ex); code != exitOK {
 			t.Errorf("clowd check %s exited %d:\n%s", ex, code, stderr)
 		}
+	}
+}
+
+// TestFmtInPlace formats a copy of an unformatted file and checks it is
+// rewritten, and that a file with errors is left alone.
+func TestFmtInPlace(t *testing.T) {
+	dir := t.TempDir()
+	copyFile := func(name string) string {
+		src, err := os.ReadFile(filepath.Join("testdata", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		dst := filepath.Join(dir, name)
+		if err := os.WriteFile(dst, src, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return dst
+	}
+	unformatted, broken := copyFile("unformatted.clowd"), copyFile("errors.clowd")
+	brokenBefore, _ := os.ReadFile(broken)
+
+	if _, stderr, code := runCLI("fmt", unformatted); code != exitOK {
+		t.Fatalf("fmt exited %d:\n%s", code, stderr)
+	}
+	if stdout, _, code := runCLI("fmt", "--check", unformatted); code != exitOK || stdout != "" {
+		t.Errorf("after fmt, --check exited %d with %q", code, stdout)
+	}
+	if info, err := os.Stat(unformatted); err != nil || info.Mode().Perm() != 0o600 {
+		t.Errorf("permissions not kept: %v %v", info.Mode(), err)
+	}
+
+	if _, _, code := runCLI("fmt", broken); code != exitBadInput {
+		t.Errorf("fmt on a broken file exited %d, want %d", code, exitBadInput)
+	}
+	if after, _ := os.ReadFile(broken); !bytes.Equal(after, brokenBefore) {
+		t.Errorf("fmt changed a file with syntax errors")
 	}
 }
 

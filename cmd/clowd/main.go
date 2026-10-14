@@ -30,6 +30,7 @@ Usage:
 
 Commands:
   check     parse and check files, and show the per-cloud capability matrix
+  fmt       format files in the canonical style
   version   print the version and language edition
   help      show this help
 
@@ -46,6 +47,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch cmd, rest := args[0], args[1:]; cmd {
 	case "check":
 		return runCheck(rest, stdout, stderr)
+	case "fmt":
+		return runFmt(rest, stdout, stderr)
 	case "version", "--version":
 		fmt.Fprintf(stdout, "clowd %s (edition %s)\n", version(), edition)
 		return exitOK

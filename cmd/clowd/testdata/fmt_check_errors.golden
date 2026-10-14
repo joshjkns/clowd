@@ -1,0 +1,12 @@
+exit 2
+--- stdout
+testdata/unformatted.clowd
+--- stderr
+error: unknown relationship `links to`
+ --> testdata/errors.clowd:7:5
+  |
+7 | api links to db
+  |     ^^^^^^^^
+  = help: did you mean `connects to`?
+
+testdata/errors.clowd: 1 error; not formatted
