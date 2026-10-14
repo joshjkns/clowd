@@ -25,6 +25,30 @@ One canonical style, no options:
 
 Ship it early. It ends style debates and makes golden tests stable.
 
+The full rules, as implemented in `internal/format`:
+
+- **Words.** Single spaces between words. Keywords are lowercase: statement
+  words (`use`, `in`, `is`, `and`, `on`, `sets`, `to`), kinds, verbs, cloud
+  names, traits, property keys, and the keyword words inside values
+  (`scale 2 to 10`, `send / to api`, `listen on 443 with tls for ...`).
+  Names, regions, other values (images, env names and values) and raw
+  override keys and values are kept as written. Quoted strings stay quoted.
+- **Spellings that are both valid are kept** (D11): `lb` stays `lb`, and
+  traits joined by `and` keep `and`; `,` becomes `, `.
+- **Blank lines.** Consecutive one-line statements of the same shape (use
+  lines, relate lines, declarations without a block) are grouped with no
+  blank line between them. Every other pair of statements gets one blank
+  line. Blocks contain no blank lines.
+- **Comments** stay where they are. A comment at the end of a line keeps
+  one space before its `#`. An own-line comment belongs to the block it is
+  in (re-indented to two spaces), or else to the statement after it. A
+  blank line in the source before a leading comment, or between a comment
+  and its statement, is kept (as one), so a file header stays separate and
+  a group can be split into commented sections.
+- Output uses `\n` line endings, drops a byte order mark and ends with one
+  newline.
+- **Files with syntax errors are not formatted** (D11).
+
 ## Syntax highlighting
 
 | Target | Approach |

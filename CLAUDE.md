@@ -25,6 +25,7 @@ go test ./... -update          # regenerate golden files (review the diff!)
 go vet ./...
 gofmt -l .                     # must print nothing
 go run ./cmd/clowd check examples/app.clowd
+go run ./cmd/clowd fmt --check examples/app.clowd
 ```
 
 ## Layout
@@ -70,7 +71,7 @@ examples/           example .clowd files (also end-to-end fixtures)
 - Compiler stages use golden files in the package's `testdata/`:
   `name.clowd` → `name.golden`. Regenerate with `-update` and review the diff.
 - Every bug fix gets a test that fails without the fix.
-- Files in `examples/` must always pass `clowd check`.
+- Files in `examples/` must always pass `clowd check` and `clowd fmt --check`.
 
 ## Git
 

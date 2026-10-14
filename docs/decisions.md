@@ -59,3 +59,13 @@ matrix rather than failing as an unknown cloud. That is the honest answer
 (the language supports it; Clowd doesn't yet), it matches the example in
 03-check.md, and it means adding the backend later changes no user files.
 
+## D11 — The formatter prints the AST and refuses broken files
+`clowd fmt` prints from the AST, so its output is canonical by
+construction rather than a cleanup of the user's tokens. On a file with
+syntax errors the AST is the parser's best guess, and printing a guess
+would silently rewrite what the user typed (a misspelt verb would become
+the suggested one, a skipped line would vanish), so such files are left
+unchanged, like gofmt. Where the language allows two spellings on purpose,
+`lb` / `load balancer` and `,` / `and` between traits, the formatter keeps
+the user's choice: they are documented alternatives, not synonyms to
+correct, and design rule 2 is enforced by errors, not by the formatter.

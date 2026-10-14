@@ -50,6 +50,22 @@ clowd check [--target cloud] [--json] [file.clowd ...]
   only ever added. Levels are `supported`, `emulated`, `not implemented`,
   `unsupported` and `not applicable`.
 
+## `clowd fmt`
+
+```
+clowd fmt [--check] [file.clowd ...]
+```
+
+- Rewrites each file in place in the canonical style (05-tooling.md),
+  keeping its permissions. Files already formatted are not touched.
+- `--check` changes nothing and prints the path of every file that is not
+  formatted; the exit code is `1` if there are any. Use it in CI.
+- A file with syntax errors is left unchanged: its diagnostics go to stderr
+  and the exit code is `2`. Other files are still formatted. Check errors
+  (unknown properties, missing images, ...) don't block formatting.
+- No file argument means every `*.clowd` in the current directory, as for
+  `check`.
+
 ## Project files
 
 | File | Written by | Purpose |
