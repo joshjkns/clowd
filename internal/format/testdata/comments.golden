@@ -1,0 +1,20 @@
+# One.
+# Two.
+use aws
+
+# Before a relate group.
+api connects to db
+db connects to api
+
+# A new section inside the group.
+api reads uploads
+
+service api # on the header
+  # first in the block
+  image x
+  # last in the block
+
+# leading the next statement
+on aws
+  # only a comment before the override
+  service api sets a to b

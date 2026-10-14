@@ -1,0 +1,14 @@
+not formatted; diagnostics:
+error: unknown resource kind `servce`
+ --> syntax_error.clowd:2:1
+  |
+2 | servce api
+  | ^^^^^^
+  = help: did you mean `service`?
+
+error: unknown relationship `links to`
+ --> syntax_error.clowd:4:5
+  |
+4 | api links to db
+  |     ^^^^^^^^
+  = help: did you mean `connects to`?

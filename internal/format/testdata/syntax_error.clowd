@@ -1,0 +1,4 @@
+use aws in eu-west-2
+servce api
+  image x
+api links to db
