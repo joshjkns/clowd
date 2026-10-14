@@ -27,6 +27,9 @@ queue oq 14:7
   at fifo 14:13
 queue sq 15:7
   fifo false
+bucket quoted 16:8
+  public true
+  at visibility 16:18
 
 diagnostics:
 error: `private` contradicts `public`
@@ -70,3 +73,10 @@ error: unknown queue trait `standard`
 15 | queue sq is standard
    |             ^^^^^^^^
    = help: a queue's traits are `fifo`
+
+error: traits aren't quoted
+  --> bucket_queue.clowd:16:18
+   |
+16 | bucket quoted is "public"
+   |                  ^^^^^^^^
+   = help: write `public`

@@ -38,3 +38,7 @@ load balancer empty
 
 load balancer norules
   listen on 80
+
+load balancer synonym_route
+  listen on 80
+  route / to db

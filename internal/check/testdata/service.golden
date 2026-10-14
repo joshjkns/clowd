@@ -82,6 +82,15 @@ service with_traits2 69:9
   port 8080
   scale 1 to 1
   at image 70:3
+service synonym_bad 72:9
+  image ""
+  port 8080
+  scale 1 to 1
+service zero_zero 75:9
+  image "a"
+  port 8080
+  scale 1 to 1
+  at image 76:3
 
 diagnostics:
 error: service `noimage` needs `image`
@@ -244,3 +253,24 @@ error: a service has no traits
 69 | service with_traits2 is fast
    |                         ^^^^
    = help: settings go in an indented block below the declaration, such as `  port 8080`
+
+error: unknown service property `img`
+  --> service.clowd:73:3
+   |
+73 |   img a b
+   |   ^^^
+   = help: write `image`
+
+error: `img` takes one value
+  --> service.clowd:73:9
+   |
+73 |   img a b
+   |         ^
+   = help: for example `image ghcr.io/me/api:latest`; quote values that contain spaces
+
+error: a service needs at least one instance
+  --> service.clowd:77:9
+   |
+77 |   scale 0 to 0
+   |         ^^^^^^
+   = help: to scale to zero when idle, write `scale 0 to <max>`

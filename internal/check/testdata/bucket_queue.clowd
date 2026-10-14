@@ -13,3 +13,4 @@ queue q
 queue fq is fifo
 queue oq is ordered
 queue sq is standard
+bucket quoted is "public"

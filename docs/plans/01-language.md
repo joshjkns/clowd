@@ -152,7 +152,8 @@ left out takes the default shown. Keys and keyword values (`to`, `on`,
 
 A missing version means the backend's default for that engine. Versions are
 numbers like `16` or `8.0`; which ones a cloud offers is in the capability
-matrix.
+matrix. Postgres versions are majors (`16`, or `16.4` to pin a minor). MySQL
+versions name a release line (`8.0`, `8.4`), so a bare `mysql 8` is an error.
 
 **`bucket`** — trait `private` (default) or `public`.
 

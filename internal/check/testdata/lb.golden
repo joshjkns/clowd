@@ -42,6 +42,10 @@ load balancer norules 39:15
   internal false
   listen 80
   at listen 40:3
+load balancer synonym_route 42:15
+  internal false
+  listen 80
+  at listen 43:3
 
 diagnostics:
 error: unknown load balancer trait `private`
@@ -168,3 +172,16 @@ error: load balancer `norules` needs `send`
 39 | load balancer norules
    |               ^^^^^^^
    = help: add it in an indented block: `  send / to api`
+
+error: unknown load balancer property `route`
+  --> lb.clowd:44:3
+   |
+44 |   route / to db
+   |   ^^^^^
+   = help: write `send`
+
+error: `db` is a database; a load balancer can only send to a service
+  --> lb.clowd:44:14
+   |
+44 |   route / to db
+   |              ^^

@@ -89,7 +89,7 @@ func (c *checker) scale(p ast.Property) (ir.Scale, bool) {
 				Suggest("write `scale %d to %d`", hi, lo))
 			return ir.Scale{}, false
 		}
-		if lo == hi {
+		if lo == hi && hi > 0 {
 			c.diags.Add(diag.Warnf(all, "`%d to %d` is a fixed count", lo, hi).
 				Suggest("write `scale %d`", lo))
 		}
