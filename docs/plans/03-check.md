@@ -37,6 +37,18 @@ Keyed by `(kind, feature, cloud)`, where a feature is a trait, a property, or a
 relate verb. Stored as Go tables in `internal/capability` so it is type-checked,
 and used to generate the support table in the docs.
 
+Features are extracted from the IR without reference to any cloud ("service
+scaling to zero", "public listener on a port other than 80, 8080 or 443"); a
+cloud with no entry for a feature has not implemented it, which is how Azure
+shows ✗ everywhere without any Azure data. The full table is rendered to
+`internal/capability/testdata/matrix.golden`, so changes to it are reviewed as
+a diff.
+
+Findings become diagnostics at the line that asked for the feature: ✗ is a
+warning and ⚠ is an info. They are never errors, so exit code 2 stays
+reserved for mistakes in the file. The same finding on several clouds is one
+diagnostic ("not supported on aws and gcp: ...").
+
 The same data drives:
 - `clowd check` output
 - LSP diagnostics and hover ("AWS: ECS Fargate · GCP: Cloud Run")
