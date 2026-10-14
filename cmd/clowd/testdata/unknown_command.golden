@@ -1,0 +1,16 @@
+exit 2
+--- stdout
+--- stderr
+clowd: unknown command "deploy"
+
+Clowd describes cloud infrastructure once and deploys it to several clouds.
+
+Usage:
+  clowd <command> [arguments]
+
+Commands:
+  check     parse and check files, and show the per-cloud capability matrix
+  version   print the version and language edition
+  help      show this help
+
+Run "clowd <command> -h" for a command's flags.

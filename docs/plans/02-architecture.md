@@ -58,6 +58,7 @@ internal/
     ast/                AST node types
     parser/             tokens → AST, error-tolerant
   resolve/              name resolution, symbol table
+  compile/              parse → resolve → check in one call, for CLI and LSP
   spell/                edit distance for "did you mean" suggestions
   check/                semantic checks on the resolved AST; builds the IR
   ir/                   cloud-neutral resource graph

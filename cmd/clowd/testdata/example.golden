@@ -1,0 +1,13 @@
+exit 0
+--- stdout
+                              aws  gcp
+database db                   ✓    ✓
+bucket uploads                ✓    ✓
+service api                   ✓    ✓
+load balancer web             ✓    ✓
+api connects to db            ✓    ✓
+api reads and writes uploads  ✓    ✓
+on aws                        ✓    –
+
+Deployable: aws ✓  gcp ✓
+--- stderr

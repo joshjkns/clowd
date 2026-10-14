@@ -1,0 +1,11 @@
+exit 0
+--- stdout
+No targets: add a `use` line or pass --target.
+--- stderr
+warning: this file has no `use` line, so it deploys nowhere
+ --> testdata/no_targets.clowd:1:1
+  |
+1 | service api
+  | ^
+  = help: add a target, for example `use aws in eu-west-2`
+

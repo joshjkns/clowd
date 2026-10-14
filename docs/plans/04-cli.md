@@ -28,6 +28,28 @@ Single binary: `clowd`.
 - The CLI never shows OpenTofu jargon unless `--verbose` is set; tofu output is
   passed through for `plan` / `apply`.
 
+## `clowd check`
+
+```
+clowd check [--target cloud] [--json] [file.clowd ...]
+```
+
+- Columns are the file's `use` clouds; `--target aws,azure` (or repeated
+  `--target`) checks other clouds instead. Flags may come before or after
+  files.
+- Until `clowd.toml` exists (phase 4), no file argument means every
+  `*.clowd` in the current directory, each checked on its own.
+- Diagnostics go to stderr with source snippets; the matrix goes to stdout.
+  A file with errors shows only its diagnostics, since its matrix would be
+  built from a partial program.
+- `--json` prints `{"files": [...]}` with, per file, `path`, `ok`,
+  `clouds`, `deployable`, `rows` (label, position, a cell per cloud with
+  level and findings) and `diagnostics` (severity, message, suggestion,
+  1-based `line`/`column`/`endLine`/`endColumn`), plus `error` for a file
+  that could not be read (the other files are still checked). Fields are
+  only ever added. Levels are `supported`, `emulated`, `not implemented`,
+  `unsupported` and `not applicable`.
+
 ## Project files
 
 | File | Written by | Purpose |

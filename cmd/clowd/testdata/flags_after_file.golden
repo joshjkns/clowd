@@ -1,0 +1,49 @@
+exit 1
+--- stdout
+                              aws    azure
+database db                   ✓      ✗      azure: database not implemented yet
+bucket uploads                ✓      ✗      azure: bucket not implemented yet
+service api                   ✓      ✗      azure: service not implemented yet
+load balancer web             ✓      ✗      azure: load balancer not implemented yet
+api connects to db            ✓      ✗      azure: service connects to database not implemented yet
+api reads and writes uploads  ✓      ✗      azure: service reads or writes bucket not implemented yet
+on aws                        ✓      –
+
+Deployable: aws ✓  azure ✗
+--- stderr
+warning: database is not implemented for azure yet
+ --> ../../examples/app.clowd:6:10
+  |
+6 | database db is postgres 16, small
+  |          ^^
+
+warning: bucket is not implemented for azure yet
+ --> ../../examples/app.clowd:7:8
+  |
+7 | bucket uploads is private
+  |        ^^^^^^^
+
+warning: service is not implemented for azure yet
+ --> ../../examples/app.clowd:9:9
+  |
+9 | service api
+  |         ^^^
+
+warning: load balancer is not implemented for azure yet
+  --> ../../examples/app.clowd:14:15
+   |
+14 | load balancer web is public
+   |               ^^^
+
+warning: service connects to database is not implemented for azure yet
+  --> ../../examples/app.clowd:18:1
+   |
+18 | api connects to db
+   | ^^^^^^^^^^^^^^^^^^
+
+warning: service reads or writes bucket is not implemented for azure yet
+  --> ../../examples/app.clowd:19:1
+   |
+19 | api reads and writes uploads
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+

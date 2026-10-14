@@ -1,0 +1,8 @@
+use aws in eu-west-2
+
+service api
+  image ghcr.io/me/api:latest
+  prot 8080
+
+api links to db
+API reads uploads

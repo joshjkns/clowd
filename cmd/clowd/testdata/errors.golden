@@ -1,0 +1,39 @@
+exit 2
+--- stdout
+--- stderr
+error: unknown service property `prot`
+ --> testdata/errors.clowd:5:3
+  |
+5 |   prot 8080
+  |   ^^^^
+  = help: did you mean `port`?
+
+error: unknown relationship `links to`
+ --> testdata/errors.clowd:7:5
+  |
+7 | api links to db
+  |     ^^^^^^^^
+  = help: did you mean `connects to`?
+
+error: no resource named `db`
+ --> testdata/errors.clowd:7:14
+  |
+7 | api links to db
+  |              ^^
+  = help: declare it, for example `database db`
+
+warning: `API` is declared as `api`
+ --> testdata/errors.clowd:8:1
+  |
+8 | API reads uploads
+  | ^^^
+  = help: write `api`
+
+error: no resource named `uploads`
+ --> testdata/errors.clowd:8:11
+  |
+8 | API reads uploads
+  |           ^^^^^^^
+  = help: declare it, for example `bucket uploads`
+
+testdata/errors.clowd: 4 errors, 1 warning; fix them to see the capability matrix

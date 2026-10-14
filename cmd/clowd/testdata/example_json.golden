@@ -1,0 +1,155 @@
+exit 0
+--- stdout
+{
+  "files": [
+    {
+      "path": "../../examples/app.clowd",
+      "ok": true,
+      "clouds": [
+        "aws",
+        "gcp"
+      ],
+      "deployable": {
+        "aws": true,
+        "gcp": true
+      },
+      "rows": [
+        {
+          "label": "database db",
+          "pos": {
+            "line": 6,
+            "column": 10,
+            "endLine": 6,
+            "endColumn": 12
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "bucket uploads",
+          "pos": {
+            "line": 7,
+            "column": 8,
+            "endLine": 7,
+            "endColumn": 15
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "service api",
+          "pos": {
+            "line": 9,
+            "column": 9,
+            "endLine": 9,
+            "endColumn": 12
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "load balancer web",
+          "pos": {
+            "line": 14,
+            "column": 15,
+            "endLine": 14,
+            "endColumn": 18
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "api connects to db",
+          "pos": {
+            "line": 18,
+            "column": 1,
+            "endLine": 18,
+            "endColumn": 19
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "api reads and writes uploads",
+          "pos": {
+            "line": 19,
+            "column": 1,
+            "endLine": 19,
+            "endColumn": 29
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "on aws",
+          "pos": {
+            "line": 22,
+            "column": 3,
+            "endLine": 22,
+            "endColumn": 53
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "not applicable",
+              "findings": []
+            }
+          }
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
+--- stderr

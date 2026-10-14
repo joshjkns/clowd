@@ -1,0 +1,276 @@
+exit 1
+--- stdout
+{
+  "files": [
+    {
+      "path": "testdata/undeployable.clowd",
+      "ok": false,
+      "clouds": [
+        "aws",
+        "gcp"
+      ],
+      "deployable": {
+        "aws": false,
+        "gcp": false
+      },
+      "rows": [
+        {
+          "label": "service api",
+          "pos": {
+            "line": 4,
+            "column": 9,
+            "endLine": 4,
+            "endColumn": 12
+          },
+          "cells": {
+            "aws": {
+              "level": "unsupported",
+              "findings": [
+                {
+                  "feature": "service scaling to zero",
+                  "level": "unsupported",
+                  "note": "ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1",
+                  "pos": {
+                    "line": 6,
+                    "column": 3,
+                    "endLine": 6,
+                    "endColumn": 15
+                  }
+                }
+              ]
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "service worker",
+          "pos": {
+            "line": 8,
+            "column": 9,
+            "endLine": 8,
+            "endColumn": 15
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "queue jobs",
+          "pos": {
+            "line": 11,
+            "column": 7,
+            "endLine": 11,
+            "endColumn": 11
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "emulated",
+              "findings": [
+                {
+                  "feature": "fifo queue",
+                  "level": "emulated",
+                  "note": "Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput",
+                  "pos": {
+                    "line": 11,
+                    "column": 15,
+                    "endLine": 11,
+                    "endColumn": 19
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "label": "load balancer web",
+          "pos": {
+            "line": 13,
+            "column": 15,
+            "endLine": 13,
+            "endColumn": 18
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "unsupported",
+              "findings": [
+                {
+                  "feature": "public listener on a port other than 80, 8080 or 443",
+                  "level": "unsupported",
+                  "note": "public load balancers serve HTTP on 80 or 8080 and HTTPS on 443",
+                  "pos": {
+                    "line": 14,
+                    "column": 3,
+                    "endLine": 14,
+                    "endColumn": 17
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "label": "api sends to jobs",
+          "pos": {
+            "line": 17,
+            "column": 1,
+            "endLine": 17,
+            "endColumn": 18
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "supported",
+              "findings": []
+            }
+          }
+        },
+        {
+          "label": "worker reads jobs",
+          "pos": {
+            "line": 18,
+            "column": 1,
+            "endLine": 18,
+            "endColumn": 18
+          },
+          "cells": {
+            "aws": {
+              "level": "supported",
+              "findings": []
+            },
+            "gcp": {
+              "level": "emulated",
+              "findings": [
+                {
+                  "feature": "service reads queue",
+                  "level": "emulated",
+                  "note": "Cloud Run consumes a pull subscription, so CPU stays allocated while instances run",
+                  "pos": {
+                    "line": 18,
+                    "column": 1,
+                    "endLine": 18,
+                    "endColumn": 18
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "label": "api connects to worker",
+          "pos": {
+            "line": 19,
+            "column": 1,
+            "endLine": 19,
+            "endColumn": 23
+          },
+          "cells": {
+            "aws": {
+              "level": "not implemented",
+              "findings": [
+                {
+                  "feature": "service connects to service",
+                  "level": "not implemented",
+                  "pos": {
+                    "line": 19,
+                    "column": 1,
+                    "endLine": 19,
+                    "endColumn": 23
+                  }
+                }
+              ]
+            },
+            "gcp": {
+              "level": "not implemented",
+              "findings": [
+                {
+                  "feature": "service connects to service",
+                  "level": "not implemented",
+                  "pos": {
+                    "line": 19,
+                    "column": 1,
+                    "endLine": 19,
+                    "endColumn": 23
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "message": "not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1",
+          "pos": {
+            "line": 6,
+            "column": 3,
+            "endLine": 6,
+            "endColumn": 15
+          }
+        },
+        {
+          "severity": "info",
+          "message": "on gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput",
+          "pos": {
+            "line": 11,
+            "column": 15,
+            "endLine": 11,
+            "endColumn": 19
+          }
+        },
+        {
+          "severity": "warning",
+          "message": "not supported on gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443",
+          "pos": {
+            "line": 14,
+            "column": 3,
+            "endLine": 14,
+            "endColumn": 17
+          }
+        },
+        {
+          "severity": "info",
+          "message": "on gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run",
+          "pos": {
+            "line": 18,
+            "column": 1,
+            "endLine": 18,
+            "endColumn": 18
+          }
+        },
+        {
+          "severity": "warning",
+          "message": "service connects to service is not implemented for aws and gcp yet",
+          "pos": {
+            "line": 19,
+            "column": 1,
+            "endLine": 19,
+            "endColumn": 23
+          }
+        }
+      ]
+    }
+  ]
+}
+--- stderr

@@ -27,4 +27,5 @@ Deployable: aws ✓  gcp ✓
 Clowd compiles to [OpenTofu](https://opentofu.org) JSON, so you get mature state
 management and provider support, and can eject to plain Terraform at any time.
 
-> **Status:** early design. Nothing works yet. See [`docs/plans`](docs/plans/00-overview.md).
+> **Status:** early. `clowd check` parses, checks and shows the per-cloud
+> capability matrix; deploying is next. See [`docs/plans`](docs/plans/00-overview.md).

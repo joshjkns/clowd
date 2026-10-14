@@ -1,0 +1,2 @@
+service api
+  image ghcr.io/me/api:latest
