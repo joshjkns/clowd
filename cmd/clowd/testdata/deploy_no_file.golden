@@ -1,0 +1,12 @@
+$ clowd build
+exit 2
+--- stdout
+--- stderr
+clowd: no .clowd file in this project; run `clowd init` or pass a file
+
+$ clowd check
+exit 2
+--- stdout
+--- stderr
+clowd: no .clowd files in this project; pass a file to check
+

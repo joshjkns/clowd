@@ -9,8 +9,13 @@ Usage:
   clowd <command> [arguments]
 
 Commands:
+  init      create a project: clowd.toml and a starter app.clowd
   check     parse and check files, and show the per-cloud capability matrix
   fmt       format files in the canonical style
+  build     compile to OpenTofu configuration in .clowd/build/<cloud>
+  plan      build, then show what apply would change
+  apply     build, then deploy
+  destroy   destroy what apply deployed
   version   print the version and language edition
   help      show this help
 

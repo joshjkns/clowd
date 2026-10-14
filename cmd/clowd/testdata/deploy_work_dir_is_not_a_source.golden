@@ -1,0 +1,24 @@
+$ clowd check
+exit 0
+--- stdout
+app.clowd → aws
+
+Resources      aws
+  queue jobs   ✓
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws
+--- stderr
+
+$ clowd fmt --check
+exit 0
+--- stdout
+--- stderr
+✓ 1 file already formatted
+
+$ clowd build
+exit 0
+--- stdout
+--- stderr
+✓ built aws → .clowd/build/aws/main.tf.json
+

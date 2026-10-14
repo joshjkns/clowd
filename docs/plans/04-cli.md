@@ -57,8 +57,9 @@ clowd check [--target cloud] [--json] [file.clowd ...]
 - Columns are the file's `use` clouds; `--target aws,azure` (or repeated
   `--target`) checks other clouds instead. Flags may come before or after
   files.
-- Until `clowd.toml` exists (phase 4), no file argument means every
-  `*.clowd` in the current directory, each checked on its own.
+- No file argument means every `*.clowd` in the project directory (the
+  nearest one up with `clowd.toml`, or the current directory), each
+  checked on its own.
 - Diagnostics go to stderr with source snippets; the matrix goes to stdout,
   under a header naming the file and its clouds and regions, in sections
   (Resources, Relationships, Overrides), followed by a legend and a
@@ -89,8 +90,72 @@ clowd fmt [--check] [file.clowd ...]
 - A file with syntax errors is left unchanged: its diagnostics go to stderr
   and the exit code is `2`. Other files are still formatted. Check errors
   (unknown properties, missing images, ...) don't block formatting.
-- No file argument means every `*.clowd` in the current directory, as for
+- No file argument means every `*.clowd` in the project directory, as for
   `check`.
+- For clouds Clowd can deploy to, `check` also runs lowering, so problems
+  only the backend can see (an `on aws` key the resource doesn't have, a
+  Fargate size that had to be rounded up) are reported before deploying.
+
+## `clowd init`
+
+```
+clowd init [dir]
+```
+
+Writes `clowd.toml` (with the project name taken from the directory), a
+starter `app.clowd` unless the directory already has `.clowd` files, and
+adds `.clowd/` to `.gitignore`. Refuses to run where `clowd.toml` exists.
+
+## `clowd build`, `plan`, `apply`, `destroy`
+
+```
+clowd build   [--target cloud] [--json] [file.clowd]
+clowd plan    [--target cloud] [file.clowd]
+clowd apply   [--target cloud] [--yes] [file.clowd]
+clowd destroy [--target cloud] [--yes] [file.clowd]
+```
+
+- A project deploys one program. With no file argument the project
+  directory must hold exactly one `.clowd` file.
+- `--target` must be a cloud the file `use`s. `build` builds every target
+  unless given one; the others need exactly one, and say so when the file
+  has several.
+- Before lowering, the file is checked and evaluated against the matrix;
+  errors exit `2` and an undeployable target exits `1`, as for `check`.
+- `build` writes `.clowd/build/<cloud>/main.tf.json` and nothing else, so
+  OpenTofu's state in the same directory is untouched.
+- `plan`, `apply` and `destroy` run `tofu init` quietly (its output is
+  shown on failure or with `--verbose`), then pass the tool's own output
+  through. `--yes` skips the confirmation. Ctrl-C goes to OpenTofu, which
+  stops cleanly.
+- After `init`, the provider version OpenTofu chose is written to
+  `clowd.lock`, and every later build pins it. A pin that changed (after
+  a `git pull`) replaces the directory's own lock.
+- `apply` with TLS listeners runs in two steps the first time: it creates
+  the certificates alone, prints the DNS records that validate them, then
+  applies the rest, which waits until the records exist. Afterwards it
+  prints the outputs (URLs, bucket names) and, for a TLS domain, the CNAME
+  to point at the load balancer.
+- `destroy` uses the configuration last built for that cloud, which is
+  what the state was made from, even if the file has changed since. With
+  nothing built it has nothing to do. It removes data too (D15).
+- The tool is `runtime` from `clowd.toml`, else `tofu`, else `terraform`.
+- State is local, in `.clowd/build/<cloud>/`: deleting `.clowd/` loses
+  track of what was deployed. Remote state backends come later.
+
+## `clowd.toml`
+
+| Setting | Default | |
+|---|---|---|
+| `name` | the directory's name | prefixes every deployed name; ≤ 20 of `a-z0-9-` |
+| `edition` | `2026` | 06-versioning.md |
+| `runtime` | `tofu`, else `terraform` | |
+| `[state] backend` | `"local"` | the only backend so far |
+| `[aws.network] services` | `"public"` | `"private"` runs services behind a NAT gateway (D14) |
+| `[aws.network] cidr` | `"10.0.0.0/16"` | the VPC Clowd creates |
+| `[aws.network] vpc`, `public_subnets`, `private_subnets` | — | use an existing VPC; two or more subnets each |
+
+Mistakes are reported like source errors, with "did you mean" help.
 
 ## Project files
 

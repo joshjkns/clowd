@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/joshjkns/clowd/internal/diag"
@@ -37,9 +36,8 @@ func runFmt(args []string, stdout, stderr io.Writer) int {
 		return exitBadInput
 	}
 	if len(paths) == 0 {
-		paths, err = filepath.Glob("*.clowd")
-		if err != nil || len(paths) == 0 {
-			fmt.Fprintln(stderr, "clowd: no .clowd files in the current directory; pass a file to format")
+		if paths = projectFiles(); len(paths) == 0 {
+			fmt.Fprintln(stderr, "clowd: no .clowd files in this project; pass a file to format")
 			return exitBadInput
 		}
 	}

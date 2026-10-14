@@ -1,0 +1,11 @@
+$ clowd plan
+exit 0
+--- stdout
+Plan: 3 to add, 0 to change, 0 to destroy.
+--- stderr
+Preparing .clowd/build/aws (tofu init)…
+
+--- tofu calls
+tofu init -input=false -no-color
+tofu plan
+

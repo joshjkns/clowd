@@ -1,0 +1,26 @@
+$ clowd check
+exit 2
+--- stdout
+--- stderr
+error: aws_ecs_service has no setting `capacity_provider` that `on aws` can change
+ --> app.clowd:7:20
+  |
+7 |   service api sets capacity_provider to FARGATE_SPOT
+  |                    ^^^^^^^^^^^^^^^^^
+  = help: `capacity_provider_strategy` is a nested block of aws_ecs_service, which `sets` can't change yet
+
+app.clowd: 1 error; fix them to see the capability matrix
+
+$ clowd build
+exit 2
+--- stdout
+--- stderr
+error: aws_ecs_service has no setting `capacity_provider` that `on aws` can change
+ --> app.clowd:7:20
+  |
+7 |   service api sets capacity_provider to FARGATE_SPOT
+  |                    ^^^^^^^^^^^^^^^^^
+  = help: `capacity_provider_strategy` is a nested block of aws_ecs_service, which `sets` can't change yet
+
+app.clowd: 1 error
+

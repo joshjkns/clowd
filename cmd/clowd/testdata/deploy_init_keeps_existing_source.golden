@@ -1,0 +1,27 @@
+$ clowd init infra
+exit 0
+--- stdout
+infra/clowd.toml
+infra/.gitignore
+--- stderr
+✓ created a Clowd project named infra · next: `clowd check`, then `clowd apply`
+
+--- infra/clowd.toml
+# Clowd project settings.
+
+# Prefixes the names of everything deployed.
+name = "infra"
+edition = 2026
+
+# [aws.network]
+# services = "private"   # run services behind a NAT gateway (default "public")
+# cidr = "10.0.0.0/16"   # the VPC Clowd creates
+# Or use an existing VPC:
+# vpc = "vpc-0123456789abcdef0"
+# public_subnets = ["subnet-...", "subnet-..."]
+# private_subnets = ["subnet-...", "subnet-..."]
+
+--- infra/.gitignore
+# Clowd build output and local OpenTofu state
+.clowd/
+
