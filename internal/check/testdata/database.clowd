@@ -23,3 +23,4 @@ database twover is postgres 16, postgres 12
 database twover2 is postgres 16, postgres
 database twice is postgres 16, postgres 16
 database pgjoined is pg16
+database my8 is mysql 8
