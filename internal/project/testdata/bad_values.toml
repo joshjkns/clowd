@@ -1,0 +1,16 @@
+name = "My App"
+edition = 2030
+runtime = "tofoo"
+colour = "blue"
+regoin = "eu-west-2"
+
+[state]
+backend = "s3"
+
+[aws.network]
+services = "publc"
+cidr = 10
+vpc = "vpc-1"
+public_subnets = ["subnet-a"]
+
+[gcp]

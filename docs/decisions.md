@@ -69,3 +69,12 @@ unchanged, like gofmt. Where the language allows two spellings on purpose,
 `lb` / `load balancer` and `,` / `and` between traits, the formatter keeps
 the user's choice: they are documented alternatives, not synonyms to
 correct, and design rule 2 is enforced by errors, not by the formatter.
+
+## D12 — clowd.toml is read by a small TOML-subset parser
+The project files need strings, integers, booleans, string arrays and
+`[tables]`. A hand-written parser for that subset avoids a dependency, and
+reports problems as ordinary diagnostics with spans and "did you mean"
+help, like errors in `.clowd` files. Everything else in TOML (floats,
+dates, inline tables, dotted keys, multi-line strings) is rejected as
+unsupported rather than misread, so a file accepted here means the same
+in any TOML parser. If the files ever need more, switch to a library.

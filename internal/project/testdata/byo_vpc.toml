@@ -1,0 +1,9 @@
+name = "shop"
+
+[aws.network]
+vpc = "vpc-0123"
+public_subnets = [
+  "subnet-a",  # eu-west-2a
+  "subnet-b",
+]
+private_subnets = ["subnet-c", "subnet-d"]
