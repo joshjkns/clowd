@@ -1,0 +1,12 @@
+$ clowd build
+exit 1
+--- stdout
+--- stderr
+warning: not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
+ --> app.clowd:5:3
+  |
+5 |   scale 0 to 3
+  |   ^^^^^^^^^^^^
+
+clowd: app.clowd isn't deployable to aws; run `clowd check` for details
+

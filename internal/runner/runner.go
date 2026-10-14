@@ -33,6 +33,9 @@ type Runner struct {
 	// user. Nil means the process's own.
 	Stdin          io.Reader
 	Stdout, Stderr io.Writer
+	// NoColor turns off the tool's colour in commands shown to the user,
+	// for when Clowd's own output is plain.
+	NoColor bool
 }
 
 // ErrNotFound is returned by Find when no tool is installed.
@@ -80,6 +83,9 @@ func (r *Runner) cmd(ctx context.Context, args ...string) *exec.Cmd {
 
 // interactive runs a command on the user's terminal.
 func (r *Runner) interactive(ctx context.Context, args ...string) error {
+	if r.NoColor {
+		args = append(args, "-no-color")
+	}
 	c := r.cmd(ctx, args...)
 	c.Stdin, c.Stdout, c.Stderr = or(r.Stdin, os.Stdin), orW(r.Stdout, os.Stdout), orW(r.Stderr, os.Stderr)
 	if err := c.Run(); err != nil {

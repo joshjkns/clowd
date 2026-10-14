@@ -7,6 +7,9 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
+	"strconv"
+
+	"github.com/joshjkns/clowd/internal/project"
 )
 
 // Exit codes (04-cli.md).
@@ -20,7 +23,7 @@ const (
 const colorUsage = "colour output: `auto` (when writing to a terminal and NO_COLOR is unset), always or never"
 
 // edition is the newest language edition this binary supports (06-versioning.md).
-const edition = "2026"
+var edition = strconv.Itoa(project.LatestEdition)
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
@@ -32,8 +35,13 @@ Usage:
   clowd <command> [arguments]
 
 Commands:
+  init      create a project: clowd.toml and a starter app.clowd
   check     parse and check files, and show the per-cloud capability matrix
   fmt       format files in the canonical style
+  build     compile to OpenTofu configuration in .clowd/build/<cloud>
+  plan      build, then show what apply would change
+  apply     build, then deploy
+  destroy   destroy what apply deployed
   version   print the version and language edition
   help      show this help
 
@@ -52,6 +60,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runCheck(rest, stdout, stderr)
 	case "fmt":
 		return runFmt(rest, stdout, stderr)
+	case "init":
+		return runInit(rest, stdout, stderr)
+	case "build":
+		return runBuild(rest, stdout, stderr)
+	case "plan":
+		return runPlan(rest, stdout, stderr)
+	case "apply":
+		return runApply(rest, stdout, stderr)
+	case "destroy":
+		return runDestroy(rest, stdout, stderr)
 	case "version", "--version":
 		fmt.Fprintf(stdout, "clowd %s (edition %s)\n", version(), edition)
 		return exitOK

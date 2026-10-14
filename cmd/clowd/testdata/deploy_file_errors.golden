@@ -1,0 +1,20 @@
+$ clowd plan
+exit 2
+--- stdout
+--- stderr
+error: service `api` needs `image`
+ --> app.clowd:3:9
+  |
+3 | service api
+  |         ^^^
+  = help: add it in an indented block: `  image ghcr.io/me/api:latest`
+
+error: unknown service property `prot`
+ --> app.clowd:4:3
+  |
+4 |   prot 80
+  |   ^^^^
+  = help: did you mean `port`?
+
+app.clowd: 2 errors
+

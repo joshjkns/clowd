@@ -1,0 +1,13 @@
+$ clowd build
+exit 2
+--- stdout
+--- stderr
+error: unknown setting `region` in clowd.toml
+ --> clowd.toml:2:1
+  |
+2 | region = "eu-west-2"
+  | ^^^^^^
+  = help: the region is set in the .clowd file: `use aws in <region>`
+
+clowd.toml: 1 error
+

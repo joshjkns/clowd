@@ -1,0 +1,39 @@
+$ clowd build
+exit 1
+--- stdout
+--- stderr
+clowd: deploying to gcp isn't implemented yet
+✓ built aws → .clowd/build/aws/main.tf.json
+
+$ clowd build --json --target aws
+exit 0
+--- stdout
+{
+  "ok": true,
+  "targets": [
+    {
+      "cloud": "aws",
+      "path": ".clowd/build/aws/main.tf.json"
+    }
+  ]
+}
+--- stderr
+
+$ clowd apply
+exit 2
+--- stdout
+--- stderr
+clowd: app.clowd deploys to aws and gcp; choose one with --target aws or --target gcp
+
+$ clowd apply --target azure
+exit 2
+--- stdout
+--- stderr
+clowd: app.clowd doesn't `use azure`, so it can't be deployed there; add `use azure in <region>`
+
+$ clowd plan --target gcp
+exit 1
+--- stdout
+--- stderr
+clowd: deploying to gcp isn't implemented yet
+

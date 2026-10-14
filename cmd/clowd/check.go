@@ -16,6 +16,8 @@ import (
 	"github.com/joshjkns/clowd/internal/compile"
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
+	"github.com/joshjkns/clowd/internal/lower/aws"
+	"github.com/joshjkns/clowd/internal/project"
 	"github.com/joshjkns/clowd/internal/term"
 )
 
@@ -75,9 +77,8 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 		return exitBadInput
 	}
 	if len(paths) == 0 {
-		paths, err = filepath.Glob("*.clowd")
-		if err != nil || len(paths) == 0 {
-			fmt.Fprintln(stderr, "clowd: no .clowd files in the current directory; pass a file to check")
+		if paths = projectFiles(); len(paths) == 0 {
+			fmt.Fprintln(stderr, "clowd: no .clowd files in this project; pass a file to check")
 			return exitBadInput
 		}
 	}
@@ -120,6 +121,34 @@ func runCheck(args []string, stdout, stderr io.Writer) int {
 	return code
 }
 
+// projectFiles are the .clowd files in the project's root directory (the
+// one with clowd.toml, or the working directory), relative to the working
+// directory.
+func projectFiles() []string {
+	root, err := project.Root(".")
+	if err != nil {
+		return nil
+	}
+	found := sourceFiles(root)
+	for i, f := range found {
+		found[i] = rel(f)
+	}
+	return found
+}
+
+// sourceFiles lists the .clowd files in dir. The glob alone would also
+// match the .clowd work directory.
+func sourceFiles(dir string) []string {
+	matches, _ := filepath.Glob(filepath.Join(dir, "*.clowd"))
+	var files []string
+	for _, m := range matches {
+		if info, err := os.Stat(m); err == nil && info.Mode().IsRegular() {
+			files = append(files, m)
+		}
+	}
+	return files
+}
+
 // parseInterspersed parses flags that may come before or after file
 // arguments (`clowd check app.clowd --json`), which flag.Parse alone stops
 // at.
@@ -155,7 +184,18 @@ func checkFile(f *diag.File, targets []ir.Cloud) checked {
 	}
 	r.report = capability.Evaluate(res.Program, clouds)
 	r.diags.Add(r.report.Diagnostics()...)
+	// Lowering knows what the matrix can't, such as whether an override
+	// names a real provider argument, so run it for every cloud that has
+	// a backend and that the program can be deployed to.
+	for i, c := range clouds {
+		if hasBackend(c) && r.report.Deployable(i) {
+			r.diags.Add(aws.Lower(res.Program, aws.Options{Project: "check", Source: f.Name}).Diags...)
+		}
+	}
 	r.diags.Sort()
+	if r.diags.HasErrors() {
+		r.report = nil
+	}
 	return r
 }
 

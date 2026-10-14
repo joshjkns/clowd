@@ -143,6 +143,20 @@ func Load(dir string) (p *Project, src *diag.File, diags diag.List, err error) {
 	return p, src, diags, nil
 }
 
+// Root returns the directory of the project containing dir: the nearest
+// one with clowd.toml, or dir itself.
+func Root(dir string) (string, error) {
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		return "", err
+	}
+	root, found, err := find(dir)
+	if err != nil || !found {
+		return dir, err
+	}
+	return root, nil
+}
+
 // find walks up from dir to the nearest directory with clowd.toml.
 func find(dir string) (string, bool, error) {
 	for d := dir; ; {

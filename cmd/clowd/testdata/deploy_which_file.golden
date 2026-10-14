@@ -1,0 +1,18 @@
+$ clowd build
+exit 2
+--- stdout
+--- stderr
+clowd: found a.clowd, b.clowd; pass the one to deploy
+
+$ clowd build a.clowd b.clowd
+exit 2
+--- stdout
+--- stderr
+clowd: pass one .clowd file: a project deploys one program
+
+$ clowd build a.clowd
+exit 0
+--- stdout
+--- stderr
+✓ built aws → .clowd/build/aws/main.tf.json
+

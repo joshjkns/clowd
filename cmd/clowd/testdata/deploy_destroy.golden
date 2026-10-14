@@ -1,0 +1,25 @@
+$ clowd destroy
+exit 0
+--- stdout
+--- stderr
+✓ nothing to destroy on aws: it was never built here
+
+$ clowd build
+exit 0
+--- stdout
+--- stderr
+✓ built aws → .clowd/build/aws/main.tf.json
+
+$ clowd destroy --yes
+exit 0
+--- stdout
+Destroy complete!
+--- stderr
+Preparing .clowd/build/aws (tofu init)…
+Pinned hashicorp/aws 6.14.1 in clowd.lock; commit it.
+✓ destroyed aws
+
+--- tofu calls
+tofu init -input=false -no-color
+tofu destroy -auto-approve -no-color
+
