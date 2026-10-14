@@ -83,6 +83,32 @@ func TestExamples(t *testing.T) {
 	}
 }
 
+func TestCIDR(t *testing.T) {
+	tests := []struct {
+		in, want, err string
+	}{
+		{"10.0.0.0/16", "10.0.0.0/16", ""},
+		{"172.16.0.0/20", "172.16.0.0/20", ""},
+		{"10.0.0.0/8", "", "between /16 and /20, not /8"},
+		{"10.0.0.0/24", "", "between /16 and /20, not /24"},
+		{"10.0.0.1/16", "", "has host bits set"},
+		{"fd00::/16", "", "not an IPv4 CIDR block"},
+		{"10.0.0.0", "", "not an IPv4 CIDR block"},
+	}
+	for _, tt := range tests {
+		_, prog, _, diags := run("t.clowd", "use aws\n\nnetwork\n  cidr "+tt.in+"\n")
+		if prog.Network.CIDR != tt.want {
+			t.Errorf("cidr %s: got %q, want %q", tt.in, prog.Network.CIDR, tt.want)
+		}
+		if tt.err == "" && len(diags) > 0 {
+			t.Errorf("cidr %s: unexpected %v", tt.in, diags)
+		}
+		if tt.err != "" && !strings.Contains(diags[0].Message, tt.err) {
+			t.Errorf("cidr %s: got %q, want it to contain %q", tt.in, diags[0].Message, tt.err)
+		}
+	}
+}
+
 // FuzzCheck checks that no input makes resolve or check panic.
 func FuzzCheck(f *testing.F) {
 	seeds, _ := filepath.Glob("testdata/*.clowd")

@@ -1,0 +1,18 @@
+$ clowd plan --runtime pulumi
+exit 2
+--- stdout
+--- stderr
+clowd: the runtime is tofu or terraform, not "pulumi"
+
+$ clowd plan --runtime tofu
+exit 0
+--- stdout
+Plan: 3 to add, 0 to change, 0 to destroy.
+--- stderr
+Preparing .clowd/build/aws (tofu init)…
+Pinned hashicorp/aws 6.14.1 in clowd.lock; commit it.
+
+--- tofu calls
+tofu init -input=false -no-color
+tofu plan -no-color
+

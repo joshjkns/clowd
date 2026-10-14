@@ -57,6 +57,8 @@ var kinds = []phrase[ast.Kind]{
 	{[]string{"load", "balancer"}, ast.LoadBalancer},
 	{[]string{"lb"}, ast.LoadBalancer},
 	{[]string{"queue"}, ast.Queue},
+	{[]string{"project"}, ast.Project},
+	{[]string{"network"}, ast.Network},
 }
 
 // kindSynonyms map product names and near-misses to a kind.
@@ -82,6 +84,7 @@ var kindSynonyms = map[string]ast.Kind{
 	"sqs":           ast.Queue,
 	"pubsub":        ast.Queue,
 	"topic":         ast.Queue,
+	"vpc":           ast.Network,
 }
 
 // guessKind returns the kind the user probably meant by word: a known

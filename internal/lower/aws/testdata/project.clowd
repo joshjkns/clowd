@@ -1,0 +1,12 @@
+use aws in eu-west-2
+
+project shop
+  edition 2026
+  tag team payments
+  tag cost-centre "42"
+
+network
+  cidr 10.20.0.0/16
+
+service api
+  image a

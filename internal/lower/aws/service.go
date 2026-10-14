@@ -106,7 +106,7 @@ func (l *lowerer) service(s *ir.Service) {
 		"network_configuration": tfjson.Body{
 			"subnets":          l.serviceSubnets(),
 			"security_groups":  []tfjson.Expr{ref(sg, "id")},
-			"assign_public_ip": !l.opts.Network.PrivateServices,
+			"assign_public_ip": !l.p.Network.Private,
 		},
 		"deployment_circuit_breaker": tfjson.Body{"enable": true, "rollback": true},
 		"propagate_tags":             "SERVICE",

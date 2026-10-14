@@ -1,0 +1,81 @@
+target aws eu-west-2 1:1
+network private true cidr "10.20.0.0/16"
+  existing aws vpc-1 public ["subnet-a"] private ["subnet-c" "subnet-d"] 11:3
+
+diagnostics:
+error: `public` contradicts `private`
+ --> network.clowd:3:24
+  |
+3 | network is private and public
+  |                        ^^^^^^
+  = help: a network takes one of `public` or `private`
+
+error: `cidr` is for the network Clowd creates, but an existing aws network is set on line 11
+ --> network.clowd:4:3
+  |
+4 |   cidr 10.20.0.0/16
+  |   ^^^^^^^^^^^^^^^^^
+  = help: remove one of them
+
+error: `cidr` is already set on line 4
+ --> network.clowd:5:3
+  |
+5 |   cidr 10.30.0.0/16
+  |   ^^^^^^^^^^^^^^^^^
+  = help: remove one of them
+
+error: unknown network property `size`
+ --> network.clowd:6:3
+  |
+6 |   size large
+  |   ^^^^
+  = help: a network's properties are `cidr`
+
+error: a program has one network, and it is declared on line 3
+ --> network.clowd:8:1
+  |
+8 | network is private
+  | ^^^^^^^
+  = help: merge the two declarations
+
+error: `public_subnets` needs at least two subnets
+  --> network.clowd:13:5
+   |
+13 |     public_subnets subnet-a
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+   = help: load balancers and databases span two availability zones
+
+error: unknown network setting `cidr`
+  --> network.clowd:15:5
+   |
+15 |     cidr 10.0.0.0/16
+   |     ^^^^
+   = help: `cidr` is for the network Clowd creates, in the `network` declaration
+
+error: unknown network setting `vcp`
+  --> network.clowd:16:5
+   |
+16 |     vcp x
+   |     ^^^
+   = help: did you mean `vpc`?
+
+error: the aws network is already set on line 11
+  --> network.clowd:17:3
+   |
+17 |   network
+   |   ^^^^^^^
+   = help: remove one of them
+
+warning: `on gcp` has no effect: this file doesn't `use gcp`
+  --> network.clowd:20:1
+   |
+20 | on gcp
+   | ^^^^^^
+   = help: add `use gcp in <region>`, or remove the block
+
+error: unknown `on gcp` setting `network`
+  --> network.clowd:21:3
+   |
+21 |   network
+   |   ^^^^^^^
+   = help: gcp has no program-wide settings yet; settings for one resource go inside its declaration, under `on gcp`

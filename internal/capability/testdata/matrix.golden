@@ -6,8 +6,11 @@
 | internal load balancer | ✓ | ✓ | ✗ |
 | load balancer | ✓ | ✓ | ✗ |
 | mysql database | ✓ | ✓ | ✗ |
+| network address block | ✓ | ✓ | ✗ |
 | path routing | ✓ | ✓ | ✗ |
 | postgres database | ✓ | ✓ | ✗ |
+| private network | ✓ | ✓ | ✗ |
+| project tags | ✓ | ✓ | ✗ |
 | provider overrides | ✓ | ✓ | ✗ |
 | public bucket | ✓ | ✓ | ✗ |
 | public listener on a port other than 80, 8080 or 443 | ✓ | ✗ public load balancers serve HTTP on 80 or 8080 and HTTPS on 443 | ✗ |

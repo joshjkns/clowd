@@ -41,7 +41,7 @@ There are exactly four.
 | Shape | Form | Example |
 |---|---|---|
 | Use | `use <cloud> [in <region>]` | `use aws in eu-west-2` |
-| Declare | `<kind> <name> [is <traits>]` + indented properties | `bucket uploads is private` |
+| Declare | `<kind> <name> [is <traits>]` + indented properties | `bucket uploads is private`, `project shop`, `network is private` |
 | Relate | `<name> <verb> <name>` | `api connects to db` |
 | On | `on <cloud>` + indented overrides | see below |
 
@@ -202,6 +202,52 @@ versions name a release line (`8.0`, `8.4`), so a bare `mysql 8` is an error.
 Paths start with `/` and match by prefix (`/` matches everything; no
 wildcards). Each port and each path appears once.
 
+### Program-wide declarations
+
+`project` and `network` are written like resources but aren't resources:
+nothing refers to them (a service may share the project's name), and each
+appears at most once. Both are optional. Without them a file is a complete
+project, named after its directory, in a network Clowd creates with
+defaults (D17).
+
+**`project <name>`** — the name prefixes everything deployed, so two
+projects can share an account: up to 20 lowercase letters, digits and
+dashes, starting with a letter. Without it, the directory's name is used.
+
+| Property | Form | Default |
+|---|---|---|
+| `edition` | `edition 2026` (06-versioning.md) | latest |
+| `tag` | `tag <key> <value>`, repeatable; an AWS tag and a GCP label on every resource | — |
+| `state` | `state local`; other backends come later | `local` |
+
+Tag keys are up to 63 lowercase letters, digits, `_` and `-`, starting
+with a letter, so every cloud accepts them. GCP also restricts label
+values, which the capability matrix reports.
+
+**`network`** — takes no name, since a program has one network.
+
+| Feature | Form | Default |
+|---|---|---|
+| trait `public` / `private` | `network is private` | `public`: services get public addresses and need no NAT (D14) |
+| `cidr` | `cidr 10.20.0.0/16`, a /16 to /20 | `10.0.0.0/16` |
+
+`private` runs services in private subnets that reach the internet through
+NAT. Databases are always private.
+
+Using a network that already exists is a fact about one cloud, so it goes
+in that cloud's top-level `on` block, and replaces `cidr`:
+
+```
+on aws
+  network
+    vpc vpc-0123
+    public_subnets subnet-a, subnet-b
+    private_subnets subnet-c, subnet-d
+```
+
+Each subnet list needs two or more subnets in different availability
+zones.
+
 ### Which relationships apply
 
 Only services start relationships. Load balancers route with `send`, and
@@ -253,11 +299,12 @@ statement  = use | declare | relate | on_block ;
 
 use        = "use" cloud [ "in" value ] NEWLINE ;
 
-declare    = kind name [ "is" traits ] NEWLINE [ block ] ;
+declare    = ( kind name | "network" ) [ "is" traits ] NEWLINE [ block ] ;
 traits     = trait { ( "," | "and" ) trait } ;
 trait      = word { word } ;
 block      = INDENT { property } DEDENT ;
-property   = key { value } NEWLINE [ block ] ;
+property   = key { value } NEWLINE [ block ]
+           | "on" cloud NEWLINE settings ;     (* raw provider settings *)
 setting    = key { value | "," } NEWLINE [ settings ] ;
 settings   = INDENT { setting } DEDENT ;
 
@@ -268,14 +315,14 @@ verb       = "connects to" | "reads" | "writes"
 on_block   = "on" cloud NEWLINE settings ;
 
 kind       = "service" | "database" | "bucket"
-           | "load balancer" | "lb" | "queue" ;
+           | "load balancer" | "lb" | "queue" | "project" ;
 cloud      = "aws" | "gcp" | "azure" ;
 ```
 
 ## Not in v1 (open questions)
 
 - Variables and inputs (`image` per environment)
-- Environments (staging vs prod) — likely `clowd.toml` profiles
+- Environments (staging vs prod) — likely `in <env>` blocks inside resources (08-customisation.md)
 - Secrets (`secret db_password from ...`)
 - Outputs (print the LB URL after apply)
 - Multiple files / imports

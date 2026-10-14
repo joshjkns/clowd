@@ -25,6 +25,67 @@ type Program struct {
 	Resources []Resource
 	Relations []Relation
 	Overrides []Override
+	Project   Project
+	Network   Network
+}
+
+// Project is the `project` declaration. Without one, every field takes
+// its default.
+type Project struct {
+	// Header.Name is the project name, which prefixes every deployed name.
+	// Empty means the deploy tool's default, the directory's name.
+	Header
+	// Edition is the language edition the file is written in; 0 means the
+	// latest.
+	Edition int
+	Tags    []Tag
+}
+
+// Tag is a `tag <key> <value>` property: an AWS tag and a GCP label on
+// every resource.
+type Tag struct {
+	Key, Value string
+	Pos        diag.Span
+}
+
+// Network is where resources are placed: the `network` declaration and
+// the per-cloud `network` settings. Without them, each backend creates a
+// network with its defaults.
+type Network struct {
+	// Header.Pos is the declaration, or zero without one; Header.Name is
+	// always empty.
+	Header
+	// Private runs services in private subnets that reach the internet
+	// through NAT, instead of giving them public addresses.
+	Private bool
+	// CIDR is the address block of the network Clowd creates; empty means
+	// the backend's default.
+	CIDR string
+	// Existing are networks to use instead of creating one, at most one
+	// per cloud.
+	Existing []ExistingNetwork
+}
+
+// ExistingNetwork is an `on <cloud>` `network` block naming a network
+// that already exists.
+type ExistingNetwork struct {
+	Cloud Cloud
+	// VPC is the network's ID.
+	VPC string
+	// PublicSubnets hold load balancers (and public services);
+	// PrivateSubnets hold databases (and private services).
+	PublicSubnets, PrivateSubnets []string
+	Pos                           diag.Span
+}
+
+// ExistingOn returns the existing network to use on cloud, or nil.
+func (n *Network) ExistingOn(cloud Cloud) *ExistingNetwork {
+	for i := range n.Existing {
+		if n.Existing[i].Cloud == cloud {
+			return &n.Existing[i]
+		}
+	}
+	return nil
 }
 
 // Resource returns the resource called name (as declared), or nil.

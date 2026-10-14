@@ -218,6 +218,9 @@ func Evaluate(p *ir.Program, clouds []ir.Cloud) *Report {
 		}
 		rep.Rows = append(rep.Rows, row)
 	}
+	for _, row := range programFeatures(p) {
+		add(SectionResources, row.label, row.pos, row.uses)
+	}
 	for _, r := range p.Resources {
 		h := r.Meta()
 		add(SectionResources, fmt.Sprintf("%s %s", r.Kind(), h.Name), h.Pos, resourceFeatures(r))

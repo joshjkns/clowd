@@ -125,3 +125,21 @@ provider names, so they still look different from portable code (D4).
 A top-level `on <cloud>` block remains for settings that apply to the
 whole program. The old form is an error that shows the new one; no
 edition has shipped, so no files break.
+
+## D17 — No clowd.toml: a project is its .clowd file
+Project settings are written in Clowd. `project <name>` holds the name,
+edition, tags and (later) the state backend; `network` holds whether
+services are private and the address block; an existing VPC goes in a
+top-level `on aws` `network` block, since its IDs only mean something
+on AWS. Whether services reach the internet through NAT, and which
+addresses they use, is infrastructure design that a reader of the file
+should see, so this reverses the "deploy settings" part of D14. It also
+supersedes D7 (the edition moves into the `project` block) and D12 (the
+TOML parser is deleted). The tool to run is a property of the machine,
+not the project, so it is `--runtime` or `CLOWD_RUNTIME`. clowd.lock is
+written by the CLI and never edited, so it is JSON, read with the
+standard library. An existing clowd.toml is an error that says where
+each setting went, rather than being silently ignored. Without a
+`project` declaration the directory's name is still used, but
+`clowd init` writes one, so renaming the directory doesn't rename
+everything deployed.

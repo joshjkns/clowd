@@ -1,0 +1,22 @@
+use aws in eu-west-2
+
+network is private and public
+  cidr 10.20.0.0/16
+  cidr 10.30.0.0/16
+  size large
+
+network is private
+
+on aws
+  network
+    vpc vpc-1
+    public_subnets subnet-a
+    private_subnets subnet-c,subnet-d
+    cidr 10.0.0.0/16
+    vcp x
+  network
+    vpc vpc-2
+
+on gcp
+  network
+    vpc x

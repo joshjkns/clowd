@@ -1,0 +1,18 @@
+use aws in eu-west-2
+
+service api
+  image a
+
+database db is postgres
+
+load balancer web
+  listen on 80
+  send / to api
+
+api connects to db
+
+on aws
+  network
+    vpc vpc-0123
+    public_subnets subnet-a, subnet-b
+    private_subnets subnet-c,subnet-d

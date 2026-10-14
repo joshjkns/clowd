@@ -79,6 +79,8 @@ func setupProject(t *testing.T, files map[string]string) string {
 
 const tlsApp = `use aws in eu-west-2
 
+project shop
+
 service api
   image nginx
   port 80
@@ -126,24 +128,28 @@ func TestDeploy(t *testing.T) {
 			name:     "init",
 			files:    map[string]string{".gitignore": "node_modules/"},
 			commands: [][]string{{"init"}, {"init"}, {"check"}},
-			show:     []string{"clowd.toml", "app.clowd", ".gitignore"},
+			show:     []string{"app.clowd", ".gitignore"},
 		},
 		{
-			name:     "init_keeps_existing_source",
+			name:     "init_refuses_existing_source",
 			files:    map[string]string{"infra/site.clowd": "use aws\n"},
 			commands: [][]string{{"init", "infra"}},
-			show:     []string{"infra/clowd.toml", "infra/.gitignore"},
 		},
 		{
 			name:     "apply_tls",
-			files:    map[string]string{"clowd.toml": "name = \"shop\"\n", "app.clowd": tlsApp},
+			files:    map[string]string{"app.clowd": tlsApp},
 			commands: [][]string{{"apply", "--yes"}, {"apply", "--yes"}},
 			show:     []string{"clowd.lock"},
 		},
 		{
 			name:     "plan_with_lock",
-			files:    map[string]string{"clowd.toml": "name = \"shop\"\n", "app.clowd": "use aws\n\nqueue jobs\n", "clowd.lock": "[providers.aws]\nsource = \"hashicorp/aws\"\nversion = \"6.14.1\"\n"},
+			files:    map[string]string{"app.clowd": "use aws\n\nproject shop\n\nqueue jobs\n", "clowd.lock": `{"providers": {"aws": {"source": "hashicorp/aws", "version": "6.14.1"}}}`},
 			commands: [][]string{{"plan"}},
+		},
+		{
+			name:     "runtime",
+			files:    map[string]string{"app.clowd": "use aws\n\nqueue jobs\n"},
+			commands: [][]string{{"plan", "--runtime", "pulumi"}, {"plan", "--runtime", "tofu"}},
 		},
 		{
 			name:     "destroy",
@@ -152,7 +158,7 @@ func TestDeploy(t *testing.T) {
 		},
 		{
 			name:     "build_several_clouds",
-			files:    map[string]string{"clowd.toml": "name = \"shop\"\n", "app.clowd": "use aws in eu-west-2\nuse gcp in europe-west2\n\nqueue jobs\n"},
+			files:    map[string]string{"app.clowd": "use aws in eu-west-2\nuse gcp in europe-west2\n\nproject shop\n\nqueue jobs\n"},
 			commands: [][]string{{"build"}, {"build", "--json", "--target", "aws"}, {"apply"}, {"apply", "--target", "azure"}, {"plan", "--target", "gcp"}},
 		},
 		{
@@ -215,10 +221,23 @@ var testdataDir = func() string {
 	return filepath.Join(wd, "testdata")
 }()
 
+// TestRuntimeEnv checks CLOWD_RUNTIME picks the tool and --runtime wins
+// over it.
+func TestRuntimeEnv(t *testing.T) {
+	setupProject(t, map[string]string{"app.clowd": "use aws\n\nqueue jobs\n"})
+	t.Setenv(runtimeEnv, "pulumi")
+	if _, stderr, code := runCLI("plan"); code != exitBadInput || !strings.Contains(stderr, `not "pulumi"`) {
+		t.Errorf("plan with %s=pulumi: exit %d, stderr %q", runtimeEnv, code, stderr)
+	}
+	if _, stderr, code := runCLI("plan", "--runtime", "tofu"); code != exitOK {
+		t.Errorf("--runtime didn't win over %s: exit %d, stderr %q", runtimeEnv, code, stderr)
+	}
+}
+
 // TestBuildWritesLoweredConfig checks build output is the lowered program
 // and that a rebuild keeps the rest of the directory (the state).
 func TestBuildWritesLoweredConfig(t *testing.T) {
-	dir := setupProject(t, map[string]string{"clowd.toml": "name = \"shop\"\n", "app.clowd": tlsApp})
+	dir := setupProject(t, map[string]string{"app.clowd": tlsApp})
 	state := filepath.Join(dir, ".clowd", "build", "aws", "terraform.tfstate")
 	if _, _, code := runCLI("build"); code != exitOK {
 		t.Fatalf("build exited %d", code)

@@ -1,0 +1,16 @@
+target aws eu-west-2 1:1
+
+diagnostics:
+error: an existing network needs its `vpc`
+ --> network_existing.clowd:4:3
+  |
+4 |   network
+  |   ^^^^^^^
+  = help: add `vpc vpc-...` to the block
+
+error: `network` takes an indented block
+ --> network_existing.clowd:8:3
+  |
+8 |   network yes
+  |   ^^^^^^^^^^^
+  = help: list the VPC and its subnets below it: `vpc vpc-...`, `public_subnets subnet-..., subnet-...`, `private_subnets ...`

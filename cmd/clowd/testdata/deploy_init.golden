@@ -1,7 +1,6 @@
 $ clowd init
 exit 0
 --- stdout
-clowd.toml
 app.clowd
 .gitignore
 --- stderr
@@ -11,7 +10,7 @@ $ clowd init
 exit 2
 --- stdout
 --- stderr
-clowd: clowd.toml already exists; this is a Clowd project
+clowd: app.clowd already exists; this is a Clowd project
 
 $ clowd check
 exit 0
@@ -26,25 +25,18 @@ Resources            aws
 ✓ deployable to aws
 --- stderr
 
---- clowd.toml
-# Clowd project settings.
-
-# Prefixes the names of everything deployed.
-name = "app-001"
-edition = 2026
-
-# [aws.network]
-# services = "private"   # run services behind a NAT gateway (default "public")
-# cidr = "10.0.0.0/16"   # the VPC Clowd creates
-# Or use an existing VPC:
-# vpc = "vpc-0123456789abcdef0"
-# public_subnets = ["subnet-...", "subnet-..."]
-# private_subnets = ["subnet-...", "subnet-..."]
-
 --- app.clowd
 # Describe your infrastructure, then run `clowd check` and `clowd apply`.
 
 use aws in eu-west-2
+
+# The project's name prefixes everything deployed.
+project app-001
+
+# Uncomment to run services behind a NAT gateway instead of giving them
+# public addresses, or to choose the network's address block:
+# network is private
+#   cidr 10.0.0.0/16
 
 service app
   image nginx:latest

@@ -16,18 +16,10 @@ import (
 	"github.com/joshjkns/clowd/internal/ir"
 )
 
-// options gives fixtures non-default settings by name.
+// options gives fixtures non-default deploy settings by name. Everything
+// else is written in the fixture itself.
 var options = map[string]func(*Options){
-	"network_private": func(o *Options) { o.Network.PrivateServices = true },
-	"network_existing": func(o *Options) {
-		o.Network.VPC = "vpc-0123"
-		o.Network.PublicSubnets = []string{"subnet-a", "subnet-b"}
-		o.Network.PrivateSubnets = []string{"subnet-c", "subnet-d"}
-	},
-	"network_pinned": func(o *Options) {
-		o.Network.CIDR = "10.20.0.0/16"
-		o.ProviderVersion = "6.14.1"
-	},
+	"network_pinned": func(o *Options) { o.ProviderVersion = "6.14.1" },
 }
 
 // lower compiles the file at path and lowers it, failing the test if it

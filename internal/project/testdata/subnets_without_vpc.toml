@@ -1,2 +1,0 @@
-[aws.network]
-public_subnets = ["subnet-a", "subnet-b"]

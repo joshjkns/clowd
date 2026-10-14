@@ -29,6 +29,11 @@ func Check(src *diag.File, f *ast.File, t *resolve.Table) (*ir.Program, diag.Lis
 			c.use(u)
 		}
 	}
+	for _, s := range f.Stmts {
+		if d, ok := s.(*ast.Declare); ok && !d.Kind.IsResource() {
+			c.programWide(d)
+		}
+	}
 	for _, d := range t.Decls {
 		c.declare(d)
 	}
