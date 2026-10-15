@@ -40,7 +40,10 @@ Each phase ends with something runnable and tested.
   its stdio stream; the extension's grammar is tested with VS Code's
   tokenizer and the extension packages with `vsce`. Still to do: the
   check by hand in VS Code itself, then mark the phase done. Go to
-  definition, references and rename (05-tooling.md, item 5) come after.
+  definition, references and rename (05-tooling.md, item 6) come after.
+- Also built: semantic tokens from `clowd lsp`, and `editors/vim` for
+  Vim and Neovim (D20), checked in a clean Neovim 0.12 with only the
+  plugin and `vim.lsp.enable("clowd")`.
 
 ## Phase 6 — GCP deploy
 - `internal/lower/gcp`, capability entries

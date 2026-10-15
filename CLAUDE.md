@@ -50,7 +50,7 @@ internal/format/    clowd fmt
 internal/lsp/       language server
 internal/project/   project directory, clowd.lock
 internal/runner/    tofu/terraform invocation
-editors/            VS Code extension, tree-sitter grammar
+editors/            VS Code extension, Vim/Neovim plugin, tree-sitter grammar
 examples/           example .clowd files (also end-to-end fixtures)
 site/               clowd.jooo.sh: landing page and docs (Next.js, static export)
 ```

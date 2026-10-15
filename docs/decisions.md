@@ -172,3 +172,16 @@ compiler can't disagree; hover and completion docs are a table in
 `internal/lsp`, with a test that every trait and property has one. The
 VS Code extension is plain JavaScript, so it needs no build step, and its
 only runtime dependency is `vscode-languageclient`.
+
+## D20 — Highlighting comes from the server; editors/vim is the fallback
+`clowd lsp` sends semantic tokens for the whole file, built from the
+same parse as `clowd check`, so every LSP editor colours Clowd as the
+compiler reads it (`queue connects to db` is a relationship) without a
+grammar per editor. The token types are standard ones (`struct` for
+kinds, `operator` for verbs, `decorator` for raw provider arguments) so
+themes colour them with no setup. Grammars are still needed for colour
+before the server starts and in editors without semantic tokens: the
+VS Code extension keeps its TextMate grammar, and `editors/vim` ships a
+regex syntax file with file-type detection and an `lsp/clowd.lua`, so
+Neovim needs only `vim.lsp.enable("clowd")`. A tree-sitter grammar
+(phase 7) would replace the syntax file, not the tokens.
