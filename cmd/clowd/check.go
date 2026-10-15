@@ -12,11 +12,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/joshjkns/clowd/internal/analyze"
 	"github.com/joshjkns/clowd/internal/capability"
-	"github.com/joshjkns/clowd/internal/compile"
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
-	"github.com/joshjkns/clowd/internal/lower/aws"
 	"github.com/joshjkns/clowd/internal/term"
 )
 
@@ -157,33 +156,10 @@ func parseInterspersed(fs *flag.FlagSet, args []string) ([]string, error) {
 }
 
 func checkFile(f *diag.File, targets []ir.Cloud) checked {
-	res := compile.Check(f)
-	r := checked{file: f, diags: res.Diags, regions: map[ir.Cloud]string{}}
-	for _, t := range res.Program.Targets {
+	a := analyze.File(f, targets)
+	r := checked{file: f, diags: a.All, report: a.Report, regions: map[ir.Cloud]string{}}
+	for _, t := range a.Program.Targets {
 		r.regions[t.Cloud] = t.Region
-	}
-	if res.Diags.HasErrors() {
-		return r
-	}
-	clouds := targets
-	if len(clouds) == 0 {
-		for _, t := range res.Program.Targets {
-			clouds = append(clouds, t.Cloud)
-		}
-	}
-	r.report = capability.Evaluate(res.Program, clouds)
-	r.diags.Add(r.report.Diagnostics()...)
-	// Lowering knows what the matrix can't, such as whether an override
-	// names a real provider argument, so run it for every cloud that has
-	// a backend and that the program can be deployed to.
-	for i, c := range clouds {
-		if hasBackend(c) && r.report.Deployable(i) {
-			r.diags.Add(aws.Lower(res.Program, aws.Options{Project: "check", Source: f.Name}).Diags...)
-		}
-	}
-	r.diags.Sort()
-	if r.diags.HasErrors() {
-		r.report = nil
 	}
 	return r
 }

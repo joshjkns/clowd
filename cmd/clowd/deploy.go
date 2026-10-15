@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/joshjkns/clowd/internal/analyze"
 	"github.com/joshjkns/clowd/internal/capability"
 	"github.com/joshjkns/clowd/internal/compile"
 	"github.com/joshjkns/clowd/internal/diag"
@@ -24,9 +25,6 @@ import (
 	"github.com/joshjkns/clowd/internal/runner"
 	"github.com/joshjkns/clowd/internal/term"
 )
-
-// hasBackend reports whether Clowd can deploy to c.
-func hasBackend(c ir.Cloud) bool { return c == ir.AWS }
 
 // awsOptions are the deploy settings the AWS backend needs besides the
 // program.
@@ -232,7 +230,7 @@ type built struct {
 // build lowers the program for cloud and writes the root module. Only
 // main.tf.json is written: the directory also holds OpenTofu's state.
 func (s *session) build(cloud ir.Cloud) (*built, int) {
-	if !hasBackend(cloud) {
+	if !analyze.HasBackend(cloud) {
 		s.fail("deploying to %s isn't implemented yet", cloud)
 		return nil, exitFailure
 	}
