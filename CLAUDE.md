@@ -39,6 +39,7 @@ internal/resolve/   name resolution
 internal/spell/     "did you mean" edit distance
 internal/check/     semantic checks; builds the IR
 internal/compile/   parse → resolve → check in one call
+internal/analyze/   everything `clowd check` reports (compile + matrix + lowering)
 internal/ir/        cloud-neutral resource graph
 internal/capability/ per-cloud capability matrix
 internal/lower/     IR → provider resources, one package per cloud

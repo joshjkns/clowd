@@ -36,6 +36,11 @@ Each phase ends with something runnable and tested.
 - `internal/lsp`: diagnostics → hover → completion → formatting
 - `editors/vscode`: TextMate grammar + LSP client
 - **Done when:** editing in VS Code shows live diagnostics and per-cloud hovers.
+- Built: `clowd lsp` with all four features, tested in-process and over
+  its stdio stream; the extension's grammar is tested with VS Code's
+  tokenizer and the extension packages with `vsce`. Still to do: the
+  check by hand in VS Code itself, then mark the phase done. Go to
+  definition, references and rename (05-tooling.md, item 5) come after.
 
 ## Phase 6 — GCP deploy
 - `internal/lower/gcp`, capability entries

@@ -60,6 +60,8 @@ internal/
     parser/             tokens → AST, error-tolerant
   resolve/              name resolution, symbol table
   compile/              parse → resolve → check in one call, for CLI and LSP
+  analyze/              compile + capability matrix + backend checks: all
+                        `clowd check` reports, for CLI and LSP
   spell/                edit distance for "did you mean" suggestions
   check/                semantic checks on the resolved AST; builds the IR
   ir/                   cloud-neutral resource graph

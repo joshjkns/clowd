@@ -158,3 +158,17 @@ the overrides allowlist points at the portable form where there is one
 (`versioning` on a bucket → the `versioned` trait). `protected` replaces
 the per-cloud overrides D15 suggested for data that must survive
 `clowd destroy`.
+
+## D19 — The language server is hand-written and shares check's code
+LSP is JSON-RPC with a Content-Length header, and the server needs a
+dozen message types, so it is written with the standard library instead
+of adding a dependency (CLAUDE.md asks for few). It answers what
+`clowd check` would, by calling the same `analyze.File`, and re-checks
+the whole file on each change: files are small, and incremental
+checking would be a second implementation to keep in step. What
+completion offers is read from the checker (`check.VocabularyOf` runs
+it in a recording mode) rather than listed again, so the editor and the
+compiler can't disagree; hover and completion docs are a table in
+`internal/lsp`, with a test that every trait and property has one. The
+VS Code extension is plain JavaScript, so it needs no build step, and its
+only runtime dependency is `vscode-languageclient`.
