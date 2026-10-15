@@ -75,6 +75,10 @@ type Config struct {
 	Comment   string
 	Providers []Provider
 	Data      []Block
+	// Ephemeral are ephemeral resources: values opened for one run and
+	// never stored in the state, such as a password that is only written
+	// to write-only arguments.
+	Ephemeral []Block
 	Resources []Block
 	Outputs   []Output
 }
@@ -89,6 +93,13 @@ func (c *Config) Resource(typ, name string, body Body) string {
 func (c *Config) DataSource(typ, name string, body Body) string {
 	c.Data = append(c.Data, Block{Type: typ, Name: name, Body: body})
 	return "data." + typ + "." + name
+}
+
+// EphemeralResource adds an ephemeral resource and returns its address
+// ("ephemeral.x.y").
+func (c *Config) EphemeralResource(typ, name string, body Body) string {
+	c.Ephemeral = append(c.Ephemeral, Block{Type: typ, Name: name, Body: body})
+	return "ephemeral." + typ + "." + name
 }
 
 // Find returns the resource at addr ("aws_ecs_service.api"), or nil.
@@ -121,6 +132,9 @@ func Marshal(c *Config) ([]byte, error) {
 	}
 	if len(c.Data) > 0 {
 		top.add("data", blocks(c.Data))
+	}
+	if len(c.Ephemeral) > 0 {
+		top.add("ephemeral", blocks(c.Ephemeral))
 	}
 	if len(c.Resources) > 0 {
 		top.add("resource", blocks(c.Resources))
