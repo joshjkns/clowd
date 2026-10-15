@@ -136,10 +136,12 @@ service api
 
 ### Editor
 
-`clowd lsp` is built into the binary, and the
-[VS Code extension](editors/vscode) uses it for live diagnostics, hovers that
-show what a resource becomes on each cloud, completion and formatting.
-`clowd fmt` formats files in one canonical style.
+`clowd lsp` is built into the binary: live diagnostics, hovers that show
+what a resource becomes on each cloud, completion, formatting, and
+highlighting from the real parse. The [VS Code extension](editors/vscode)
+and the [Vim and Neovim plugin](editors/vim) set it up for you, and any
+other LSP editor can run it. `clowd fmt` formats files in one canonical
+style.
 
 ## Install
 
@@ -186,7 +188,7 @@ internal/lower/     IR → provider resources, one package per cloud
 internal/emit/      .tf.json output
 internal/format/    clowd fmt
 internal/lsp/       language server
-editors/vscode/     VS Code extension
+editors/            VS Code extension, Vim and Neovim plugin
 site/               clowd.jooo.sh
 docs/plans/         design docs; decisions.md logs why
 ```

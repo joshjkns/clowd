@@ -13,9 +13,10 @@ compiler. Features, in priority order:
    block, verbs after a name, declared names after a verb, raw provider
    properties inside `on <cloud>` blocks.
 4. **Formatting** — via `internal/format`.
-5. **Go to definition / find references / rename** for resource names.
+5. **Semantic tokens** — highlighting from the parse (D20).
+6. **Go to definition / find references / rename** for resource names.
 
-Items 1–4 are implemented in `internal/lsp` (D19):
+Items 1–5 are implemented in `internal/lsp` (D19):
 
 - **Transport.** JSON-RPC over stdio with the standard library. Full-text
   sync: every change re-runs `analyze.File`, the same call `clowd check`
@@ -43,6 +44,26 @@ Items 1–4 are implemented in `internal/lsp` (D19):
   completion can't offer what check rejects.
 - **Formatting** returns one whole-file edit, or none when the file is
   already formatted or has syntax errors (D11).
+- **Semantic tokens** cover the whole file (`textDocument/semanticTokens/full`;
+  no deltas or ranges, since files are small). They walk the AST, so they
+  colour a file with errors as far as the parser recovered it. The few
+  joining words the AST doesn't keep (`in`, `is`, `and`) are found in the
+  source between the spans around them. Types are standard ones themes
+  already colour:
+
+  | Clowd | Token type |
+  |---|---|
+  | `use`, `in`, `is`, `and`, `on`, value words (`to`, `with tls for`) | `keyword` |
+  | kinds | `struct` |
+  | resource names (`declaration` modifier where declared) | `variable` |
+  | verbs | `operator` |
+  | clouds | `enumMember` |
+  | traits | `type` |
+  | property keys, including phrases (`health check`) | `property` |
+  | raw provider arguments under `on <cloud>` | `decorator` |
+  | values | `string` |
+  | numbers, sizes, durations | `number` |
+  | comments | `comment` |
 
 ## Formatter (`clowd fmt`)
 
@@ -82,12 +103,17 @@ The full rules, as implemented in `internal/format`:
 
 | Target | Approach |
 |---|---|
+| Any LSP editor | semantic tokens from `clowd lsp` (D20) |
 | VS Code | TextMate grammar in `editors/vscode`, plus LSP client |
+| Vim, Neovim | `editors/vim`: syntax file, file-type detection, `lsp/clowd.lua` |
 | Neovim, Zed, Helix | tree-sitter grammar in `editors/tree-sitter-clowd` (later) |
 | GitHub | linguist entry once the language has users |
 
-The tree-sitter grammar needs a small external scanner (C) for
-INDENT/DEDENT, like tree-sitter-python.
+Semantic tokens are the main path: one implementation, from the real
+parse, in every editor that speaks LSP. The grammars colour a file before
+the server starts and in editors without semantic tokens; in Neovim the
+tokens take priority over the syntax file once the server attaches.
 
-Semantic tokens from the LSP can refine highlighting later (e.g. colour
-resource names by kind).
+The tree-sitter grammar needs a small external scanner (C) for
+INDENT/DEDENT, like tree-sitter-python. It would replace the Vim syntax
+file, not the semantic tokens.

@@ -21,11 +21,32 @@ type serverInfo struct {
 }
 
 type serverCapabilities struct {
-	PositionEncoding           string             `json:"positionEncoding"`
-	TextDocumentSync           textDocumentSync   `json:"textDocumentSync"`
-	HoverProvider              bool               `json:"hoverProvider"`
-	CompletionProvider         completionProvider `json:"completionProvider"`
-	DocumentFormattingProvider bool               `json:"documentFormattingProvider"`
+	PositionEncoding           string                `json:"positionEncoding"`
+	TextDocumentSync           textDocumentSync      `json:"textDocumentSync"`
+	HoverProvider              bool                  `json:"hoverProvider"`
+	CompletionProvider         completionProvider    `json:"completionProvider"`
+	DocumentFormattingProvider bool                  `json:"documentFormattingProvider"`
+	SemanticTokensProvider     semanticTokensOptions `json:"semanticTokensProvider"`
+}
+
+type semanticTokensOptions struct {
+	Legend semanticTokensLegend `json:"legend"`
+	// Full is true: the server sends the whole file's tokens, never deltas
+	// or ranges, which is plenty for files people write by hand.
+	Full bool `json:"full"`
+}
+
+type semanticTokensLegend struct {
+	TokenTypes     []string `json:"tokenTypes"`
+	TokenModifiers []string `json:"tokenModifiers"`
+}
+
+type semanticTokensParams struct {
+	TextDocument textDocumentIdentifier `json:"textDocument"`
+}
+
+type semanticTokensResult struct {
+	Data []uint32 `json:"data"`
 }
 
 type textDocumentSync struct {

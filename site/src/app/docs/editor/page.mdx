@@ -43,9 +43,30 @@ Server**.
   inside `on aws`. It's built from the checker's own vocabulary, so it can't
   offer something `check` would reject.
 - **Formatting** with `clowd fmt`, on Format Document or on save.
+- **Highlighting** from the server's semantic tokens, so files are coloured
+  the way the compiler reads them: `queue connects to db` is a relationship,
+  not a queue.
 
-Other editors can run `clowd lsp` over stdio. A tree-sitter grammar for
-Neovim, Zed and Helix is planned.
+## Vim and Neovim
+
+[`editors/vim`](https://github.com/joshjkns/clowd/tree/main/editors/vim)
+adds file-type detection, a syntax file, and the language server setup for
+Neovim 0.11+. In Neovim 0.12, with `clowd` on your `PATH`:
+
+```lua
+vim.pack.add({ "https://github.com/joshjkns/clowd" })
+vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site/pack/core/opt/clowd/editors/vim")
+vim.lsp.enable("clowd")
+```
+
+Its README has the lazy.nvim and vim-plug versions. Once the server
+attaches, its colours take over from the syntax file.
+
+## Other editors
+
+Any editor with an LSP client can run `clowd lsp` over stdio and gets
+everything above, highlighting included. A tree-sitter grammar for Zed
+and Helix is planned.
 
 ## clowd fmt
 
