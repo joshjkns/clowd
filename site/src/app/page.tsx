@@ -4,13 +4,18 @@ import { DidYouMean } from '@/components/DidYouMean'
 import { Matrix } from '@/components/Matrix'
 import { Code } from '@/components/Code'
 import { CopyCommand } from '@/components/CopyCommand'
+import { Glyph } from '@/components/Logo'
+import { CloudField } from '@/components/CloudField'
 import { highlight, tokenClass } from '@/lib/clowd'
 import { CHECK_MS, FULL_SOURCE, JSON_LINES, SOURCE_LINES, STEPS, TOTAL_RESOURCES } from '@/lib/demo'
 
 export default function Home() {
   return (
-    <main>
+    <main className="relative isolate">
       {/* Hero */}
+      <CloudField className="h-[56rem] [mask-image:linear-gradient(to_bottom,black_60%,transparent)]" />
+      {/* Keeps the hero copy readable over the field. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[radial-gradient(ellipse_70%_60%_at_30%_45%,var(--color-ink)_35%,transparent)]" />
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28">
         <h1 className="max-w-3xl text-[clamp(2.4rem,6vw,4.25rem)] font-medium leading-[1.02] tracking-[-0.04em]">
           Describe your cloud once.
@@ -127,7 +132,8 @@ export default function Home() {
       </Section>
 
       {/* Close */}
-      <section className="border-t border-line">
+      <section className="relative isolate overflow-hidden border-t border-line">
+        <CloudField className="h-full [mask-image:radial-gradient(ellipse_at_center,transparent_15%,black_75%)]" />
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-28 text-center sm:px-6">
           <h2 className="text-[clamp(2rem,4.5vw,3rem)] font-medium leading-[1.05] tracking-[-0.035em]">
             From sentences to infrastructure.
@@ -186,7 +192,10 @@ function Section({
     <section className="border-t border-line">
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <h2 className="text-lg text-paper">{label}</h2>
+          <h2 className="flex items-center gap-2.5 self-start text-2xl font-medium tracking-[-0.03em] text-paper md:sticky md:top-24">
+            <Glyph className="size-6 text-faint" />
+            {label}
+          </h2>
           <div>
             <p className="text-[clamp(1.5rem,3vw,2rem)] font-medium leading-tight tracking-[-0.03em]">
               {title}
