@@ -5,6 +5,7 @@
 
 const vscode = require("vscode");
 const { LanguageClient, TransportKind } = require("vscode-languageclient/node");
+const { resolve } = require("./server-path");
 
 /** @type {LanguageClient | undefined} */
 let client;
@@ -23,7 +24,14 @@ async function activate(context) {
 }
 
 async function start() {
-  const command = vscode.workspace.getConfiguration("clowd").get("path") || "clowd";
+  const setting = vscode.workspace.getConfiguration("clowd").get("path") || "clowd";
+  // Find the binary first, so a missing one gets one clear message
+  // rather than the client library's "spawn clowd ENOENT".
+  const { command, searched } = resolve(setting);
+  if (!command) {
+    notFound(`couldn't find \`${setting}\`. Looked in: ${searched.join(", ")}.`);
+    return;
+  }
   client = new LanguageClient(
     "clowd",
     "Clowd",
@@ -40,14 +48,19 @@ async function start() {
     await client.start();
   } catch (err) {
     client = undefined;
-    const choice = await vscode.window.showErrorMessage(
-      `Clowd: couldn't start the language server with \`${command} lsp\`. ` +
-        "Install clowd, or set `clowd.path` to the binary.",
-      "Open Settings",
-    );
-    if (choice === "Open Settings") {
-      vscode.commands.executeCommand("workbench.action.openSettings", "clowd.path");
-    }
+    notFound(`couldn't start \`${command} lsp\`: ${err instanceof Error ? err.message : err}.`);
+  }
+}
+
+// notFound explains why the server isn't running and how to fix it.
+async function notFound(problem) {
+  const choice = await vscode.window.showErrorMessage(
+    `Clowd: ${problem} Install it with \`go install github.com/joshjkns/clowd/cmd/clowd@latest\`, ` +
+      "or set `clowd.path` to the binary.",
+    "Open Settings",
+  );
+  if (choice === "Open Settings") {
+    vscode.commands.executeCommand("workbench.action.openSettings", "clowd.path");
   }
 }
 
