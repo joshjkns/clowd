@@ -1,0 +1,109 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Clowd",
+  "scopeName": "source.clowd",
+  "fileTypes": ["clowd"],
+  "comment": "Keywords are contextual (D8), so each statement shape is matched as a whole line. Keywords are case-insensitive.",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#use" },
+    { "include": "#on" },
+    { "include": "#relate" },
+    { "include": "#declare" },
+    { "include": "#property" },
+    { "include": "#setting" }
+  ],
+  "repository": {
+    "comment": {
+      "comment": "A comment starts with # at the start of a word.",
+      "match": "(?:^|(?<=\\s))(#).*$",
+      "name": "comment.line.number-sign.clowd",
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.clowd" }
+      }
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"|$",
+      "name": "string.quoted.double.clowd",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.clowd" }
+      ]
+    },
+    "cloud": {
+      "match": "(?i)\\b(aws|gcp|azure)\\b",
+      "name": "support.constant.cloud.clowd"
+    },
+    "use": {
+      "match": "^(?i)(use)\\b(?:\\s+([^\\s#]+))?(?:\\s+(in)\\b(?:\\s+(\"[^\"]*\"|[^\\s#]+))?)?",
+      "captures": {
+        "1": { "name": "keyword.control.use.clowd" },
+        "2": { "patterns": [{ "include": "#cloud" }] },
+        "3": { "name": "keyword.other.in.clowd" },
+        "4": { "name": "string.unquoted.region.clowd" }
+      }
+    },
+    "on": {
+      "comment": "`on <cloud>`, at the top level or inside a resource.",
+      "match": "^\\s*(?i)(on)\\s+(\\w+)\\s*(?=$|#)",
+      "captures": {
+        "1": { "name": "keyword.control.on.clowd" },
+        "2": { "patterns": [{ "include": "#cloud" }] }
+      }
+    },
+    "relate": {
+      "comment": "A line whose second word starts a verb is a relationship, whatever its first word.",
+      "match": "^([^\\s#,]+)\\s+(?i)(connects\\s+to|reads\\s+and\\s+writes|reads|writes|sends\\s+to)(?:\\s+([^\\s#,]+))?",
+      "captures": {
+        "1": { "name": "variable.other.resource.clowd" },
+        "2": { "name": "keyword.operator.verb.clowd" },
+        "3": { "name": "variable.other.resource.clowd" }
+      }
+    },
+    "declare": {
+      "begin": "^(?i)(load\\s+balancer|lb|service|database|bucket|queue|project|network)\\b(?:\\s+(?!is\\b)([^\\s#,]+))?",
+      "beginCaptures": {
+        "1": { "name": "storage.type.kind.clowd" },
+        "2": { "name": "entity.name.type.resource.clowd" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "match": "(?i)\\b(is|and)\\b", "name": "keyword.operator.word.clowd" },
+        { "match": ",", "name": "punctuation.separator.comma.clowd" },
+        { "include": "#string" },
+        { "match": "\\b[0-9]+(?:\\.[0-9]+)*\\b", "name": "constant.numeric.version.clowd" },
+        { "match": "[A-Za-z][\\w-]*", "name": "constant.language.trait.clowd" }
+      ]
+    },
+    "property": {
+      "comment": "The portable properties of every kind.",
+      "begin": "^\\s+(?i)(image|port|scale|cpu|memory|env|health\\s+check|command|storage|backups|expire\\s+after|listen|send|retry|timeout|keep\\s+messages\\s+for|edition|tag|state|cidr)(?=\\s|$)",
+      "beginCaptures": {
+        "1": { "name": "variable.other.property.clowd" }
+      },
+      "end": "$",
+      "patterns": [{ "include": "#value" }]
+    },
+    "setting": {
+      "comment": "Any other indented key: a raw provider argument in an `on` block, or a mistake the language server reports.",
+      "begin": "^\\s+([^\\s#,\"]+)",
+      "beginCaptures": {
+        "1": { "name": "support.type.property-name.clowd" }
+      },
+      "end": "$",
+      "patterns": [{ "include": "#value" }]
+    },
+    "value": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#string" },
+        { "match": ",", "name": "punctuation.separator.comma.clowd" },
+        { "match": "(?i)(?<=\\s)(to|on|with\\s+tls\\s+for|with|times|days|off|after|messages|for)(?=\\s|$)", "name": "keyword.other.clowd" },
+        { "match": "(?i)(?<=\\s)(true|false)(?=\\s|$)", "name": "constant.language.boolean.clowd" },
+        { "match": "(?i)(?<=\\s)[0-9]+(?:\\.[0-9]+)?(?:mb|gb|s|m|h|d)?(?=[\\s,]|$)", "name": "constant.numeric.clowd" },
+        { "match": "(?<=\\s)/[^\\s#]*", "name": "string.unquoted.path.clowd" }
+      ]
+    }
+  }
+}

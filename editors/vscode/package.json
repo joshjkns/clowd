@@ -1,0 +1,89 @@
+{
+  "name": "clowd",
+  "displayName": "Clowd",
+  "description": "Syntax highlighting and language support for Clowd infrastructure files",
+  "version": "0.1.0",
+  "publisher": "joshjkns",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joshjkns/clowd",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "clowd",
+        "aliases": [
+          "Clowd",
+          "clowd"
+        ],
+        "extensions": [
+          ".clowd"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "clowd",
+        "scopeName": "source.clowd",
+        "path": "./syntaxes/clowd.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Clowd",
+      "properties": {
+        "clowd.path": {
+          "type": "string",
+          "default": "clowd",
+          "description": "The clowd binary to run the language server with (`clowd lsp`). A bare name is looked up on PATH.",
+          "scope": "machine-overridable"
+        },
+        "clowd.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Log the messages between VS Code and the language server to the Clowd output channel."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "clowd.restartServer",
+        "title": "Restart Language Server",
+        "category": "Clowd"
+      }
+    ],
+    "configurationDefaults": {
+      "[clowd]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^10.1.2"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.2.0"
+  }
+}

@@ -42,6 +42,7 @@ Commands:
   plan      build, then show what apply would change
   apply     build, then deploy
   destroy   destroy what apply deployed
+  lsp       run the language server, for editors
   version   print the version and language edition
   help      show this help
 
@@ -70,6 +71,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runApply(rest, stdout, stderr)
 	case "destroy":
 		return runDestroy(rest, stdout, stderr)
+	case "lsp":
+		return runLSP(rest, stdin, stdout, stderr)
 	case "version", "--version":
 		fmt.Fprintf(stdout, "clowd %s (edition %s)\n", version(), edition)
 		return exitOK
