@@ -16,8 +16,8 @@ export function Glyph({ className = '' }: { className?: string }) {
 
 export function Logo({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <Glyph className="size-6 text-paper" />
+    <span className={`flex items-center gap-2 leading-none ${className}`}>
+      <Glyph className="size-6 shrink-0 text-paper" />
       <span className="text-[15px] font-medium tracking-tight text-paper">Clowd</span>
     </span>
   )

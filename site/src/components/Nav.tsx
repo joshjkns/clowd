@@ -7,7 +7,7 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-6xl items-center gap-8 px-4 sm:px-6">
-        <Link href="/" aria-label="Clowd home">
+        <Link href="/" aria-label="Clowd home" className="flex items-center">
           <Logo />
         </Link>
         <div className="hidden items-center gap-6 text-sm text-mute sm:flex">
