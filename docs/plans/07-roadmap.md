@@ -48,6 +48,17 @@ Each phase ends with something runnable and tested.
 ## Phase 6 — GCP deploy
 - `internal/lower/gcp`, capability entries
 - **Done when:** the same example deploys to GCP unchanged.
+- Built: `internal/lower/gcp` for every kind and relationship (Cloud
+  Run, Cloud SQL on a private IP, Cloud Storage, Pub/Sub, public and
+  internal Application Load Balancers with Certificate Manager), `on gcp`
+  overrides on the same shared code as `on aws` (`internal/lower/override`),
+  an `on gcp` `project` setting, and `build` / `plan` / `apply` /
+  `destroy --target gcp` with `hashicorp/google` and `hashicorp/random`
+  pinned in clowd.lock (D21). Every golden output, including
+  `examples/app.clowd` unchanged, passes `terraform validate` against
+  google 8.7. Still to do: deploy the example to a real Google Cloud
+  project, then mark the phase done. Using an existing VPC on GCP comes
+  later; `on gcp` `network` says so.
 
 ## Phase 7 — Later
 - tree-sitter grammar

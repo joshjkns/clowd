@@ -185,3 +185,44 @@ VS Code extension keeps its TextMate grammar, and `editors/vim` ships a
 regex syntax file with file-type detection and an `lsp/clowd.lua`, so
 Neovim needs only `vim.lsp.enable("clowd")`. A tree-sitter grammar
 (phase 7) would replace the syntax file, not the tokens.
+
+## D21 — The GCP backend: private Cloud SQL, write-only passwords, proxied images
+GCP lowering follows lower/aws where it can and differs where Google
+Cloud does. Each difference keeps a promise the language already makes:
+
+- **Databases have private addresses only.** Cloud SQL is peered into a
+  Clowd-made VPC (private services access) and services reach it with
+  Direct VPC egress, so `<NAME>_HOST` and `<NAME>_PORT` mean a host and
+  a port on both clouds. Cloud Run's Cloud SQL connector would avoid the
+  VPC but hands the app a Unix socket, which no AWS app expects.
+- **The password stays out of the state.** Cloud SQL can't generate a
+  password into Secret Manager the way RDS does, so Clowd generates one
+  as an ephemeral `random_password` and writes it only to write-only
+  arguments (`password_wo` on the user, `secret_data_wo` on the
+  secret), once. A `random_password` resource would have been simpler
+  and put the password in the state, which 01-language.md rules out.
+  The cost is that GCP builds need OpenTofu or Terraform 1.11 or later,
+  and the `hashicorp/random` provider, pinned in clowd.lock with
+  `hashicorp/google`.
+- **Images on other registries go through Artifact Registry.** Cloud
+  Run pulls only from Artifact Registry and Docker Hub, so an image on
+  ghcr.io, quay.io and so on is pulled through a remote repository per
+  registry, and the matrix shows it as ⚠ (a private image needs
+  credentials there). Requiring users to copy images would break "the
+  same file deploys to every cloud".
+- **TLS certificates don't block the apply.** Certificate Manager
+  certificates are authorised by a DNS record, like ACM's, but issuance
+  isn't something the apply waits on, so there is no two-step apply on
+  GCP: the record is an output, printed after `clowd apply`.
+- **The Google Cloud project is named in the file or the environment.**
+  An AWS account comes from credentials, but a GCP project is where
+  everything lands and teams usually fix it, so the top-level
+  `on gcp` block takes `project <id>`. Without it the provider's usual
+  environment variables (`GOOGLE_PROJECT`, ...) apply, and `plan` and
+  `apply` stop early, with that advice, when neither is set.
+- **Overrides share one implementation.** The allowlist checks and merge
+  rules moved from lower/aws to internal/lower/override, so `on gcp`
+  blocks behave and fail exactly like `on aws` ones; each backend keeps
+  only its tables. A load balancer's `on gcp` block sets its backend
+  services, where Google Cloud's per-route settings (CDN, Cloud Armor,
+  logging) live.

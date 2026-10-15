@@ -53,6 +53,11 @@ In a `public` network, services get public addresses and need no NAT
 gateway, which is cheaper. `private` runs services in private subnets that
 reach the internet through NAT. Databases are always private either way.
 
+On GCP, Cloud Run services reach a database's private address through the
+network's subnet. In a `private` network they send all their traffic that
+way, out through Cloud NAT. The `cidr` block is split between that subnet,
+the range peered for Cloud SQL, and the proxies of internal load balancers.
+
 ## Using an existing network
 
 A VPC that already exists is a fact about one cloud, so it goes in that
@@ -67,6 +72,24 @@ on aws
 ```
 
 Each subnet list needs two or more subnets in different availability zones.
+Using an existing network on GCP isn't implemented yet; Clowd creates one,
+shaped by the `network` declaration.
+
+## The Google Cloud project
+
+On AWS, everything goes to the account your credentials belong to. On GCP,
+name the project to deploy into, by its ID, in a top-level `on gcp` block:
+
+```clowd
+on gcp
+  project shop-prod-123
+```
+
+Leave it out to take the project from the environment instead
+(`GOOGLE_PROJECT`, or another variable the Google provider reads). With
+neither, `clowd plan` and `clowd apply` stop before running OpenTofu and say
+so. Clowd enables the APIs it uses in the project on the first apply, and
+leaves them enabled after `clowd destroy`.
 
 ## State
 

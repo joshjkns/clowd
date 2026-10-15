@@ -73,7 +73,15 @@ $ clowd destroy [--target cloud] [--runtime tool] [--yes] [file.clowd]
   tool's own output through. `--yes` skips the confirmation. Ctrl-C goes to
   OpenTofu, which stops cleanly.
 - After `apply`, Clowd prints the outputs: URLs, bucket names, and for a TLS
-  domain, the CNAME to point at the load balancer.
+  domain, the record to point at the load balancer (a CNAME on AWS, an A
+  record on GCP).
+- With TLS on AWS, the first `apply` runs in two steps: it requests the
+  certificates, prints the DNS records that validate them, then deploys the
+  rest, which waits for those records. On GCP the apply doesn't wait; the
+  records are among the outputs, and HTTPS works once Google sees them.
+- On GCP, `plan`, `apply` and `destroy` need the Google Cloud project, from
+  `on gcp` / `project <id>` in the file or `GOOGLE_PROJECT` in the
+  environment.
 - `destroy` uses the configuration last built for that cloud, which is what
   the state was made from, even if the file has changed since. It removes
   data too, unless a resource is `protected`.
@@ -84,8 +92,12 @@ The tool that runs plans is `--runtime`, else `$CLOWD_RUNTIME`, else `tofu`
 if it's installed, else `terraform`. It's a property of your machine, not the
 project, so two people can use different tools on the same state.
 
-`clowd.lock` records the provider version OpenTofu chose on first `init`, and
-every later build pins it. Commit it.
+`clowd.lock` records the provider versions OpenTofu chose on first `init`
+(`hashicorp/aws` for AWS, `hashicorp/google` and `hashicorp/random` for GCP),
+and every later build pins them. Commit it.
+
+GCP builds keep the database password out of the state with ephemeral values
+and write-only arguments, which need OpenTofu or Terraform 1.11 or later.
 
 ## Files
 

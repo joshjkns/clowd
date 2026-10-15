@@ -4,7 +4,8 @@ export const metadata = { title: 'A tour of app.clowd' }
 
 This is the example the project tests against: a web API with a database and
 file uploads, deployable to AWS and GCP. It's fifteen lines. Built for AWS it
-becomes 37 resources and about 400 lines of OpenTofu JSON.
+becomes 37 resources and about 400 lines of OpenTofu JSON; built for GCP, 34
+resources and about as many lines.
 
 ```clowd
 # A web API with a database and file uploads, deployable to AWS and GCP.
@@ -82,7 +83,10 @@ service api
 A service is a container. The indented lines are **properties**. `scale 2 to
 10` means at least two copies, autoscaling to ten on CPU. On AWS that's an
 ECS Fargate service with its task definition, log group, two IAM roles, a
-security group and an autoscaling policy; on GCP it's Cloud Run.
+security group and an autoscaling policy; on GCP it's a Cloud Run service
+with its own service account. Cloud Run pulls only from Artifact Registry and
+Docker Hub, so on GCP an image like this one comes through an Artifact
+Registry repository that proxies `ghcr.io`.
 
 ## A load balancer
 
@@ -93,8 +97,9 @@ load balancer web is public
 ```
 
 `listen on 443 with tls for api.example.com` asks for a certificate for that
-domain. The first `clowd apply` prints the DNS records that prove you own it,
-then waits for them. `send / to api` routes every path (paths match by prefix)
+domain. On AWS, the first `clowd apply` prints the DNS records that prove you
+own it, then waits for them; on GCP it prints them when it's done, and HTTPS
+starts working once they exist. `send / to api` routes every path (paths match by prefix)
 to the service.
 
 ## Relationships
@@ -122,7 +127,7 @@ app.clowd → aws (eu-west-2), gcp (europe-west2)
 Resources                       aws  gcp
   database db                   ✓    ✓
   bucket uploads                ✓    ✓
-  service api                   ✓    ✓
+  service api                   ✓    ⚠    gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
   load balancer web             ✓    ✓
 
 Relationships

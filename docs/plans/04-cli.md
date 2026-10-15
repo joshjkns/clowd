@@ -129,14 +129,23 @@ clowd destroy [--target cloud] [--runtime tool] [--yes] [file.clowd]
   shown on failure or with `--verbose`), then pass the tool's own output
   through. `--yes` skips the confirmation. Ctrl-C goes to OpenTofu, which
   stops cleanly.
-- After `init`, the provider version OpenTofu chose is written to
-  `clowd.lock`, and every later build pins it. A pin that changed (after
-  a `git pull`) replaces the directory's own lock.
-- `apply` with TLS listeners runs in two steps the first time: it creates
-  the certificates alone, prints the DNS records that validate them, then
-  applies the rest, which waits until the records exist. Afterwards it
-  prints the outputs (URLs, bucket names) and, for a TLS domain, the CNAME
-  to point at the load balancer.
+- After `init`, the provider versions OpenTofu chose are written to
+  `clowd.lock` (`hashicorp/aws` for AWS; `hashicorp/google` and
+  `hashicorp/random` for GCP), and every later build pins them. A pin
+  that changed (after a `git pull`) replaces the directory's own lock.
+- `apply` with TLS listeners on AWS runs in two steps the first time: it
+  creates the certificates alone, prints the DNS records that validate
+  them, then applies the rest, which waits until the records exist. On
+  GCP the apply doesn't wait for certificates, so it is one step and the
+  records are among the outputs, with a reminder to create them (D21).
+  Afterwards `apply` prints the outputs (URLs, bucket names) and, for a
+  TLS domain, the record to point at the load balancer: a CNAME to its
+  name on AWS, an A record to its address on GCP.
+- On GCP, `plan`, `apply` and `destroy` need to know the Google Cloud
+  project: an `on gcp` `project` setting, or `GOOGLE_PROJECT` (or another
+  variable the provider reads). Without either they stop before running
+  OpenTofu and say so. GCP builds use ephemeral resources and write-only
+  arguments, so they need OpenTofu or Terraform 1.11 or later.
 - `destroy` uses the configuration last built for that cloud, which is
   what the state was made from, even if the file has changed since. With
   nothing built it has nothing to do. It removes data too (D15).

@@ -39,15 +39,28 @@ works everywhere else.
 
 ## What can be set
 
-Each kind has one resource its block applies to. On AWS:
+Each kind has one resource its block applies to:
 
-| Kind | Resource |
-|---|---|
-| `service` | `aws_ecs_service` |
-| `database` | `aws_db_instance` |
-| `bucket` | `aws_s3_bucket` |
-| `load balancer` | `aws_lb` |
-| `queue` | `aws_sqs_queue` |
+| Kind | AWS | GCP |
+|---|---|---|
+| `service` | `aws_ecs_service` | `google_cloud_run_v2_service` |
+| `database` | `aws_db_instance` | `google_sql_database_instance` |
+| `bucket` | `aws_s3_bucket` | `google_storage_bucket` |
+| `load balancer` | `aws_lb` | each `google_compute_backend_service` |
+| `queue` | `aws_sqs_queue` | `google_pubsub_subscription` |
+
+On GCP a load balancer's block sets every backend service it has, one per
+service it sends to, since that's where CDN, Cloud Armor and logging live:
+
+```clowd
+load balancer web
+  listen on 443 with tls for shop.example.com
+  send / to api
+  on gcp
+    enable_cdn true
+    log_config
+      enable true
+```
 
 Each has an allowlist of arguments and nested blocks. Arguments that carry
 Clowd's own wiring, like subnets, security groups and roles, can't be set,
@@ -70,5 +83,5 @@ no effect.
 ## Program-wide settings
 
 A top-level `on <cloud>` block, not inside any resource, holds settings for
-the whole program on that cloud. Today that's an existing network; see
-[Projects & networks](/docs/projects/#using-an-existing-network).
+the whole program on that cloud: an existing network on AWS, and the project
+to deploy into on GCP. See [Projects & networks](/docs/projects/).
