@@ -30,6 +30,7 @@ const (
 	ServiceCPU         Feature = "service cpu size"
 	ServiceMemory      Feature = "service memory size"
 	ServiceEnv         Feature = "service environment variables"
+	ServiceRegistry    Feature = "service image from a registry other than Docker Hub"
 
 	Postgres        Feature = "postgres database"
 	MySQL           Feature = "mysql database"
@@ -46,6 +47,7 @@ const (
 	ConnectsToDatabase Feature = "service connects to database"
 	ConnectsToService  Feature = "service connects to service"
 	BucketAccess       Feature = "service reads or writes bucket"
+	WritesBucket       Feature = "service writes bucket without reading it"
 	ReadsQueue         Feature = "service reads queue"
 	SendsToQueue       Feature = "service sends to queue"
 
@@ -123,6 +125,9 @@ func resourceFeatures(r ir.Resource) []use {
 		if r.Scale.Min == 0 {
 			add(ServiceScaleToZero, "scale")
 		}
+		if host, ok := registry(r.Image); ok {
+			uses = append(uses, use{feature: ServiceRegistry, pos: h.At("image"), check: registryCheck(host)})
+		}
 		if r.CPU != 0 {
 			add(ServiceCPU, "cpu")
 		}
@@ -149,7 +154,7 @@ func resourceFeatures(r ir.Resource) []use {
 			uses = append(uses, use{feature: DatabaseVersion, pos: h.At("engine"), check: versionCheck(r.Engine, r.Version)})
 		}
 		if r.HighlyAvailable {
-			add(DatabaseHA, "availability")
+			uses = append(uses, use{feature: DatabaseHA, pos: h.At("availability"), check: haCheck(r)})
 		}
 		if r.Protected {
 			add(DatabaseProtected, "protection")
@@ -237,6 +242,8 @@ func relationFeature(p *ir.Program, rel ir.Relation) (Feature, bool) {
 		return ConnectsToDatabase, true
 	case rel.Verb == ir.ConnectsTo && k == ir.ServiceKind:
 		return ConnectsToService, true
+	case rel.Verb == ir.Writes && k == ir.BucketKind:
+		return WritesBucket, true
 	case k == ir.BucketKind:
 		return BucketAccess, true
 	case rel.Verb == ir.Reads && k == ir.QueueKind:
@@ -299,6 +306,16 @@ func tagCheck(value string) func(ir.Cloud) Entry {
 	}
 }
 
+// haCheck returns a check that a cloud can keep a standby of d.
+func haCheck(d *ir.Database) func(ir.Cloud) Entry {
+	return func(cloud ir.Cloud) Entry {
+		if cloud == ir.GCP && d.Has("backups") && d.BackupDays == 0 {
+			return Entry{Level: Unsupported, Note: "a highly available Cloud SQL database needs backups; remove `backups off`"}
+		}
+		return Lookup(DatabaseHA, cloud)
+	}
+}
+
 // rangeCheck returns a check that n is at most a cloud's limit in max;
 // clouds without a limit take the matrix entry.
 func rangeCheck(f Feature, n int, max map[ir.Cloud]int, note string) func(ir.Cloud) Entry {
@@ -332,6 +349,33 @@ func seconds(s int) string {
 		}
 	}
 	return fmt.Sprintf("%ds", s)
+}
+
+// registry returns the registry host of an image reference, if it names
+// one other than Docker Hub: a first part with a dot or a port, or
+// localhost, as Docker decides.
+func registry(image string) (string, bool) {
+	host, _, ok := strings.Cut(image, "/")
+	if !ok || !strings.ContainsAny(host, ".:") && host != "localhost" {
+		return "", false
+	}
+	switch host {
+	case "docker.io", "index.docker.io", "registry-1.docker.io":
+		return "", false
+	}
+	return host, true
+}
+
+// registryCheck returns a check that a cloud pulls images from host.
+// Cloud Run pulls only from Artifact Registry (and Docker Hub), so other
+// registries go through a proxy repository.
+func registryCheck(host string) func(ir.Cloud) Entry {
+	return func(cloud ir.Cloud) Entry {
+		if cloud == ir.GCP && (host == "gcr.io" || strings.HasSuffix(host, ".gcr.io") || strings.HasSuffix(host, "-docker.pkg.dev")) {
+			return ok
+		}
+		return Lookup(ServiceRegistry, cloud)
+	}
 }
 
 // memoryCheck returns a check that a cloud's services can have mib of

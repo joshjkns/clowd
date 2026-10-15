@@ -45,9 +45,23 @@ Each phase ends with something runnable and tested.
   Vim and Neovim (D20), checked in a clean Neovim 0.12 with only the
   plugin and `vim.lsp.enable("clowd")`.
 
-## Phase 6 — GCP deploy
+## Phase 6 — GCP deploy ✓
 - `internal/lower/gcp`, capability entries
 - **Done when:** the same example deploys to GCP unchanged.
+- Built: `internal/lower/gcp` for every kind and relationship (Cloud
+  Run, Cloud SQL on a private IP, Cloud Storage, Pub/Sub, public and
+  internal Application Load Balancers with Certificate Manager), `on gcp`
+  overrides on the same shared code as `on aws` (`internal/lower/override`),
+  an `on gcp` `project` setting, and `build` / `plan` / `apply` /
+  `destroy --target gcp` with `hashicorp/google` and `hashicorp/random`
+  pinned in clowd.lock (D21). Every golden output, including
+  `examples/app.clowd` unchanged, passes `terraform validate` against
+  google 8.7. Marked done on 2026-10-15 without a real deploy: no Google
+  Cloud account was available. Validation checks the configuration's
+  shape, not what the APIs accept, so the first real deploy should be
+  watched; the internal load balancer's backend settings are the least
+  certain part. Using an existing VPC on GCP comes later; `on gcp`
+  `network` says so.
 
 ## Phase 7 — Later
 - tree-sitter grammar

@@ -134,7 +134,11 @@ generated resource.
   after it; `a,b` is one value.
 - Each kind has one resource the block sets arguments on (on AWS:
   `aws_ecs_service`, `aws_db_instance`, `aws_s3_bucket`, `aws_lb`,
-  `aws_sqs_queue`), with an allowlist of its arguments and nested blocks.
+  `aws_sqs_queue`; on GCP: `google_cloud_run_v2_service`,
+  `google_sql_database_instance`, `google_storage_bucket`, every
+  `google_compute_backend_service` of the load balancer, and
+  `google_pubsub_subscription`), with an allowlist of its arguments and
+  nested blocks.
   Arguments that carry Clowd's own wiring (subnets, security groups, roles)
   can't be set, and the error says so.
 - Values are passed as strings, and the provider converts them to the
@@ -305,15 +309,33 @@ name in upper case with `-` as `_` (`db` → `DB`, `user-files` →
 name in lower case with `-` as `_`, ending in `_db` (`db` → `db_db`,
 `users` → `users_db`), so it is never a word the engine reserves.
 
-The password is a secret: it is generated and stored by the cloud, never
-written in the configuration or state, and given to the service at start.
-A service's own `env` of the same name wins, with a warning.
+`<NAME>_QUEUE_URL` is where the service sends or reads: the queue's URL
+on AWS; on GCP the topic's path for a sender and the subscription's for a
+reader. A service that both reads and sends to a queue on GCP gets the
+subscription in `<NAME>_QUEUE_URL` and the topic in `<NAME>_TOPIC`.
+
+The password is a secret: it is generated at deploy time and stored in the
+cloud's secret store, never written in the configuration or state, and
+given to the service at start. A service's own `env` of the same name
+wins, with a warning.
 
 ### Clouds
 
 `use` and `on` take `aws`, `gcp` or `azure`. Each cloud appears in at most
 one `use` line (one region per cloud for now). An `on` block for a cloud
 the file doesn't `use` is a warning, since it has no effect.
+
+A top-level `on gcp` block may name the Google Cloud project to deploy
+into, by its ID (D21):
+
+```
+on gcp
+  project shop-prod-123
+```
+
+Without it, the project comes from the environment (`GOOGLE_PROJECT` and
+the other variables the Google provider reads). AWS has no equivalent:
+the account is the one the credentials belong to.
 
 ## Grammar (EBNF draft)
 

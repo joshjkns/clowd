@@ -25,6 +25,7 @@ var matrix = map[Feature]map[ir.Cloud]Entry{
 	ServiceCPU:         {ir.AWS: ok, ir.GCP: ok},
 	ServiceMemory:      {ir.AWS: ok, ir.GCP: ok},
 	ServiceEnv:         {ir.AWS: ok, ir.GCP: ok},
+	ServiceRegistry:    {ir.AWS: ok, ir.GCP: emulated("Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private")},
 
 	Database: {ir.AWS: ok, ir.GCP: ok},
 	Postgres: {ir.AWS: ok, ir.GCP: ok},
@@ -45,6 +46,7 @@ var matrix = map[Feature]map[ir.Cloud]Entry{
 	ConnectsToDatabase: {ir.AWS: ok, ir.GCP: ok},
 	ConnectsToService:  {ir.AWS: notYet, ir.GCP: notYet},
 	BucketAccess:       {ir.AWS: ok, ir.GCP: ok},
+	WritesBucket:       {ir.AWS: ok, ir.GCP: emulated("Cloud Storage has no role that writes objects without reading them, so the service can read the bucket too")},
 	ReadsQueue:         {ir.AWS: ok, ir.GCP: emulated("Cloud Run consumes a pull subscription, so CPU stays allocated while instances run")},
 	SendsToQueue:       {ir.AWS: ok, ir.GCP: ok},
 
@@ -72,6 +74,7 @@ var matrix = map[Feature]map[ir.Cloud]Entry{
 // backups.
 var maxBackupDays = map[ir.Cloud]int{
 	ir.AWS: 35,
+	ir.GCP: 365,
 }
 
 // queueDeliveries are the fewest and most deliveries (the first try and

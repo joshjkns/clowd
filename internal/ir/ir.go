@@ -27,6 +27,27 @@ type Program struct {
 	Overrides []Override
 	Project   Project
 	Network   Network
+	// Accounts are where each cloud deploys, from top-level `on <cloud>`
+	// blocks; a cloud without one uses its tool's default.
+	Accounts []Account
+}
+
+// Account is the account or project a cloud deploys into: on GCP, an
+// `on gcp` `project <id>` setting.
+type Account struct {
+	Cloud Cloud
+	ID    string
+	Pos   diag.Span
+}
+
+// AccountOn returns where cloud deploys, or "" for its tool's default.
+func (p *Program) AccountOn(cloud Cloud) string {
+	for _, a := range p.Accounts {
+		if a.Cloud == cloud {
+			return a.ID
+		}
+	}
+	return ""
 }
 
 // Project is the `project` declaration. Without one, every field takes

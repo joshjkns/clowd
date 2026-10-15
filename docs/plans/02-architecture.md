@@ -29,7 +29,9 @@ consume the same diagnostics.
 - **The IR is the contract.** The language can change above it, backends can
   change below it. Lowering never sees the AST.
 - **Lowering is per cloud and isolated.** `lower/aws` knows nothing about GCP.
-  Adding a cloud = adding a lowering package + capability entries.
+  Adding a cloud = adding a lowering package + capability entries. What
+  backends share without knowing about each other (applying `on <cloud>`
+  blocks) lives in `lower/override`, which knows no cloud.
 - **Readable output.** Emitted `.tf.json` should be understandable by a human,
   so users can eject to plain Terraform/OpenTofu.
 
@@ -69,6 +71,8 @@ internal/
   lower/
     aws/                IR → AWS resources
     gcp/                IR → GCP resources
+    override/           `on <cloud>` blocks: allowlist checks and merging,
+                        shared by every backend
   emit/tfjson/          resources → .tf.json
   format/               canonical formatter (clowd fmt)
   lsp/                  language server

@@ -1,9 +1,9 @@
 $ clowd build
-exit 1
+exit 0
 --- stdout
 --- stderr
-clowd: deploying to gcp isn't implemented yet
 ✓ built aws → .clowd/build/aws/main.tf.json
+✓ built gcp → .clowd/build/gcp/main.tf.json
 
 $ clowd build --json --target aws
 exit 0
@@ -32,8 +32,8 @@ exit 2
 clowd: app.clowd doesn't `use azure`, so it can't be deployed there; add `use azure in <region>`
 
 $ clowd plan --target gcp
-exit 1
+exit 2
 --- stdout
 --- stderr
-clowd: deploying to gcp isn't implemented yet
+clowd: app.clowd doesn't say which Google Cloud project to deploy to; add `on gcp` with `project <id>` below it, or set GOOGLE_PROJECT
 

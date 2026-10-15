@@ -26,6 +26,14 @@ provider "registry.opentofu.org/hashicorp/aws" {
   version     = "6.14.1"
   constraints = "~> 6.0"
 }
+provider "registry.opentofu.org/hashicorp/google" {
+  version     = "8.7.0"
+  constraints = "~> 8.0"
+}
+provider "registry.opentofu.org/hashicorp/random" {
+  version     = "3.9.1"
+  constraints = "~> 3.7"
+}
 EOF
     ;;
   show)
@@ -40,7 +48,10 @@ EOF
     echo "Apply complete!"
     ;;
   output)
-    echo '{"web_url":{"value":"https://api.example.com"},"web_dns_name":{"value":"shop-web-1.eu-west-2.elb.amazonaws.com"},"uploads_bucket":{"value":"shop-uploads-123"}}'
+    case "$PWD" in
+      */gcp) echo '{"web_url":{"value":"https://api.example.com"},"web_ip_address":{"value":"34.120.1.2"},"web_api_example_com_validation":{"value":"CNAME _acme-challenge.api.example.com. → 1a2b.9.authorize.certificatemanager.goog."},"uploads_bucket":{"value":"shop-uploads-1a2b3c4d"}}' ;;
+      *) echo '{"web_url":{"value":"https://api.example.com"},"web_dns_name":{"value":"shop-web-1.eu-west-2.elb.amazonaws.com"},"uploads_bucket":{"value":"shop-uploads-123"}}' ;;
+    esac
     ;;
   plan) echo "Plan: 3 to add, 0 to change, 0 to destroy." ;;
   destroy) echo "Destroy complete!" ;;
@@ -64,6 +75,9 @@ func setupProject(t *testing.T, files map[string]string) string {
 	}
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("CLOWD_FAKE_DIR", dir)
+	for _, v := range gcpProjectEnv {
+		t.Setenv(v, "")
+	}
 	for name, text := range files {
 		path := filepath.Join(dir, name)
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -160,6 +174,17 @@ func TestDeploy(t *testing.T) {
 			name:     "build_several_clouds",
 			files:    map[string]string{"app.clowd": "use aws in eu-west-2\nuse gcp in europe-west2\n\nproject shop\n\nqueue jobs\n"},
 			commands: [][]string{{"build"}, {"build", "--json", "--target", "aws"}, {"apply"}, {"apply", "--target", "azure"}, {"plan", "--target", "gcp"}},
+		},
+		{
+			name:     "apply_gcp",
+			files:    map[string]string{"app.clowd": strings.Replace(tlsApp, "use aws in eu-west-2", "use gcp in europe-west2\n\non gcp\n  project shop-prod-123", 1)},
+			commands: [][]string{{"apply", "--yes"}},
+			show:     []string{"clowd.lock"},
+		},
+		{
+			name:     "gcp_needs_a_project",
+			files:    map[string]string{"app.clowd": "use gcp in europe-west2\n\nqueue jobs\n"},
+			commands: [][]string{{"plan"}, {"build"}},
 		},
 		{
 			name:     "build_undeployable",

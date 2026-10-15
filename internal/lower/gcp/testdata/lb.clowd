@@ -1,0 +1,18 @@
+use gcp
+
+service api
+  image a
+service admin
+  image b
+  health check /healthz
+
+load balancer web
+  listen on 443 with tls for *.example.com
+  listen on 8080
+  send /admin to admin
+  send /api to api
+
+load balancer inner is internal
+  listen on 443 with tls for inner.example.com
+  listen on 9000
+  send / to api

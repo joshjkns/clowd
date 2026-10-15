@@ -69,8 +69,20 @@ exit 0
               "findings": []
             },
             "gcp": {
-              "level": "supported",
-              "findings": []
+              "level": "emulated",
+              "findings": [
+                {
+                  "feature": "service image from a registry other than Docker Hub",
+                  "level": "emulated",
+                  "note": "Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+                  "pos": {
+                    "line": 13,
+                    "column": 3,
+                    "endLine": 13,
+                    "endColumn": 30
+                  }
+                }
+              ]
             }
           }
         },
@@ -155,7 +167,18 @@ exit 0
           }
         }
       ],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "info",
+          "message": "on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+          "pos": {
+            "line": 13,
+            "column": 3,
+            "endLine": 13,
+            "endColumn": 30
+          }
+        }
+      ]
     }
   ]
 }

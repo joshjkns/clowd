@@ -184,6 +184,13 @@ api sends to jobs
 on aws
   network
     vpc vpc-1
+
+bucket files
+  on gcp
+    storage_class NEARLINE
+
+on gcp
+  project shop-prod-1
 `
 
 func TestHover(t *testing.T) {
@@ -201,7 +208,7 @@ func TestHover(t *testing.T) {
 		{"property", "storage", "**database** `storage`\n\nThe initial disk size"},
 		{"phrase property", "health", "**service** `health check`"},
 		{"emulated trait note", "jobs is", "**queue jobs**\n\nAWS: SQS · GCP: Pub/Sub\n\n- ⚠ **gcp**: Pub/Sub has no FIFO queues"},
-		{"reference", "\napi connects", "**service api**\n\nAWS: ECS Fargate · GCP: Cloud Run\n\nDeclared on line 13."},
+		{"reference", "\napi connects", "**service api**\n\nAWS: ECS Fargate · GCP: Cloud Run\n\n- ⚠ **gcp**: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private\n\nDeclared on line 13."},
 		{"send target", " api\n\napi", "**service api**"},
 		{"verb", "connects", "**connects to**\n\nGives the service a network path"},
 		{"verb note", "sends to", "**sends to**"},
@@ -210,6 +217,8 @@ func TestHover(t *testing.T) {
 		{"nested override", "enabled", "the `blue_green_update` block of `aws_db_instance`"},
 		{"cloud setting", "network\n", "Uses a network that already exists"},
 		{"nested cloud setting", "vpc vpc", "The ID of the existing VPC."},
+		{"gcp override", "storage_class", "`storage_class`: an argument of `google_storage_bucket`, passed to the provider as written and applied only when deploying to GCP.\n\n[google_storage_bucket documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket)"},
+		{"gcp project", "project shop", "The Google Cloud project to deploy into"},
 		{"value", "50gb", ""},
 		{"blank line", "\n\nqueue", ""},
 	}
@@ -279,7 +288,10 @@ func TestComplete(t *testing.T) {
 		{"send target", decls + "lb web\n  send / to |", "api worker"},
 		{"overrides", "bucket b\n  on aws\n    |", "force_destroy object_lock_enabled"},
 		{"nested overrides", "service api\n  on aws\n    capacity_provider_strategy\n      |", "base capacity_provider weight"},
-		{"gcp overrides", "bucket b\n  on gcp\n    |", ""},
+		{"gcp overrides", "bucket b\n  on gcp\n    |", "cors default_event_based_hold enable_object_retention logging requester_pays rpo soft_delete_policy storage_class"},
+		{"gcp nested overrides", "database d\n  on gcp\n    settings\n      maintenance_window\n        |", "day hour update_track"},
+		{"azure overrides", "bucket b\n  on azure\n    |", ""},
+		{"gcp cloud settings", "on gcp\n  |", "project"},
 		{"cloud settings", "on aws\n  |", "network"},
 		{"network settings", "on aws\n  network\n    |", "vpc public_subnets private_subnets"},
 		{"in a comment", "# service |", ""},

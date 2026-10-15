@@ -1,0 +1,46 @@
+use gcp in us-central1
+
+service api
+  image ghcr.io/me/api:latest
+  port 3000
+  scale 2 to 6
+  cpu 0.5
+  memory 2gb
+  env LOG_LEVEL debug
+  env GREETING "costs ${5} & more"
+  env DB_PORT 6543
+
+service admin
+  image ghcr.io/me/admin:1.2
+  scale 1
+
+service worker
+  image ghcr.io/me/worker:latest
+
+database db is postgres 16, medium
+database legacy-db is mysql 8.0, large
+bucket uploads is private
+bucket assets is public
+queue jobs
+queue orders is fifo
+
+load balancer web is public
+  listen on 443 with tls for api.example.com
+  listen on 80
+  send / to api
+  send /admin to admin
+  send /admin/api to api
+
+lb internal_lb is internal
+  listen on 8080
+  send /status to worker
+
+api connects to db
+api reads and writes uploads
+api reads assets
+api sends to jobs
+api sends to orders
+admin connects to legacy-db
+admin writes uploads
+worker reads jobs
+worker connects to db

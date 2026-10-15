@@ -5,7 +5,7 @@ exit 0
 Resources                       aws  gcp
   database db                   ✓    ✓
   bucket uploads                ✓    ✓
-  service api                   ✓    ✓
+  service api                   ✓    ⚠    gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
   load balancer web             ✓    ✓
 
 Relationships
@@ -18,3 +18,9 @@ Overrides
 ✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
 ✓ deployable to aws, gcp
 --- stderr
+info: on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
+  --> ../../examples/app.clowd:13:3
+   |
+13 |   image ghcr.io/me/api:latest
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+

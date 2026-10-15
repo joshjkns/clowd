@@ -1,0 +1,12 @@
+$ clowd plan
+exit 2
+--- stdout
+--- stderr
+clowd: app.clowd doesn't say which Google Cloud project to deploy to; add `on gcp` with `project <id>` below it, or set GOOGLE_PROJECT
+
+$ clowd build
+exit 0
+--- stdout
+--- stderr
+✓ built gcp → .clowd/build/gcp/main.tf.json
+

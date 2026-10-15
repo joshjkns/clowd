@@ -29,6 +29,7 @@ func sample() *Config {
 		// User values must survive templating and HTML-ish characters.
 		"note": "costs ${5} & <more> %{if}",
 	})
+	c.EphemeralResource("random_password", "db", Body{"length": 32})
 	c.Outputs = []Output{{Name: "web_url", Description: "Where web is served", Value: Expr("http://${aws_lb.web.dns_name}")}}
 	return c
 }

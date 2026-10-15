@@ -37,7 +37,8 @@ $ clowd version
 
 To deploy you also need [OpenTofu](https://opentofu.org/docs/intro/install/)
 (`tofu`) or Terraform on your `PATH`, and credentials for the cloud you're
-deploying to. Checking and building need neither.
+deploying to. Checking and building need neither. GCP deploys need version
+1.11 or later of either tool.
 
 ## Quick start
 
@@ -88,8 +89,9 @@ Clowd is early, and honest about it.
 - **Works today:** the language, `clowd check` with the capability matrix,
   `clowd fmt`, the language server and VS Code extension, and deploying to
   **AWS** end to end.
-- **Next:** deploying to **GCP**. The checker already knows GCP, so
-  `clowd check` reports it, but `build` and `apply` don't target it yet.
+- **New:** deploying to **GCP**. `build`, `plan`, `apply` and `destroy`
+  target it, and every generated configuration validates against the Google
+  provider; the first deploy to a real Google Cloud project is still to come.
 - **Later:** Azure, variables, environments, secrets and outputs.
 
 The design lives in the repository's

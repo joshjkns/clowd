@@ -183,6 +183,7 @@ func (c *checker) cidr(v ast.Value) (string, bool) {
 // block accepts.
 var cloudSettings = map[ir.Cloud][]string{
 	ir.AWS: {"network"},
+	ir.GCP: {"project"},
 }
 
 // cloudSetting checks one setting in a top-level `on <cloud>` block.
@@ -192,6 +193,8 @@ func (c *checker) cloudSetting(cl ir.Cloud, p ast.Property) {
 	if !slices.Contains(known, key) {
 		e := diag.Errorf(p.Key.Pos, "unknown `on %s` setting `%s`", cl, p.Key.Text)
 		switch g, ok := spell.Closest(key, known); {
+		case key == "network" && cl != ir.AWS:
+			e = e.Suggest("using an existing network isn't implemented for %s yet; Clowd creates one, which the `network` declaration configures", cl)
 		case ok:
 			e = e.Suggest("did you mean `%s`?", g)
 		case len(known) > 0:
@@ -205,7 +208,41 @@ func (c *checker) cloudSetting(cl ir.Cloud, p ast.Property) {
 	switch key {
 	case "network":
 		c.existingNetwork(cl, p)
+	case "project":
+		c.account(cl, p)
 	}
+}
+
+// gcpProjectID is what Google Cloud accepts as a project ID.
+var gcpProjectID = regexp.MustCompile(`^[a-z][a-z0-9-]{4,28}[a-z0-9]$`)
+
+// account checks an `on gcp` `project <id>` setting: the Google Cloud
+// project to deploy into.
+func (c *checker) account(cl ir.Cloud, p ast.Property) {
+	if p.HasBlock() {
+		c.diags.Add(diag.Errorf(p.Pos, "`project` takes a value, not a block").
+			Suggest("write the project ID on the same line: `project my-project-123`"))
+		return
+	}
+	if len(p.Values) == 0 {
+		c.diags.Add(diag.Errorf(diag.Span{Start: p.Key.Pos.End, End: p.Key.Pos.End}, "expected a project ID after `project`").
+			Suggest("for example `project my-project-123`"))
+		return
+	}
+	v, ok := c.one(p, "project my-project-123")
+	if !ok {
+		return
+	}
+	if !gcpProjectID.MatchString(v.Text) {
+		c.diags.Add(diag.Errorf(v.Pos, "`%s` is not a Google Cloud project ID", v.Text).
+			Suggest("project IDs are 6 to 30 lowercase letters, digits and dashes, starting with a letter; the ID is shown next to the project's name in the console"))
+		return
+	}
+	if i := slices.IndexFunc(c.prog.Accounts, func(a ir.Account) bool { return a.Cloud == cl }); i >= 0 {
+		c.diags.Add(diag.Errorf(p.Pos, "the %s project is already set on line %d", cl, c.line(c.prog.Accounts[i].Pos)).Suggest("remove one of them"))
+		return
+	}
+	c.prog.Accounts = append(c.prog.Accounts, ir.Account{Cloud: cl, ID: v.Text, Pos: p.Pos})
 }
 
 // networkSettings are the settings of an existing network.

@@ -1,0 +1,52 @@
+use gcp in europe-west2
+
+service api
+  image a
+  on gcp
+    launch_stage BETA
+    template
+      max_instance_request_concurrency 40
+      timeout 30s
+    ingress INGRESS_TRAFFIC_ALL
+    scaling
+      min_instance_count 1
+    max_instance_request_concurrency 10
+
+database db is postgres
+  on gcp
+    settings
+      disk_type PD_HDD
+      database_flags
+        name max_connections
+        value 200
+      database_flags
+        name log_min_duration_statement
+        value 500
+      backup_configuration
+        start_time 03:00
+    deletion_protection true
+
+bucket files
+  on gcp
+    storage_class NEARLINE
+    cors
+      origin https://example.com, https://www.example.com
+      method GET
+      max_age_seconds 3600
+    versioning true
+
+queue jobs
+  on gcp
+    retry_policy
+      minimum_backoff 10s
+    ack_deadline_seconds 60
+
+load balancer web
+  listen on 80
+  send / to api
+  send /v2 to api
+  on gcp
+    enable_cdn true
+    log_config
+      enable true
+    custom_response_headers X-Frame-Options: DENY

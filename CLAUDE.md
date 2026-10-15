@@ -44,7 +44,8 @@ internal/compile/   parse → resolve → check in one call
 internal/analyze/   everything `clowd check` reports (compile + matrix + lowering)
 internal/ir/        cloud-neutral resource graph
 internal/capability/ per-cloud capability matrix
-internal/lower/     IR → provider resources, one package per cloud
+internal/lower/     IR → provider resources, one package per cloud;
+                    override/ applies `on <cloud>` blocks for all of them
 internal/emit/      .tf.json output
 internal/format/    clowd fmt
 internal/lsp/       language server

@@ -20,6 +20,13 @@
       }
     }
   },
+  "ephemeral": {
+    "random_password": {
+      "db": {
+        "length": 32
+      }
+    }
+  },
   "resource": {
     "aws_vpc": {
       "main": {

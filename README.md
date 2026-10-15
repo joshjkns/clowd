@@ -60,8 +60,9 @@ There's no new engine underneath: OpenTofu does the planning, state and
 deploying, and you can read the generated configuration or take it and leave.
 
 > **Beta.** The language, `clowd check`, the formatter, the editor support and
-> AWS deploys work today. GCP deploys are next. Expect the language to change
-> before 1.0.
+> AWS deploys work today. GCP deploys are new: built and validated, with the
+> first run against a real project still to come. Expect the language to
+> change before 1.0.
 
 ## Features
 
@@ -121,8 +122,8 @@ error: unknown relationship `links to`
 
 ### Escape hatches
 
-When the portable words run out, an `on aws` block passes raw provider
-arguments through, and `clowd check` verifies each key exists on the
+When the portable words run out, an `on aws` or `on gcp` block passes raw
+provider arguments through, and `clowd check` verifies each key exists on the
 generated resource.
 
 ```
@@ -152,8 +153,9 @@ go install github.com/joshjkns/clowd/cmd/clowd@latest
 ```
 
 Deploying also needs [OpenTofu](https://opentofu.org/docs/intro/install/) (or
-Terraform) and credentials for your cloud. Checking and building need
-neither.
+Terraform; 1.11 or later for GCP) and credentials for your cloud. Checking
+and building need neither. On GCP, name the project in the file
+(`on gcp` / `project <id>`) or set `GOOGLE_PROJECT`.
 
 ```sh
 clowd init shop     # a starter app.clowd

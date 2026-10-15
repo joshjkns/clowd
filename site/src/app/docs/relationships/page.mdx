@@ -70,9 +70,14 @@ A relationship sets variables in the service named after the target:
 name in lower case with `-` as `_`, ending in `_db` (`db` becomes `db_db`,
 `users` becomes `users_db`), so it's never a word the engine reserves.
 
-The password is a secret. The cloud generates and stores it; it's never
-written in your configuration or in OpenTofu's state, and it's handed to the
-service when it starts. If a service sets an `env` with the same name, its
+On GCP, `<NAME>_QUEUE_URL` is the Pub/Sub topic's path for a service that
+sends and the subscription's path for one that reads. A service that does
+both gets the subscription in `<NAME>_QUEUE_URL` and the topic in
+`<NAME>_TOPIC`.
+
+The password is a secret. It's generated at deploy time and kept in the
+cloud's secret store; it's never written in your configuration or in
+OpenTofu's state, and it's handed to the service when it starts. If a service sets an `env` with the same name, its
 own value wins, with a warning.
 
 ## What it builds on AWS
@@ -88,3 +93,25 @@ For `api connects to db`:
 For `api reads and writes uploads`, an IAM policy on the task role that
 allows listing that bucket and getting, putting and deleting its objects,
 plus `UPLOADS_BUCKET`.
+
+## What it builds on GCP
+
+Every service runs as its own service account, and relationships grant that
+account access. For `api connects to db`:
+
+- Direct VPC egress from the Cloud Run service into the network, where the
+  Cloud SQL instance has only a private address
+- access for the service account to the Secret Manager secret holding the
+  password
+- the five variables on the container, with `DB_PASSWORD` read from the
+  secret
+
+For `api reads and writes uploads`, the `storage.objectUser` role on that
+bucket, plus `UPLOADS_BUCKET`; `reads` alone gives `storage.objectViewer`.
+Cloud Storage has no role that writes without reading, so `writes` can read
+too, and `clowd check` shows it as ⚠.
+
+A service that `reads` a queue pulls from its subscription between requests,
+so its CPU stays allocated. It should scale from at least 1: Cloud Run only
+starts instances for requests, and `clowd check` warns when one can scale to
+zero.
