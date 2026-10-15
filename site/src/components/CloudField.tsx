@@ -31,8 +31,8 @@ const PUFFS: [number, number, number, number][] = [
   [0.38, 0.75, 0.1, 0.005],
 ]
 
-const BASE = 0.03
-const PEAK = 0.17
+const BASE = 0
+const PEAK = 0.22
 
 export function CloudField({ className = '' }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -66,7 +66,7 @@ export function CloudField({ className = '' }: { className?: string }) {
       ctx.clearRect(0, 0, w, h)
       ctx.font = `${FONT}px ${getComputedStyle(canvas).fontFamily}`
       ctx.textBaseline = 'top'
-      ctx.fillStyle = '#ece6da'
+      ctx.fillStyle = '#1e40af'
 
       // Puffs wrap with a margin so they enter and leave off screen.
       const puffs = PUFFS.map(([x, y, r, v]) => {

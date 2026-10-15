@@ -14,7 +14,7 @@ export function DidYouMean() {
   const result = check(line)
 
   return (
-    <div className="overflow-hidden rounded-lg border border-line bg-ink-2">
+    <div className="overflow-hidden border border-edge bg-page">
       <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">toy.clowd</div>
       <pre className="px-0 pt-3 font-mono text-[13px] leading-[1.75]">
         {/* Keeps the trailing empty line: fmt puts a blank line before relationships. */}
@@ -29,7 +29,7 @@ export function DidYouMean() {
           </span>
         ))}
       </pre>
-      <label className="relative flex items-center bg-ink-3 py-1.5 pl-12 pr-4 font-mono text-[13px] leading-[1.75] ring-1 ring-inset ring-line-2 focus-within:ring-mute">
+      <label className="relative flex items-center bg-page-2 py-1.5 pl-12 pr-4 font-mono text-[13px] leading-[1.75] ring-1 ring-inset ring-line-2 focus-within:ring-edge">
         <span className="absolute left-3 w-6 select-none text-right text-faint">{LINE_NO}</span>
         <span className="sr-only">Type a relationship</span>
         {/* The input is transparent over a highlighted copy, so it colours as you type. */}
@@ -46,7 +46,7 @@ export function DidYouMean() {
           spellCheck={false}
           autoCapitalize="off"
           autoComplete="off"
-          className="w-full bg-transparent text-transparent caret-paper outline-none"
+          className="w-full bg-transparent text-transparent caret-fg outline-none"
         />
       </label>
 
@@ -56,7 +56,7 @@ export function DidYouMean() {
             {result.kind === 'ok' && result.note && (
               <p>
                 <span className="font-bold text-tok-trait">warning</span>
-                <span className="text-paper">: {result.note}</span>
+                <span className="text-fg">: {result.note}</span>
               </p>
             )}
             {result.kind === 'ok' && !result.note && (
@@ -83,7 +83,7 @@ export function DidYouMean() {
             key={t}
             type="button"
             onClick={() => setLine(t)}
-            className={`rounded-md border px-2.5 py-1 font-mono transition ${line === t ? 'border-mute text-paper' : 'border-line text-mute hover:border-mute hover:text-paper'}`}
+            className={`rounded-md border px-2.5 py-1 font-mono transition ${line === t ? 'border-edge bg-fg text-page' : 'border-line-2 text-mute hover:border-edge hover:text-fg'}`}
           >
             {t}
           </button>
@@ -99,7 +99,7 @@ function Diagnostic({ d, line, onFix }: { d: Diag; line: string; onFix: (s: stri
     <div className="mb-3 last:mb-0">
       <p>
         <span className={`font-bold ${colour}`}>{d.severity}</span>
-        <span className="font-semibold text-paper">: {d.message}</span>
+        <span className="font-semibold text-fg">: {d.message}</span>
       </p>
       <p className="text-faint">
         {' '}--&gt; <span className="text-mute">toy.clowd:{LINE_NO}:{d.from + 1}</span>
@@ -108,7 +108,7 @@ function Diagnostic({ d, line, onFix }: { d: Diag; line: string; onFix: (s: stri
         {'  |\n'}
         {String(LINE_NO).padStart(2)}
         {' | '}
-        <span className="text-paper">{line}</span>
+        <span className="text-fg">{line}</span>
         {'\n  | '}
         <span className={colour}>{' '.repeat(d.from) + '^'.repeat(Math.max(1, d.to - d.from))}</span>
       </p>
@@ -116,14 +116,14 @@ function Diagnostic({ d, line, onFix }: { d: Diag; line: string; onFix: (s: stri
         <p className="mt-0.5 flex flex-wrap items-center gap-x-3">
           <span>
             <span className="text-faint">{'  = '}</span>
-            <span className="font-bold text-paper">help</span>
-            <span className="text-paper">: {d.help}</span>
+            <span className="font-bold text-fg">help</span>
+            <span className="text-fg">: {d.help}</span>
           </span>
           {d.fix && (
             <button
               type="button"
               onClick={() => onFix(d.fix!)}
-              className="inline-flex items-center gap-1 rounded border border-line-2 px-1.5 py-0.5 text-[11px] text-paper transition hover:border-mute"
+              className="inline-flex items-center gap-1 rounded border border-edge px-1.5 py-0.5 text-[11px] text-fg transition hover:bg-fg hover:text-page"
             >
               <CornerDownLeft className="size-3" aria-hidden /> apply
             </button>

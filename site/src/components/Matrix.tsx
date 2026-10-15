@@ -24,19 +24,19 @@ export function Matrix() {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
       <Code src={MATRIX_SRC} title="app.clowd" lineNumbers />
-      <div className="overflow-x-auto rounded-lg border border-line bg-ink-2 px-4 py-3.5 font-mono text-[12.5px] leading-[1.75]">
+      <div className="overflow-x-auto border border-edge bg-page px-4 py-3.5 font-mono text-[12.5px] leading-[1.75]">
         <p>
           <span className="select-none text-faint">$ </span>
-          <span className="text-paper">clowd check</span>
+          <span className="text-fg">clowd check</span>
         </p>
-        <p className="text-paper">
-          app.clowd <span className="text-faint">→</span> <span className="text-paper">aws</span>,{' '}
-          <span className="text-paper">gcp</span>
+        <p className="text-fg">
+          app.clowd <span className="text-faint">→</span> <span className="text-fg">aws</span>,{' '}
+          <span className="text-fg">gcp</span>
         </p>
         <div className="mt-2 grid grid-cols-[minmax(0,1fr)_2.25rem_2.25rem] gap-x-1 sm:grid-cols-[9rem_2.25rem_2.25rem_minmax(0,1fr)] text-mute">
-          <span className="font-semibold text-paper">Resources</span>
-          <span className="font-semibold text-paper">aws</span>
-          <span className="font-semibold text-paper">gcp</span>
+          <span className="font-semibold text-fg">Resources</span>
+          <span className="font-semibold text-fg">aws</span>
+          <span className="font-semibold text-fg">gcp</span>
           <span className="hidden sm:block" />
           {ROWS.map((r) => (
             <div key={r.label} className="contents">
@@ -44,11 +44,11 @@ export function Matrix() {
               <span className={MARK[r.aws]}>{r.aws}</span>
               <span className={MARK[r.gcp]}>{r.gcp}</span>
               <span className="col-span-3 pb-2 pl-2 text-[11.5px] leading-snug sm:col-span-1 sm:pl-0">
-                <span className="text-paper">{r.note![0]}:</span> {r.note![1]}
+                <span className="text-fg">{r.note![0]}:</span> {r.note![1]}
               </span>
             </div>
           ))}
-          <span className="col-span-3 mt-2 font-semibold text-paper sm:col-span-4">Relationships</span>
+          <span className="col-span-3 mt-2 font-semibold text-fg sm:col-span-4">Relationships</span>
           <span className="pl-2">api sends to jobs</span>
           <span className="text-ok">✓</span>
           <span className="text-ok">✓</span>
@@ -59,9 +59,9 @@ export function Matrix() {
           <span className="text-bad">✗</span> unavailable – not applicable
         </p>
         <p>
-          <span className="text-ok">✓</span> <span className="text-paper">deployable to gcp</span>
+          <span className="text-ok">✓</span> <span className="text-fg">deployable to gcp</span>
           <span className="text-faint"> · </span>
-          <span className="text-bad">✗</span> <span className="text-paper">not deployable to aws</span>
+          <span className="text-bad">✗</span> <span className="text-fg">not deployable to aws</span>
         </p>
       </div>
     </div>

@@ -27,7 +27,7 @@ export function DocsSidebar() {
                 <li key={p.href}>
                   <Link
                     href={p.href}
-                    className={`-ml-px block border-l py-1.5 pl-4 transition ${active ? 'border-paper text-paper' : 'border-transparent text-mute hover:border-mute hover:text-paper'}`}
+                    className={`-ml-px block border-l py-1.5 pl-4 transition ${active ? 'border-fg text-fg' : 'border-transparent text-mute hover:border-mute hover:text-fg'}`}
                   >
                     {p.title}
                   </Link>
@@ -52,7 +52,7 @@ export function DocsSidebar() {
           {open ? <X className="size-4" /> : <Menu className="size-4" />}
           {FLAT.find((p) => p.href === path)?.title ?? 'Docs'}
         </button>
-        {open && <div className="mt-4 rounded-lg border border-line bg-ink-2 p-4">{list}</div>}
+        {open && <div className="mt-4 border border-edge bg-page p-4">{list}</div>}
       </div>
       <aside className="hidden lg:block">
         <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto pb-10">{list}</div>
@@ -69,21 +69,21 @@ export function DocsPager() {
   return (
     <div className="mt-20 grid gap-3 border-t border-line pt-8 sm:grid-cols-2">
       {prev ? (
-        <Link href={prev.href} className="group rounded-lg border border-line px-4 py-3 transition hover:border-mute">
+        <Link href={prev.href} className="group border border-line-2 px-4 py-3 transition hover:border-edge">
           <span className="flex items-center gap-1.5 text-xs text-faint">
             <ArrowLeft className="size-3.5" /> Previous
           </span>
-          <span className="mt-1 block font-serif text-lg text-paper">{prev.title}</span>
+          <span className="mt-1 block font-display text-lg text-fg">{prev.title}</span>
         </Link>
       ) : (
         <span />
       )}
       {next && (
-        <Link href={next.href} className="group rounded-lg border border-line px-4 py-3 text-right transition hover:border-mute">
+        <Link href={next.href} className="group border border-line-2 px-4 py-3 text-right transition hover:border-edge">
           <span className="flex items-center justify-end gap-1.5 text-xs text-faint">
             Next <ArrowRight className="size-3.5" />
           </span>
-          <span className="mt-1 block font-serif text-lg text-paper">{next.title}</span>
+          <span className="mt-1 block font-display text-lg text-fg">{next.title}</span>
         </Link>
       )}
     </div>

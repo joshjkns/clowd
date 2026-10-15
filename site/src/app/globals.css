@@ -1,65 +1,68 @@
 @import 'tailwindcss';
 
-/* Monochrome everywhere; colour is reserved for syntax highlighting, so it
-   always means the same thing it means in a .clowd file. */
+/* Black on white with hard edges. Blue is the one accent; the other colours
+   are syntax highlighting, so they always mean what they mean in a .clowd
+   file. */
 @theme {
-  /* Warm ink and paper, like a printed manual rather than a dashboard. */
-  --color-ink: #12110f;
-  --color-ink-2: #191815;
-  --color-ink-3: #22201c;
-  --color-line: #2c2924;
-  --color-line-2: #3d3931;
-  --color-paper: #ece6da;
-  --color-mute: #a69e8f;
-  --color-faint: #6f685c;
+  --color-page: #ffffff;
+  --color-page-2: #f7f7f5;
+  --color-page-3: #efefec;
+  --color-line: #e2e2de;
+  --color-line-2: #cfcfca;
+  --color-edge: #111111;
+  --color-fg: #111111;
+  --color-mute: #5f6368;
+  --color-faint: #9a9a96;
+  --color-accent: #1e40af;
+  --color-accent-soft: #c7d0f0;
 
-  --color-tok-kw: #a99bff;
-  --color-tok-kind: #5ec8ff;
-  --color-tok-name: #ece6da;
-  --color-tok-verb: #ff6aa9;
-  --color-tok-cloud: #b8f25c;
-  --color-tok-trait: #ffd166;
-  --color-tok-prop: #6ee7c8;
-  --color-tok-value: #efc7a2;
-  --color-tok-num: #ff9f5a;
-  --color-tok-raw: #9aa3b5;
-  --color-tok-comment: #6f685c;
+  --color-tok-kw: #6d3fc8;
+  --color-tok-kind: #1e40af;
+  --color-tok-name: #111111;
+  --color-tok-verb: #be185d;
+  --color-tok-cloud: #3f6f12;
+  --color-tok-trait: #9a5b00;
+  --color-tok-prop: #047857;
+  --color-tok-value: #8a4513;
+  --color-tok-num: #c2410c;
+  --color-tok-raw: #55606e;
+  --color-tok-comment: #9a9a96;
 
-  --color-ok: #b8f25c;
-  --color-warn: #ffd166;
-  --color-bad: #ff5d5d;
+  --color-ok: #2f7d12;
+  --color-warn: #a16207;
+  --color-bad: #c62828;
 
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-plex-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-funnel), var(--font-inter), ui-sans-serif, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* Square corners everywhere: panels read as printed boxes, not cards. */
-  --radius-sm: 1px;
-  --radius: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
+  /* Square corners everywhere: boxes, not cards. */
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
 }
 
 html {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  color-scheme: dark;
+  background: var(--color-page);
+  color: var(--color-fg);
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background: var(--color-ink);
+  background: var(--color-page);
   font-family: var(--font-sans);
 }
 
 ::selection {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--color-fg);
+  color: var(--color-page);
 }
 
 /* Docs prose, by hand so headings, tables and code match the site. */
 .prose-clowd {
-  color: #d2cbbd;
+  color: #2b2b2b;
   line-height: 1.75;
   font-size: 0.95rem;
 }
@@ -67,30 +70,30 @@ body {
   margin-top: 1.1em;
 }
 .prose-clowd h1 {
-  font-family: var(--font-serif);
-  font-size: 2.5rem;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-  font-weight: 400;
-  color: var(--color-paper);
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--color-fg);
   margin-bottom: 0.8em;
 }
 .prose-clowd h2 {
-  font-family: var(--font-serif);
-  font-size: 1.6rem;
-  letter-spacing: -0.01em;
-  font-weight: 400;
-  color: var(--color-paper);
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  color: var(--color-fg);
   margin-top: 2.6em;
   padding-top: 1.4em;
   border-top: 1px solid var(--color-line);
   scroll-margin-top: 7rem;
 }
 .prose-clowd h3 {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   font-weight: 500;
-  color: var(--color-paper);
+  color: var(--color-fg);
   margin-top: 1.9em;
   scroll-margin-top: 7rem;
 }
@@ -99,17 +102,17 @@ body {
   margin-top: 0.7em;
 }
 .prose-clowd a {
-  color: var(--color-paper);
+  color: var(--color-accent);
   text-decoration: underline;
-  text-decoration-color: var(--color-faint);
+  text-decoration-color: var(--color-accent-soft);
   text-underline-offset: 3px;
 }
 .prose-clowd a:hover {
-  text-decoration-color: var(--color-paper);
+  text-decoration-color: var(--color-accent);
 }
 .prose-clowd strong {
-  color: var(--color-paper);
-  font-weight: 500;
+  color: var(--color-fg);
+  font-weight: 600;
 }
 .prose-clowd ul {
   list-style: none;
@@ -139,10 +142,8 @@ body {
   font-family: var(--font-mono);
   font-size: 0.85em;
   padding: 0.1em 0.35em;
-  border-radius: 0.25rem;
-  background: var(--color-ink-3);
-  border: 1px solid var(--color-line);
-  color: var(--color-paper);
+  background: var(--color-page-3);
+  color: var(--color-fg);
   white-space: nowrap;
 }
 .prose-clowd table {
@@ -154,10 +155,10 @@ body {
 }
 .prose-clowd th {
   text-align: left;
-  font-weight: 400;
-  color: var(--color-mute);
+  font-weight: 500;
+  color: var(--color-fg);
   padding: 0.6em 1em 0.6em 0;
-  border-bottom: 1px solid var(--color-line-2);
+  border-bottom: 1px solid var(--color-edge);
 }
 .prose-clowd td {
   padding: 0.65em 1em 0.65em 0;
@@ -165,7 +166,7 @@ body {
   vertical-align: top;
 }
 .prose-clowd blockquote {
-  border-left: 1px solid var(--color-line-2);
+  border-left: 2px solid var(--color-edge);
   padding-left: 1em;
   color: var(--color-mute);
 }

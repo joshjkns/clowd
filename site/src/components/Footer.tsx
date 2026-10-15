@@ -20,19 +20,19 @@ export function Footer() {
   return (
     <footer className="border-t border-line">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <p className="flex items-center gap-2.5 font-serif text-lg italic text-paper">
-          <Glyph className="size-5 shrink-0 not-italic text-faint" />
+        <p className="flex items-center gap-2.5 font-display text-lg text-fg">
+          <Glyph className="size-5 shrink-0 text-fg" />
           Infrastructure in plain English. Compiles to OpenTofu.
         </p>
         <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[13px] text-mute">
           {LINKS.map(([label, href]) => (
             <li key={label}>
               {href.startsWith('/') ? (
-                <Link href={href} className="transition hover:text-paper">
+                <Link href={href} className="transition hover:text-fg">
                   {label}
                 </Link>
               ) : (
-                <a href={href} className="transition hover:text-paper">
+                <a href={href} className="transition hover:text-fg">
                   {label}
                 </a>
               )}
