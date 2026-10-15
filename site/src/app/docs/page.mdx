@@ -1,0 +1,103 @@
+export const metadata = { title: 'Introduction' }
+
+# Introduction
+
+Clowd is a small, English-like language for describing cloud infrastructure
+once and deploying it to more than one cloud. A file reads like a list of
+facts:
+
+```clowd
+use aws in eu-west-2
+use gcp in europe-west2
+
+database db is postgres 16, small
+
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+
+api connects to db
+```
+
+You write the nouns (`service`, `database`, `bucket`) and how they relate
+(`api connects to db`). Clowd picks the product on each cloud, generates the
+networking, permissions and environment variables that wiring needs, and
+compiles the result to [OpenTofu](https://opentofu.org) JSON. OpenTofu does
+the planning, state and deploying, so there's no new engine to trust, and you
+can always take the generated files and leave.
+
+## Install
+
+Clowd is a single Go binary. With Go 1.26 or newer:
+
+```sh
+$ go install github.com/joshjkns/clowd/cmd/clowd@latest
+$ clowd version
+```
+
+To deploy you also need [OpenTofu](https://opentofu.org/docs/intro/install/)
+(`tofu`) or Terraform on your `PATH`, and credentials for the cloud you're
+deploying to. Checking and building need neither.
+
+## Quick start
+
+```sh
+$ clowd init shop
+✓ created a Clowd project named shop · next: `clowd check`, then `clowd apply`
+$ cd shop
+```
+
+`init` writes a starter `app.clowd` and adds `.clowd/` to `.gitignore`. The
+starter is a public web server behind a load balancer:
+
+```clowd
+use aws in eu-west-2
+
+# The project's name prefixes everything deployed.
+project shop
+
+service app
+  image nginx:latest
+  port 80
+
+load balancer web
+  listen on 80
+  send / to app
+```
+
+Check it. This is local and instant, and tells you per cloud whether the file
+will deploy:
+
+```sh
+$ clowd check
+```
+
+Then deploy. `apply` builds the OpenTofu configuration, runs a plan, and asks
+before changing anything:
+
+```sh
+$ clowd apply
+```
+
+When you're done, `clowd destroy` removes everything, data included.
+
+## Status
+
+Clowd is early, and honest about it.
+
+- **Works today:** the language, `clowd check` with the capability matrix,
+  `clowd fmt`, the language server and VS Code extension, and deploying to
+  **AWS** end to end.
+- **Next:** deploying to **GCP**. The checker already knows GCP, so
+  `clowd check` reports it, but `build` and `apply` don't target it yet.
+- **Later:** Azure, variables, environments, secrets and outputs.
+
+The design lives in the repository's
+[plans](https://github.com/joshjkns/clowd/tree/main/docs/plans) and
+[decision log](https://github.com/joshjkns/clowd/blob/main/docs/decisions.md).
+
+## Where next
+
+- [A tour of app.clowd](/docs/tour/) walks through a realistic file line by line.
+- [Syntax](/docs/language/) covers the four kinds of statement.
+- [Resources](/docs/resources/) lists every kind and property.

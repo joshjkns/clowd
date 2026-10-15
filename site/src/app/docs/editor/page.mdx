@@ -1,0 +1,68 @@
+export const metadata = { title: 'Editor & formatter' }
+
+# Editor & formatter
+
+The language server is built into the `clowd` binary as `clowd lsp`, and uses
+the same parser and checker as the CLI, so the editor and `clowd check` never
+disagree.
+
+## VS Code
+
+The extension lives in
+[`editors/vscode`](https://github.com/joshjkns/clowd/tree/main/editors/vscode).
+It needs `clowd` installed:
+
+```sh
+$ go install github.com/joshjkns/clowd/cmd/clowd@latest
+```
+
+Then build and install the extension from a checkout:
+
+```sh
+$ cd editors/vscode
+$ npm install
+$ npx vsce package
+$ code --install-extension clowd-0.1.0.vsix
+```
+
+If `clowd` isn't on your `PATH`, set **Clowd: Path** (`clowd.path`) to the
+binary. After installing a new `clowd`, run **Clowd: Restart Language
+Server**.
+
+## What you get
+
+- **Diagnostics as you type:** the same errors, warnings and per-cloud notes
+  as `clowd check`, with the suggestion on a `help:` line.
+- **Hovers** that show what a resource becomes on each target
+  (`AWS: ECS Fargate · GCP: Cloud Run`) with the matrix's notes, plus docs for
+  keywords, traits, properties, verbs, and raw provider arguments (with a link
+  to the provider's docs).
+- **Completion** that reads the line you're typing: kinds at the start of a
+  line, clouds after `use`, traits after `is`, the rest of a verb and the names
+  it can target, a kind's properties in its block, and provider arguments
+  inside `on aws`. It's built from the checker's own vocabulary, so it can't
+  offer something `check` would reject.
+- **Formatting** with `clowd fmt`, on Format Document or on save.
+
+Other editors can run `clowd lsp` over stdio. A tree-sitter grammar for
+Neovim, Zed and Helix is planned.
+
+## clowd fmt
+
+One canonical style, no options:
+
+- keywords lowercase; names, values and raw override keys kept as written
+- two-space indentation
+- single spaces between words, and `, ` between traits
+- one-line statements of the same shape (use lines, relate lines,
+  one-line declarations) grouped together; one blank line between everything
+  else
+- comments stay where they are
+
+Spellings that are both valid are kept: `lb` stays `lb`, and traits joined by
+`and` keep `and`. A file with syntax errors isn't formatted.
+
+```sh
+$ clowd fmt              # format every .clowd file here
+$ clowd fmt --check      # exit 1 if anything would change
+```

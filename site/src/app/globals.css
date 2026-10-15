@@ -1,0 +1,160 @@
+@import 'tailwindcss';
+
+/* Monochrome everywhere; colour is reserved for syntax highlighting, so it
+   always means the same thing it means in a .clowd file. */
+@theme {
+  --color-ink: #000000;
+  --color-ink-2: #0a0a0a;
+  --color-ink-3: #141414;
+  --color-line: #1f1f1f;
+  --color-line-2: #2a2a2a;
+  --color-paper: #f5f5f5;
+  --color-mute: #8f8f8f;
+  --color-faint: #5c5c5c;
+
+  --color-tok-kw: #a99bff;
+  --color-tok-kind: #5ec8ff;
+  --color-tok-name: #f5f5f5;
+  --color-tok-verb: #ff6aa9;
+  --color-tok-cloud: #b8f25c;
+  --color-tok-trait: #ffd166;
+  --color-tok-prop: #6ee7c8;
+  --color-tok-value: #efc7a2;
+  --color-tok-num: #ff9f5a;
+  --color-tok-raw: #9aa3b5;
+  --color-tok-comment: #5c5c5c;
+
+  --color-ok: #b8f25c;
+  --color-warn: #ffd166;
+  --color-bad: #ff5d5d;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+html {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Docs prose, by hand so headings, tables and code match the site. */
+.prose-clowd {
+  color: #c8c8c8;
+  line-height: 1.75;
+  font-size: 0.95rem;
+}
+.prose-clowd > * + * {
+  margin-top: 1.1em;
+}
+.prose-clowd h1 {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  color: var(--color-paper);
+  margin-bottom: 0.8em;
+}
+.prose-clowd h2 {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  color: var(--color-paper);
+  margin-top: 2.6em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--color-line);
+  scroll-margin-top: 7rem;
+}
+.prose-clowd h3 {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-paper);
+  margin-top: 1.9em;
+  scroll-margin-top: 7rem;
+}
+.prose-clowd h2 + *,
+.prose-clowd h3 + * {
+  margin-top: 0.7em;
+}
+.prose-clowd a {
+  color: var(--color-paper);
+  text-decoration: underline;
+  text-decoration-color: var(--color-faint);
+  text-underline-offset: 3px;
+}
+.prose-clowd a:hover {
+  text-decoration-color: var(--color-paper);
+}
+.prose-clowd strong {
+  color: var(--color-paper);
+  font-weight: 500;
+}
+.prose-clowd ul {
+  list-style: none;
+  padding-left: 0;
+}
+.prose-clowd ul > li {
+  position: relative;
+  padding-left: 1.2em;
+}
+.prose-clowd ul > li + li {
+  margin-top: 0.35em;
+}
+.prose-clowd ul > li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--color-faint);
+}
+.prose-clowd ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.prose-clowd ol > li::marker {
+  color: var(--color-faint);
+}
+.prose-clowd :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background: var(--color-ink-3);
+  border: 1px solid var(--color-line);
+  color: var(--color-paper);
+  white-space: nowrap;
+}
+.prose-clowd table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.prose-clowd th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--color-mute);
+  padding: 0.6em 1em 0.6em 0;
+  border-bottom: 1px solid var(--color-line-2);
+}
+.prose-clowd td {
+  padding: 0.65em 1em 0.65em 0;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+}
+.prose-clowd blockquote {
+  border-left: 1px solid var(--color-line-2);
+  padding-left: 1em;
+  color: var(--color-mute);
+}

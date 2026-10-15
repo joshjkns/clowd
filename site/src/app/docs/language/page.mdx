@@ -1,0 +1,139 @@
+export const metadata = { title: 'Syntax' }
+
+# Syntax
+
+A Clowd file describes what exists. There are no loops, no expressions and
+no braces: each line is a short sentence, and indentation groups the lines
+that belong to something.
+
+## Design rules
+
+1. **Reads like a sentence.** Every line is a short, structured English
+   statement.
+2. **One canonical phrasing.** `connects to`, never `links to` or `uses`.
+   Wrong guesses are errors that suggest the right words.
+3. **Case-insensitive keywords.** `service`, `Service` and `SERVICE` all
+   work. Lowercase is canonical, and `clowd fmt` lowercases them.
+4. **Declarative.** A file says what exists. There's no `create`.
+5. **Newlines end statements, indentation makes blocks.** No `;`, `{}` or `:`.
+6. **No quotes unless needed.** Quote only values with spaces.
+
+## Four kinds of statement
+
+| Shape | Form | Example |
+|---|---|---|
+| Use | `use <cloud> [in <region>]` | `use aws in eu-west-2` |
+| Declare | `<kind> <name> [is <traits>]`, then indented properties | `bucket uploads is private` |
+| Relate | `<name> <verb> <name>` | `api connects to db` |
+| On | `on <cloud>`, then indented settings | see [Cloud overrides](/docs/overrides/) |
+
+### Use
+
+```clowd
+use aws in eu-west-2
+use gcp in europe-west2
+```
+
+Declares a cloud you can deploy to: `aws`, `gcp` or `azure`. Each cloud
+appears at most once. A file with no `use` line checks fine but deploys
+nowhere, and the checker warns about it.
+
+### Declare
+
+```clowd
+database db is postgres 16, small
+
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+```
+
+A declaration names a resource of some kind. **Traits** come after `is`:
+adjectives joined by `,` or `and`. A trait can be several words
+(`postgres 16`, `highly available`). Contradictory traits, like
+`is public and internal`, are errors.
+
+**Properties** are the indented lines: a key, then its value. Each kind has a
+fixed set, listed in [Resources](/docs/resources/).
+
+### Relate
+
+```clowd
+api connects to db
+api reads and writes uploads
+api sends to jobs
+```
+
+A line whose second word starts a verb is a relationship, with one target per
+line. The verbs, and what each one generates, are in
+[Relationships](/docs/relationships/).
+
+### On
+
+```clowd
+database db is postgres 16
+  on aws
+    backup_retention_period 14
+```
+
+Settings for one cloud only, passed straight to its provider. See
+[Cloud overrides](/docs/overrides/).
+
+## Lexical details
+
+- **Comments** start with `#` and run to the end of the line. The `#` must
+  start a word, so a value like `a#b` survives.
+- **Indentation** is spaces only; a tab is an error. Any consistent width
+  works, and `clowd fmt` uses two.
+- **Names** match `[a-z][a-z0-9_-]*` and are case-insensitive. Referring to
+  `api` as `API` works with a warning; two names that differ only by case are
+  an error.
+- **Bare values** are any run of non-space characters, like
+  `ghcr.io/me/api:latest`, `/` or `eu-west-2`.
+- **Quoted strings** use `"..."`, with `\"` and `\\` as escapes.
+- **Numbers** are integers or decimals; **ranges** are `2 to 10`;
+  **durations** are `30s`, `5m`, `1h`, `14d`. Sizes are `512mb` or `2gb`.
+
+Keywords are contextual: the parser recognises them by position. So a
+resource can be called `web`, `jobs`, or even `queue`
+(`queue connects to db` is a relationship). The one thing a resource can't be
+called is a verb.
+
+## Grammar
+
+For the precise version, here's the EBNF the parser follows. Quoted terminals
+are words matched case-insensitively, and layout is Python-style
+`INDENT`/`DEDENT`.
+
+```text
+file       = { statement } ;
+statement  = use | declare | relate | on_block ;
+
+use        = "use" cloud [ "in" value ] NEWLINE ;
+
+declare    = ( kind name | "network" ) [ "is" traits ] NEWLINE [ block ] ;
+traits     = trait { ( "," | "and" ) trait } ;
+trait      = word { word } ;
+block      = INDENT { property } DEDENT ;
+property   = key { value } NEWLINE [ block ]
+           | "on" cloud NEWLINE settings ;
+setting    = key { value | "," } NEWLINE [ settings ] ;
+settings   = INDENT { setting } DEDENT ;
+
+relate     = name verb name NEWLINE ;
+verb       = "connects to" | "reads" | "writes"
+           | "reads and writes" | "sends to" ;
+
+on_block   = "on" cloud NEWLINE settings ;
+
+kind       = "service" | "database" | "bucket"
+           | "load balancer" | "lb" | "queue" | "project" ;
+cloud      = "aws" | "gcp" | "azure" ;
+```
+
+## Not in the language yet
+
+Variables, environments (staging vs production), secrets, outputs, multiple
+files, and several targets on one relate line
+(`api connects to db and cache`) are all planned but not designed in detail.

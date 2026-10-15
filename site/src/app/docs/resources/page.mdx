@@ -1,0 +1,146 @@
+export const metadata = { title: 'Resources' }
+
+# Resources
+
+Five kinds of resource cover most web applications. Anything you leave out
+takes the default shown. Which cloud supports what, exactly, is decided by the
+capability matrix and reported by [`clowd check`](/docs/check/).
+
+| Kind | AWS | GCP |
+|---|---|---|
+| `service` | ECS Fargate | Cloud Run |
+| `database` | RDS | Cloud SQL |
+| `bucket` | S3 | Cloud Storage |
+| `load balancer` (or `lb`) | Application Load Balancer | Application Load Balancer |
+| `queue` | SQS | Pub/Sub |
+
+## service
+
+A container that runs your code. Services have no traits; to expose one,
+route to it from a [load balancer](#load-balancer).
+
+```clowd
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+  cpu 0.5
+  memory 1gb
+  env LOG_LEVEL debug
+  env GREETING "hello there"
+  health check /healthz
+  command ./api --serve
+```
+
+| Property | Form | Default |
+|---|---|---|
+| `image` | one value, e.g. `ghcr.io/me/api:latest` | required |
+| `port` | `1` to `65535` | `8080` |
+| `scale` | `<n>`, or `<min> to <max>`; `0 to <max>` scales to zero when idle | `1` |
+| `cpu` | vCPUs: `0.25`, `0.5`, `1`, `2`, `4`, `8` | cloud default |
+| `memory` | whole `mb` or `gb` (`1gb` = `1024mb`) | cloud default |
+| `env` | `env <NAME> <value>`, repeatable; quote values with spaces | none |
+| `health check` | the path load balancers check; it must answer 2xx or 3xx | `/`, any answer below 500 |
+| `command` | replaces the image's command; quote words with spaces | the image's |
+
+Scaling to zero works on Cloud Run but not on Fargate, which can't start a
+task for an incoming request. `clowd check` marks that ✗ for AWS.
+
+## database
+
+A managed relational database, always in private subnets.
+
+```clowd
+database orders is postgres 16, medium, highly available, protected
+  storage 100gb
+  backups 14 days
+```
+
+| Trait group | Values | Default |
+|---|---|---|
+| engine | `postgres [<version>]`, `mysql [<version>]` | required |
+| size | `small`, `medium`, `large` | `small` |
+| availability | `highly available`: a standby in another zone takes over on failure | one zone |
+| protection | `protected`: can't be deleted, and keeps a final snapshot | deleted by `clowd destroy` |
+
+| Property | Form | Default |
+|---|---|---|
+| `storage` | `storage <n>gb`, 20 to 65536; grows automatically on AWS | cloud default |
+| `backups` | `backups <n> days` (1 to 365, at most 35 on AWS) or `backups off` | cloud default |
+
+Postgres versions are majors (`16`, or `16.4` to pin a minor). MySQL versions
+name a release line (`8.0`, `8.4`), so a bare `mysql 8` is an error. Leave the
+version out to get the cloud's default.
+
+## bucket
+
+Object storage.
+
+```clowd
+bucket uploads is private, versioned
+  expire after 30d
+```
+
+| Trait | Meaning | Default |
+|---|---|---|
+| `private` / `public` | who can read objects | `private` |
+| `versioned` | keep every version of an object | off |
+| `protected` | can't be deleted while it holds objects | `clowd destroy` empties it |
+
+| Property | Form | Default |
+|---|---|---|
+| `expire after` | `expire after <n>d`: delete objects (and old versions) after whole days | kept |
+
+## load balancer
+
+An HTTP(S) load balancer in front of services. `lb` is accepted as a short
+form.
+
+```clowd
+load balancer web is public
+  listen on 443 with tls for shop.example.com
+  send /api to api
+  send / to frontend
+```
+
+| Trait | Meaning | Default |
+|---|---|---|
+| `public` / `internal` | reachable from the internet, or only inside the network | `public` |
+
+| Property | Form | |
+|---|---|---|
+| `listen` | `listen on <port> [with tls for <domain>]`, repeatable | at least one |
+| `send` | `send <path> to <service>`, repeatable | at least one |
+
+Paths start with `/` and match by prefix: `/` matches everything, and there
+are no wildcards. Each port and each path appears once.
+
+With TLS, the first `clowd apply` creates the certificate on its own, prints
+the DNS records that validate it, and waits for them before creating the
+rest. Afterwards it prints the CNAME to point your domain at.
+
+## queue
+
+A message queue. Services publish with `sends to` and consume with `reads`.
+
+```clowd
+queue jobs is fifo
+  retry 5 times
+  timeout 30s
+  keep messages for 4d
+```
+
+| Trait | Meaning | Default |
+|---|---|---|
+| `fifo` | ordered, exactly-once delivery | standard |
+
+| Property | Form | Default |
+|---|---|---|
+| `retry` | `retry <n> times`: after that, a message moves to the dead-letter queue `<name>-dead` | retried until it expires |
+| `timeout` | `timeout <duration>`, 1s to 12h: how long a consumer has before redelivery | cloud default |
+| `keep messages for` | `keep messages for <duration>`, 1m to 31d | cloud default |
+
+Each cloud is narrower in places: GCP allows 4 to 99 retries and a 10s to
+600s timeout, and AWS keeps messages for at most 14 days. Pub/Sub has no FIFO
+queues, so on GCP `fifo` is emulated with an ordered, exactly-once
+subscription, and `clowd check` shows it as ⚠.

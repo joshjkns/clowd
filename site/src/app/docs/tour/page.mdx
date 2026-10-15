@@ -1,0 +1,137 @@
+export const metadata = { title: 'A tour of app.clowd' }
+
+# A tour of app.clowd
+
+This is the example the project tests against: a web API with a database and
+file uploads, deployable to AWS and GCP. It's fifteen lines. Built for AWS it
+becomes 37 resources and about 400 lines of OpenTofu JSON.
+
+```clowd
+# A web API with a database and file uploads, deployable to AWS and GCP.
+
+use aws in eu-west-2
+use gcp in europe-west2
+
+database db is postgres 16, small
+  on aws
+    backup_retention_period 14
+
+bucket uploads is private
+
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+
+load balancer web is public
+  listen on 443 with tls for api.example.com
+  send / to api
+
+api connects to db
+api reads and writes uploads
+```
+
+## Targets
+
+```clowd
+use aws in eu-west-2
+use gcp in europe-west2
+```
+
+Each `use` line is a cloud you might deploy to. `clowd check` validates the
+file against every one of them; `clowd apply` deploys to one at a time, chosen
+with `--target`. Deploying everywhere at once is never implicit.
+
+On AWS, this line alone brings a VPC, public and private subnets across
+availability zones, route tables, an internet gateway and an ECS cluster.
+
+## A database
+
+```clowd
+database db is postgres 16, small
+  on aws
+    backup_retention_period 14
+```
+
+Everything after `is` is a **trait**: the engine and version, and a size.
+`small`, `medium` and `large` map to an instance class on each cloud. This
+becomes RDS on AWS and Cloud SQL on GCP, always in private subnets.
+
+The indented `on aws` block is an [override](/docs/overrides/): raw
+arguments for the AWS resource, applied only when building for AWS. Here it
+keeps backups for 14 days.
+
+## A bucket
+
+```clowd
+bucket uploads is private
+```
+
+`private` is the default, but saying it is cheap and reads well. On AWS it
+also turns on S3's public access block.
+
+## A service
+
+```clowd
+service api
+  image ghcr.io/me/api:latest
+  port 8080
+  scale 2 to 10
+```
+
+A service is a container. The indented lines are **properties**. `scale 2 to
+10` means at least two copies, autoscaling to ten on CPU. On AWS that's an
+ECS Fargate service with its task definition, log group, two IAM roles, a
+security group and an autoscaling policy; on GCP it's Cloud Run.
+
+## A load balancer
+
+```clowd
+load balancer web is public
+  listen on 443 with tls for api.example.com
+  send / to api
+```
+
+`listen on 443 with tls for api.example.com` asks for a certificate for that
+domain. The first `clowd apply` prints the DNS records that prove you own it,
+then waits for them. `send / to api` routes every path (paths match by prefix)
+to the service.
+
+## Relationships
+
+```clowd
+api connects to db
+api reads and writes uploads
+```
+
+This is where Clowd earns its keep. `api connects to db` opens the database's
+security group to the service, lets the service read the password the cloud
+generated, and sets `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` and
+`DB_PASSWORD` in it. `api reads and writes uploads` grants read and write on
+that one bucket and sets `UPLOADS_BUCKET`.
+
+Your code reads the environment variables; it never sees an ARN. See
+[Relationships](/docs/relationships/) for every verb.
+
+## Check it
+
+```sh
+$ clowd check app.clowd
+app.clowd → aws (eu-west-2), gcp (europe-west2)
+
+Resources                       aws  gcp
+  database db                   ✓    ✓
+  bucket uploads                ✓    ✓
+  service api                   ✓    ✓
+  load balancer web             ✓    ✓
+
+Relationships
+  api connects to db            ✓    ✓
+  api reads and writes uploads  ✓    ✓
+
+Overrides
+  database db on aws            ✓    –
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to aws, gcp
+```

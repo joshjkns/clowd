@@ -1,0 +1,96 @@
+export const metadata = { title: 'clowd check' }
+
+# clowd check
+
+`clowd check` answers one question before anything is deployed: for each
+cloud you target, will this file compile to valid infrastructure? It runs
+locally in a few milliseconds and needs no credentials.
+
+```sh
+$ clowd check
+app.clowd → aws, gcp
+
+Resources            aws  gcp
+  service api        ✗    ✓    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
+  queue jobs         ✓    ⚠    gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
+
+Relationships
+  api sends to jobs  ✓    ✓
+
+✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
+✓ deployable to gcp · ✗ not deployable to aws
+```
+
+Columns are the clouds in the file's `use` lines. Rows are grouped into
+resources, relationships and overrides.
+
+## Support levels
+
+| Level | Mark | Meaning |
+|---|---|---|
+| supported | ✓ | maps directly to the cloud |
+| emulated | ⚠ | works, with a caveat shown to you |
+| not implemented | ✗ | the cloud could do it; Clowd doesn't yet |
+| unsupported | ✗ | the cloud can't do it |
+
+"Not implemented" and "unsupported" share a mark but not a message: one is
+Clowd's backlog, the other is a real limit of the cloud.
+
+## Diagnostics
+
+Mistakes in the file are reported first, rustc style, with the source line,
+a caret under the problem, and a fix when there is one:
+
+```sh
+error: no resource named `upload`
+ --> app.clowd:9:11
+  |
+9 | api reads upload
+  |           ^^^^^^
+  = help: did you mean `uploads`?
+```
+
+The parser never stops at the first error, so one run shows everything. A
+file with errors shows only its diagnostics, because its matrix would be
+built from a partial program.
+
+Matrix findings also appear as diagnostics at the line that asked for the
+feature: ✗ is a warning and ⚠ is an info. They're never errors, so exit code
+2 always means a mistake in the file.
+
+## Other clouds
+
+`--target` checks clouds the file doesn't `use`:
+
+```sh
+$ clowd check --target aws,gcp,azure
+```
+
+## Flags and exit codes
+
+| Flag | |
+|---|---|
+| `--target <cloud,...>` | check these clouds instead of the file's `use` lines |
+| `--json` | machine-readable output for CI |
+| `--color=auto\|always\|never` | colour; `auto` respects `NO_COLOR` |
+
+| Exit | Meaning |
+|---|---|
+| `0` | every target is deployable |
+| `1` | at least one target isn't |
+| `2` | syntax or semantic errors in the file |
+
+## JSON
+
+`--json` prints `{"files": [...]}`. Each file has `path`, `ok`, `clouds`,
+`deployable`, `rows` (section, label, position, and a cell per cloud with a
+level and findings) and `diagnostics` (severity, message, suggestion, and
+1-based `line`, `column`, `endLine`, `endColumn`). Fields are only ever
+added. Levels are `supported`, `emulated`, `not implemented`, `unsupported`
+and `not applicable`.
+
+## What it doesn't promise
+
+A static check means "this compiles to valid configuration for that cloud".
+It can't see quotas, your account's IAM permissions, or which services a
+region offers. For that, `clowd plan` runs a real OpenTofu plan.
