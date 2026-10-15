@@ -1,0 +1,96 @@
+export const metadata = { title: 'CLI reference' }
+
+# CLI reference
+
+One binary, `clowd`. With no file argument, commands use the `*.clowd` files
+in the current directory; a project is the directory that holds its `.clowd`
+file.
+
+| Command | What it does |
+|---|---|
+| `clowd init [dir]` | create a starter `app.clowd` |
+| `clowd check [file...]` | parse, check, and show the capability matrix |
+| `clowd fmt [file...]` | format in place (`--check` to only report) |
+| `clowd build` | compile to `.clowd/build/<cloud>/main.tf.json` |
+| `clowd plan` | build, then show what apply would change |
+| `clowd apply` | build, then deploy |
+| `clowd destroy` | destroy what apply deployed |
+| `clowd lsp` | run the language server on stdio |
+| `clowd version` | print the version and language edition |
+
+Every command with human output takes `--color=auto|always|never`. Exit codes
+are `0` for success, `1` for a check or deploy failure, and `2` for usage or
+source errors.
+
+## init
+
+```sh
+$ clowd init [dir]
+```
+
+Writes a starter `app.clowd` and adds `.clowd/` to `.gitignore`. The starter
+declares `project <name>`, named after the directory, so renaming the
+directory later doesn't rename what's deployed. It refuses to run where there
+are `.clowd` files already.
+
+## check
+
+```sh
+$ clowd check [--target cloud] [--json] [file.clowd ...]
+```
+
+See [clowd check](/docs/check/).
+
+## fmt
+
+```sh
+$ clowd fmt [--check] [file.clowd ...]
+```
+
+Rewrites files in the canonical style. Paths that changed (or, with
+`--check`, would change) go to stdout, one per line, and a summary goes to
+stderr. `--check` changes nothing and exits `1` if any file isn't formatted;
+use it in CI. A file with syntax errors is left alone and exits `2`.
+
+## build, plan, apply, destroy
+
+```sh
+$ clowd build   [--target cloud] [--json] [file.clowd]
+$ clowd plan    [--target cloud] [--runtime tool] [file.clowd]
+$ clowd apply   [--target cloud] [--runtime tool] [--yes] [file.clowd]
+$ clowd destroy [--target cloud] [--runtime tool] [--yes] [file.clowd]
+```
+
+- A project deploys one program, so with no file argument the directory must
+  hold exactly one `.clowd` file.
+- `--target` picks the cloud. `build` builds every target unless given one;
+  the others need exactly one when the file uses several. Deploying to several
+  clouds at once is always deliberate.
+- The file is checked first: errors exit `2` and an undeployable target exits
+  `1`, before OpenTofu runs at all.
+- `build` writes `.clowd/build/<cloud>/main.tf.json` and nothing else.
+- `plan`, `apply` and `destroy` run `tofu init` quietly, then pass the
+  tool's own output through. `--yes` skips the confirmation. Ctrl-C goes to
+  OpenTofu, which stops cleanly.
+- After `apply`, Clowd prints the outputs: URLs, bucket names, and for a TLS
+  domain, the CNAME to point at the load balancer.
+- `destroy` uses the configuration last built for that cloud, which is what
+  the state was made from, even if the file has changed since. It removes
+  data too, unless a resource is `protected`.
+
+## Runtime
+
+The tool that runs plans is `--runtime`, else `$CLOWD_RUNTIME`, else `tofu`
+if it's installed, else `terraform`. It's a property of your machine, not the
+project, so two people can use different tools on the same state.
+
+`clowd.lock` records the provider version OpenTofu chose on first `init`, and
+every later build pins it. Commit it.
+
+## Files
+
+| File | Written by | Purpose |
+|---|---|---|
+| `*.clowd` | you, `clowd init` | infrastructure and project settings |
+| `clowd.lock` | the CLI | pinned provider versions |
+| `.clowd/` | the CLI | build output and OpenTofu state (gitignored) |

@@ -1,0 +1,74 @@
+export const metadata = { title: 'Cloud overrides' }
+
+# Cloud overrides
+
+Abstractions only go so far. When the portable words don't cover something,
+an `on <cloud>` block inside a resource sets raw provider arguments on the
+resource Clowd generates for that cloud:
+
+```clowd
+database db is postgres 16
+  on aws
+    backup_retention_period 14
+
+service api
+  image ghcr.io/me/api:latest
+  on aws
+    capacity_provider_strategy
+      capacity_provider FARGATE_SPOT
+      weight 1
+```
+
+The block applies only when building for that cloud, so the same file still
+works everywhere else.
+
+## Rules
+
+- Keys are the provider's own argument names, on purpose: they look
+  different from portable Clowd, and `clowd fmt` keeps their case.
+- A line is `<argument> <value>`, or an argument with an indented block under
+  it for a nested block.
+- A nested block the provider allows more than once may be written more than
+  once: the first replaces what Clowd generated and the rest add to it. A
+  nested block that appears once is merged into Clowd's, so you can change one
+  field.
+- Lists use commas, with a space after: `<argument> a, b`. Without the space,
+  `a,b` is one value.
+- Values are passed as strings, and the provider converts them.
+- A resource has at most one `on` block per cloud.
+
+## What can be set
+
+Each kind has one resource its block applies to. On AWS:
+
+| Kind | Resource |
+|---|---|
+| `service` | `aws_ecs_service` |
+| `database` | `aws_db_instance` |
+| `bucket` | `aws_s3_bucket` |
+| `load balancer` | `aws_lb` |
+| `queue` | `aws_sqs_queue` |
+
+Each has an allowlist of arguments and nested blocks. Arguments that carry
+Clowd's own wiring, like subnets, security groups and roles, can't be set,
+and the error says so.
+
+## Checked before deploy
+
+`clowd check` lists every block in the matrix's **Overrides** section and
+verifies each key exists on the generated resource. A typo fails in
+`check`, not halfway through an apply:
+
+```sh
+Overrides
+  database db on aws            ✓    –
+```
+
+An `on` block for a cloud the file doesn't `use` is a warning, since it has
+no effect.
+
+## Program-wide settings
+
+A top-level `on <cloud>` block, not inside any resource, holds settings for
+the whole program on that cloud. Today that's an existing network; see
+[Projects & networks](/docs/projects/#using-an-existing-network).

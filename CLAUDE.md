@@ -26,6 +26,8 @@ go vet ./...
 gofmt -l .                     # must print nothing
 go run ./cmd/clowd check examples/app.clowd
 go run ./cmd/clowd fmt --check examples/app.clowd
+cd site && npm run dev         # the website, on localhost:3000
+cd site && npm run build       # static export to site/out
 ```
 
 ## Layout
@@ -50,7 +52,13 @@ internal/project/   project directory, clowd.lock
 internal/runner/    tofu/terraform invocation
 editors/            VS Code extension, tree-sitter grammar
 examples/           example .clowd files (also end-to-end fixtures)
+site/               clowd.jooo.sh: landing page and docs (Next.js, static export)
 ```
+
+The site is deployed to GitHub Pages by `.github/workflows/pages.yml` on
+every push to `main` that touches `site/`. Its docs are written for users
+and summarise the plans; when a language or CLI change lands, update the
+matching page in `site/src/app/docs/` in the same PR.
 
 ## Code conventions
 

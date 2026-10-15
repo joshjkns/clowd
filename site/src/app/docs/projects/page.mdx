@@ -1,0 +1,76 @@
+export const metadata = { title: 'Projects & networks' }
+
+# Projects & networks
+
+`project` and `network` are written like resources, but they describe the
+program as a whole. Nothing refers to them, each appears at most once, and
+both are optional. Without them a file is a complete project, named after its
+directory, in a network Clowd creates with sensible defaults.
+
+Everything about a project lives in its `.clowd` file. There's no separate
+config file.
+
+## project
+
+```clowd
+project shop
+  edition 2026
+  tag team payments
+  tag cost-centre 4410
+  state local
+```
+
+The name prefixes everything deployed, so two projects can share an account.
+It's up to 20 lowercase letters, digits and dashes, starting with a letter.
+Without a `project` line, the directory's name is used, which means renaming
+the directory renames everything deployed. `clowd init` writes one for you
+to avoid that.
+
+| Property | Form | Default |
+|---|---|---|
+| `edition` | `edition 2026` | latest |
+| `tag` | `tag <key> <value>`, repeatable: an AWS tag and a GCP label on every resource | none |
+| `state` | `state local`; other backends come later | `local` |
+
+Tag keys are up to 63 lowercase letters, digits, `_` and `-`, starting with a
+letter, so every cloud accepts them.
+
+## network
+
+```clowd
+network is private
+  cidr 10.20.0.0/16
+```
+
+A program has one network, so it takes no name.
+
+| Feature | Form | Default |
+|---|---|---|
+| `public` / `private` | `network is private` | `public` |
+| `cidr` | a /16 to /20 | `10.0.0.0/16` |
+
+In a `public` network, services get public addresses and need no NAT
+gateway, which is cheaper. `private` runs services in private subnets that
+reach the internet through NAT. Databases are always private either way.
+
+## Using an existing network
+
+A VPC that already exists is a fact about one cloud, so it goes in that
+cloud's top-level `on` block, in place of `cidr`:
+
+```clowd
+on aws
+  network
+    vpc vpc-0123
+    public_subnets subnet-a, subnet-b
+    private_subnets subnet-c, subnet-d
+```
+
+Each subnet list needs two or more subnets in different availability zones.
+
+## State
+
+OpenTofu's state lives in `.clowd/build/<cloud>/`, next to the generated
+configuration. Deleting `.clowd/` loses track of what was deployed, so don't,
+until remote state backends arrive. Commit `clowd.lock`, which pins provider
+versions so everyone builds the same thing.

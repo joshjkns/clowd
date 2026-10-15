@@ -1,0 +1,90 @@
+export const metadata = { title: 'Relationships' }
+
+# Relationships
+
+A relationship is one line that says how a service uses something else:
+
+```clowd
+api connects to db
+api reads and writes uploads
+worker reads jobs
+api sends to jobs
+```
+
+Each one generates the network path, the permissions, and environment
+variables in the service, so your code finds what it needs without knowing
+which cloud it runs on. Most of the boilerplate in hand-written Terraform
+lives here.
+
+## Verbs
+
+There are exactly five, and one target per line.
+
+| Verb | Meaning | Targets |
+|---|---|---|
+| `connects to` | network path, credentials and connection variables | `database`, `service` |
+| `reads` | read-only access; on a queue, consume | `bucket`, `queue` |
+| `writes` | write-only access | `bucket` |
+| `reads and writes` | read and write access | `bucket` |
+| `sends to` | publish | `queue` |
+
+Only services start relationships. Load balancers route with `send`, and
+databases, buckets and queues are passive.
+
+## One phrasing
+
+Each relationship has one way to say it. The common wrong guesses are errors
+that name the right verb, and the line is still read with that verb, so the
+rest of the file checks normally:
+
+```sh
+error: unknown relationship `links to`
+ --> app.clowd:4:5
+  |
+4 | api links to db
+  |     ^^^^^^^^
+  = help: did you mean `connects to`?
+```
+
+The same goes for a verb that doesn't fit its target. To publish to a queue
+you say `sends to`, never `writes`:
+
+```sh
+error: `writes` doesn't apply to a queue
+  = help: to publish to a queue, write `api sends to jobs`
+```
+
+## Environment variables
+
+A relationship sets variables in the service named after the target:
+`<NAME>` is the target's name in upper case, with `-` as `_` (`db` becomes
+`DB`, `user-files` becomes `USER_FILES`). They're the same on every cloud.
+
+| Relationship | Variables |
+|---|---|
+| `connects to` a database | `<NAME>_HOST`, `<NAME>_PORT`, `<NAME>_NAME`, `<NAME>_USER`, `<NAME>_PASSWORD` |
+| any verb to a bucket | `<NAME>_BUCKET` |
+| `reads` or `sends to` a queue | `<NAME>_QUEUE_URL` |
+
+`<NAME>_NAME` is the database created inside the instance: the resource's
+name in lower case with `-` as `_`, ending in `_db` (`db` becomes `db_db`,
+`users` becomes `users_db`), so it's never a word the engine reserves.
+
+The password is a secret. The cloud generates and stores it; it's never
+written in your configuration or in OpenTofu's state, and it's handed to the
+service when it starts. If a service sets an `env` with the same name, its
+own value wins, with a warning.
+
+## What it builds on AWS
+
+For `api connects to db`:
+
+- an ingress rule on the database's security group, from the service's
+- an IAM policy on the service's execution role to read the database's
+  generated password from Secrets Manager
+- the five variables in the task definition, with `DB_PASSWORD` injected as a
+  secret
+
+For `api reads and writes uploads`, an IAM policy on the task role that
+allows listing that bucket and getting, putting and deleting its objects,
+plus `UPLOADS_BUCKET`.
