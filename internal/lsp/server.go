@@ -145,6 +145,16 @@ func (s *server) dispatch(m *message) (any, *rpcError) {
 			return nil, nil
 		}
 		return s.format(doc), nil
+	case "textDocument/semanticTokens/full":
+		var p semanticTokensParams
+		if err := json.Unmarshal(m.Params, &p); err != nil {
+			return nil, invalidParams(err)
+		}
+		doc := s.docs[p.TextDocument.URI]
+		if doc == nil {
+			return nil, nil
+		}
+		return s.semanticTokens(doc), nil
 	}
 	if m.isRequest() {
 		return nil, &rpcError{Code: codeMethodNotFound, Message: fmt.Sprintf("%s is not supported", m.Method)}
@@ -177,6 +187,10 @@ func (s *server) initialize(params json.RawMessage) (any, *rpcError) {
 			HoverProvider:              true,
 			CompletionProvider:         completionProvider{TriggerCharacters: []string{" "}},
 			DocumentFormattingProvider: true,
+			SemanticTokensProvider: semanticTokensOptions{
+				Legend: semanticTokensLegend{TokenTypes: tokenTypes, TokenModifiers: tokenModifiers},
+				Full:   true,
+			},
 		},
 		ServerInfo: serverInfo{Name: "clowd", Version: s.version},
 	}, nil
