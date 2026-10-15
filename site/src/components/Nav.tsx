@@ -3,35 +3,48 @@ import { Logo } from './Logo'
 
 export const REPO = 'https://github.com/joshjkns/clowd'
 
+const LINKS: [string, string][] = [
+  ['Docs', '/docs/'],
+  ['Language', '/docs/language/'],
+  ['CLI', '/docs/cli/'],
+  ['GitHub', REPO],
+]
+
 export function Nav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-line bg-page">
       <nav className="mx-auto flex h-14 max-w-6xl items-center gap-8 px-4 sm:px-6">
-        <Link href="/" aria-label="Clowd home" className="flex items-center">
-          <Logo />
-        </Link>
-        <div className="hidden items-center gap-6 text-sm text-mute sm:flex">
-          <Link href="/docs/" className="transition hover:text-paper">
-            Docs
+        <div className="flex items-center gap-3">
+          <Link href="/" aria-label="Clowd home" className="flex items-center">
+            <Logo />
           </Link>
-          <Link href="/docs/language/" className="transition hover:text-paper">
-            Language
-          </Link>
-          <Link href="/docs/cli/" className="transition hover:text-paper">
-            CLI
-          </Link>
-          <a href={REPO} className="transition hover:text-paper">
-            GitHub
-          </a>
-        </div>
-        <div className="ml-auto flex items-center gap-4 text-sm">
-          <Link href="/docs/" className="text-mute transition hover:text-paper sm:hidden">
-            Docs
-          </Link>
+          {/* The beta notice lives here so it shows on every page without a banner. */}
           <Link
-            href="/docs/#install"
-            className="rounded-full bg-paper px-4 py-1.5 font-medium text-ink transition hover:bg-white"
+            href="/docs/#status"
+            title="Clowd is a work in progress, and the language may change before 1.0"
+            className="bg-fg px-1.5 py-px font-mono text-[10.5px] uppercase tracking-[0.12em] text-page transition hover:bg-accent"
           >
+            Beta
+          </Link>
+        </div>
+        <div className="hidden items-center gap-6 font-mono text-[13px] text-mute sm:flex">
+          {LINKS.map(([label, href]) =>
+            href.startsWith('/') ? (
+              <Link key={href} href={href} className="transition hover:text-fg">
+                {label}
+              </Link>
+            ) : (
+              <a key={href} href={href} className="transition hover:text-fg">
+                {label}
+              </a>
+            ),
+          )}
+        </div>
+        <div className="ml-auto flex items-center gap-4 font-mono text-[13px]">
+          <Link href="/docs/" className="text-mute transition hover:text-fg sm:hidden">
+            Docs
+          </Link>
+          <Link href="/docs/#install" className="bg-fg px-3.5 py-1.5 text-page transition hover:bg-accent">
             Install
           </Link>
         </div>

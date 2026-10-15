@@ -14,7 +14,7 @@ type Props = {
 export function Code({ src, lang = 'clowd', title, lineNumbers = false, className = '', bare = false }: Props) {
   const text = src.replace(/\n$/, '')
   return (
-    <div className={`overflow-hidden ${bare ? '' : 'rounded-lg border border-line bg-ink-2'} ${className}`}>
+    <div className={`overflow-hidden ${bare ? '' : 'border border-edge bg-page'} ${className}`}>
       {title && (
         <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">
           {title}
@@ -46,7 +46,7 @@ function Shell({ text }: { text: string }) {
       return (
         <span key={i} className="block">
           <span className="select-none text-faint">$ </span>
-          <span className="text-paper">{line.slice(2)}</span>
+          <span className="text-fg">{line.slice(2)}</span>
         </span>
       )
     }
