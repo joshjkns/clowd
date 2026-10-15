@@ -4,7 +4,6 @@ import { DidYouMean } from '@/components/DidYouMean'
 import { Matrix } from '@/components/Matrix'
 import { Code } from '@/components/Code'
 import { CopyCommand } from '@/components/CopyCommand'
-import { Glyph } from '@/components/Logo'
 import { CloudField } from '@/components/CloudField'
 import { highlight, tokenClass } from '@/lib/clowd'
 import { CHECK_MS, FULL_SOURCE, JSON_LINES, SOURCE_LINES, STEPS, TOTAL_RESOURCES } from '@/lib/demo'
@@ -17,10 +16,11 @@ export default function Home() {
       {/* Keeps the hero copy readable over the field. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[radial-gradient(ellipse_70%_60%_at_30%_45%,var(--color-ink)_35%,transparent)]" />
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28">
-        <h1 className="max-w-3xl text-[clamp(2.4rem,6vw,4.25rem)] font-medium leading-[1.02] tracking-[-0.04em]">
+        <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-mute">A language for cloud infrastructure</p>
+        <h1 className="mt-6 max-w-4xl font-serif text-[clamp(2.6rem,6.5vw,4.75rem)] font-normal leading-[1.02] tracking-[-0.02em]">
           Describe your cloud once.
           <br />
-          <span className="text-mute">Deploy it to any of them.</span>
+          <em className="text-mute">Deploy it to any of them.</em>
         </h1>
         <p className="mt-7 max-w-xl text-pretty text-[17px] leading-relaxed text-mute">
           Clowd is a small, English-like language for infrastructure. Write what you want in sentences, check it against
@@ -28,7 +28,7 @@ export default function Home() {
         </p>
         <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
           <CopyCommand className="sm:w-auto" />
-          <Link href="/docs/" className="group inline-flex items-center gap-1.5 text-sm text-mute transition hover:text-paper">
+          <Link href="/docs/" className="group inline-flex items-center gap-1.5 font-mono text-[13px] text-mute transition hover:text-paper">
             Read the docs <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" aria-hidden />
           </Link>
         </div>
@@ -37,6 +37,7 @@ export default function Home() {
       </section>
 
       <Section
+        n={1}
         label="Resources"
         title="Nouns, not products."
         subtitle="Clowd picks the service on each cloud."
@@ -50,18 +51,19 @@ export default function Home() {
       </Section>
 
       <Section
+        n={2}
         label="Relationships"
         title="One line of wiring."
         subtitle="Instead of a page of IAM and security groups."
         body="A relationship generates the network path, the permissions and the environment variables your code reads. It never sees an ARN, and the variables are the same on every cloud."
       >
-        <div className="overflow-hidden rounded-lg border border-line">
+        <div className="border-y border-line">
           {RELATIONS.map((r, i) => (
-            <div key={r.src} className={`grid gap-6 p-6 md:grid-cols-[1fr_1.4fr] ${i ? 'border-t border-line' : ''}`}>
+            <div key={r.src} className={`grid gap-6 py-6 md:grid-cols-[1fr_1.4fr] ${i ? 'border-t border-dashed border-line-2' : ''}`}>
               <Line src={r.src} className="text-[15px]" />
               <div className="grid gap-5 text-sm sm:grid-cols-2">
                 <div>
-                  <p className="text-paper">On AWS</p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-faint">On AWS</p>
                   <ul className="mt-2 space-y-1 text-mute">
                     {r.aws.map((a) => (
                       <li key={a}>{a}</li>
@@ -69,7 +71,7 @@ export default function Home() {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-paper">In the service</p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-faint">In the service</p>
                   <ul className="mt-2 space-y-1 font-mono text-[12.5px] text-mute">
                     {r.env.map((e) => (
                       <li key={e}>{e}</li>
@@ -83,6 +85,7 @@ export default function Home() {
       </Section>
 
       <Section
+        n={3}
         label="Checking"
         title="Know before you deploy."
         subtitle={`Every cloud, in ${CHECK_MS} milliseconds.`}
@@ -92,6 +95,7 @@ export default function Home() {
       </Section>
 
       <Section
+        n={4}
         label="Errors"
         title="One way to say it."
         subtitle="And the fix, when you guess wrong."
@@ -101,28 +105,21 @@ export default function Home() {
       </Section>
 
       <Section
+        n={5}
         label="Output"
         title="Plain OpenTofu underneath."
         subtitle="No new engine, no lock-in."
         body="clowd build writes ordinary OpenTofu JSON. OpenTofu plans, applies and keeps state, and you can read the output, diff it, or take it and leave."
       >
-        <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-line md:grid-cols-4">
-          {[
-            [String(SOURCE_LINES), 'lines of Clowd'],
-            [String(TOTAL_RESOURCES), 'AWS resources'],
-            [String(JSON_LINES), 'lines of OpenTofu JSON'],
-            [`${CHECK_MS} ms`, 'to check it'],
-          ].map(([n, label], i) => (
-            <div key={label} className={`p-6 ${i % 2 ? 'border-l border-line' : ''} ${i > 1 ? 'border-t border-line md:border-t-0' : ''} ${i === 2 ? 'md:border-l' : ''}`}>
-              <p className="text-3xl font-medium tracking-tight">{n}</p>
-              <p className="mt-1 text-sm text-mute">{label}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-sm text-faint">examples/app.clowd, built for AWS. Timed on an Apple M2.</p>
+        <p className="max-w-4xl font-serif text-[clamp(1.5rem,3.2vw,2.25rem)] leading-snug text-mute">
+          <Stat>{SOURCE_LINES}</Stat> lines of Clowd become <Stat>{TOTAL_RESOURCES}</Stat> AWS resources and{' '}
+          <Stat>{JSON_LINES}</Stat> lines of OpenTofu JSON, checked in <Stat>{CHECK_MS} ms</Stat>.
+        </p>
+        <p className="mt-6 font-mono text-[12px] text-faint">examples/app.clowd, built for AWS. Timed on an Apple M2.</p>
       </Section>
 
       <Section
+        n={6}
         label="Editor"
         title="Your editor speaks it too."
         subtitle="Diagnostics, hovers, completion, formatting."
@@ -135,13 +132,13 @@ export default function Home() {
       <section className="relative isolate overflow-hidden border-t border-line">
         <CloudField className="h-full [mask-image:radial-gradient(ellipse_at_center,transparent_15%,black_75%)]" />
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-28 text-center sm:px-6">
-          <h2 className="text-[clamp(2rem,4.5vw,3rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+          <h2 className="font-serif text-[clamp(2.1rem,4.8vw,3.25rem)] font-normal leading-[1.05] tracking-[-0.015em]">
             From sentences to infrastructure.
             <br />
-            <span className="text-mute">Install in one line.</span>
+            <em className="text-mute">Install in one line.</em>
           </h2>
           <CopyCommand className="mt-10" />
-          <p className="mt-4 text-sm text-faint">Needs Go 1.26 or newer. Deploying also needs OpenTofu or Terraform.</p>
+          <p className="mt-4 font-mono text-[12px] text-faint">Needs Go 1.26 or newer. Deploying also needs OpenTofu or Terraform.</p>
         </div>
       </section>
     </main>
@@ -176,12 +173,14 @@ const RELATIONS = [
 ]
 
 function Section({
+  n,
   label,
   title,
   subtitle,
   body,
   children,
 }: {
+  n: number
   label: string
   title: string
   subtitle: string
@@ -192,15 +191,15 @@ function Section({
     <section className="border-t border-line">
       <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <h2 className="flex items-center gap-2.5 self-start text-2xl font-medium tracking-[-0.03em] text-paper md:sticky md:top-24">
-            <Glyph className="size-6 text-faint" />
+          <h2 className="flex items-baseline gap-3 self-start font-mono text-[13px] uppercase tracking-[0.14em] text-mute md:sticky md:top-24">
+            <span className="text-faint">§{String(n).padStart(2, '0')}</span>
             {label}
           </h2>
           <div>
-            <p className="text-[clamp(1.5rem,3vw,2rem)] font-medium leading-tight tracking-[-0.03em]">
+            <p className="font-serif text-[clamp(1.75rem,3.4vw,2.4rem)] leading-tight tracking-[-0.01em]">
               {title}
               <br />
-              <span className="text-mute">{subtitle}</span>
+              <em className="text-mute">{subtitle}</em>
             </p>
             <p className="mt-5 max-w-md text-pretty text-[15px] leading-relaxed text-mute">{body}</p>
           </div>
@@ -212,20 +211,21 @@ function Section({
 }
 
 function Grid({ children }: { children: React.ReactNode }) {
-  // gap-px over a line-coloured background draws hairlines between cells.
-  return <div className="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+  return <div className="grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
 }
 
 function Card({ code, title, text }: { code: string; title: string; text: string }) {
   return (
-    <div className="bg-ink p-6">
-      <div className="flex h-28 items-center justify-center rounded-md border border-line bg-ink-2">
-        <Line src={code} className="text-[14px]" />
-      </div>
-      <p className="mt-5 text-[15px] text-paper">{title}</p>
+    <div className="border-t border-line pb-10 pt-5">
+      <Line src={code} className="text-[14px]" />
+      <p className="mt-4 font-serif text-lg text-paper">{title}</p>
       <p className="mt-1 text-sm leading-relaxed text-mute">{text}</p>
     </div>
   )
+}
+
+function Stat({ children }: { children: React.ReactNode }) {
+  return <span className="text-paper">{children}</span>
 }
 
 function Line({ src, className = '' }: { src: string; className?: string }) {
@@ -283,7 +283,7 @@ function HoverMock() {
         <Line src="service api" />
         <br />
         <Line src="  scale 0 to 5" className="whitespace-pre" />
-        <div className="absolute left-4 right-4 top-[8.6rem] max-w-md rounded-md border border-line-2 bg-ink-3 p-3.5 font-sans text-[13px] leading-relaxed shadow-2xl shadow-black sm:left-24 sm:right-auto">
+        <div className="absolute left-4 right-4 top-[8.6rem] max-w-md rounded-md border border-line-2 bg-ink-3 p-3.5 font-sans text-[13px] leading-relaxed shadow-[6px_6px_0_0_var(--color-ink)] sm:left-24 sm:right-auto">
           <p className="font-mono text-paper">service api</p>
           <div className="mt-2 grid grid-cols-[3rem_1fr] gap-y-1 text-mute">
             <span className="font-mono text-paper">aws</span>

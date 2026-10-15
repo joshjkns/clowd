@@ -19,9 +19,7 @@ export function DocsSidebar() {
     <nav className="space-y-7 text-sm">
       {DOCS.map((s) => (
         <div key={s.section}>
-          <p className="mb-2 text-sm text-paper">
-            {s.section}
-          </p>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-faint">{s.section}</p>
           <ul className="space-y-0.5 border-l border-line">
             {s.pages.map((p) => {
               const active = path === p.href
@@ -75,7 +73,7 @@ export function DocsPager() {
           <span className="flex items-center gap-1.5 text-xs text-faint">
             <ArrowLeft className="size-3.5" /> Previous
           </span>
-          <span className="mt-1 block text-paper">{prev.title}</span>
+          <span className="mt-1 block font-serif text-lg text-paper">{prev.title}</span>
         </Link>
       ) : (
         <span />
@@ -85,7 +83,7 @@ export function DocsPager() {
           <span className="flex items-center justify-end gap-1.5 text-xs text-faint">
             Next <ArrowRight className="size-3.5" />
           </span>
-          <span className="mt-1 block text-paper">{next.title}</span>
+          <span className="mt-1 block font-serif text-lg text-paper">{next.title}</span>
         </Link>
       )}
     </div>

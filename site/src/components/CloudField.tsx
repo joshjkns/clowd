@@ -66,7 +66,7 @@ export function CloudField({ className = '' }: { className?: string }) {
       ctx.clearRect(0, 0, w, h)
       ctx.font = `${FONT}px ${getComputedStyle(canvas).fontFamily}`
       ctx.textBaseline = 'top'
-      ctx.fillStyle = '#f5f5f5'
+      ctx.fillStyle = '#ece6da'
 
       // Puffs wrap with a margin so they enter and leave off screen.
       const puffs = PUFFS.map(([x, y, r, v]) => {

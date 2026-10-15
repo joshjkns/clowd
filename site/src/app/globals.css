@@ -3,18 +3,19 @@
 /* Monochrome everywhere; colour is reserved for syntax highlighting, so it
    always means the same thing it means in a .clowd file. */
 @theme {
-  --color-ink: #000000;
-  --color-ink-2: #0a0a0a;
-  --color-ink-3: #141414;
-  --color-line: #1f1f1f;
-  --color-line-2: #2a2a2a;
-  --color-paper: #f5f5f5;
-  --color-mute: #8f8f8f;
-  --color-faint: #5c5c5c;
+  /* Warm ink and paper, like a printed manual rather than a dashboard. */
+  --color-ink: #12110f;
+  --color-ink-2: #191815;
+  --color-ink-3: #22201c;
+  --color-line: #2c2924;
+  --color-line-2: #3d3931;
+  --color-paper: #ece6da;
+  --color-mute: #a69e8f;
+  --color-faint: #6f685c;
 
   --color-tok-kw: #a99bff;
   --color-tok-kind: #5ec8ff;
-  --color-tok-name: #f5f5f5;
+  --color-tok-name: #ece6da;
   --color-tok-verb: #ff6aa9;
   --color-tok-cloud: #b8f25c;
   --color-tok-trait: #ffd166;
@@ -22,14 +23,21 @@
   --color-tok-value: #efc7a2;
   --color-tok-num: #ff9f5a;
   --color-tok-raw: #9aa3b5;
-  --color-tok-comment: #5c5c5c;
+  --color-tok-comment: #6f685c;
 
   --color-ok: #b8f25c;
   --color-warn: #ffd166;
   --color-bad: #ff5d5d;
 
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-plex-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Square corners everywhere: panels read as printed boxes, not cards. */
+  --radius-sm: 1px;
+  --radius: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
 }
 
 html {
@@ -45,13 +53,13 @@ body {
 }
 
 ::selection {
-  background: #ffffff;
-  color: #000000;
+  background: var(--color-paper);
+  color: var(--color-ink);
 }
 
 /* Docs prose, by hand so headings, tables and code match the site. */
 .prose-clowd {
-  color: #c8c8c8;
+  color: #d2cbbd;
   line-height: 1.75;
   font-size: 0.95rem;
 }
@@ -59,17 +67,19 @@ body {
   margin-top: 1.1em;
 }
 .prose-clowd h1 {
-  font-size: 2.25rem;
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
   line-height: 1.1;
-  letter-spacing: -0.03em;
-  font-weight: 500;
+  letter-spacing: -0.015em;
+  font-weight: 400;
   color: var(--color-paper);
   margin-bottom: 0.8em;
 }
 .prose-clowd h2 {
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
-  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+  font-weight: 400;
   color: var(--color-paper);
   margin-top: 2.6em;
   padding-top: 1.4em;
@@ -77,7 +87,8 @@ body {
   scroll-margin-top: 7rem;
 }
 .prose-clowd h3 {
-  font-size: 1.05rem;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
   font-weight: 500;
   color: var(--color-paper);
   margin-top: 1.9em;
