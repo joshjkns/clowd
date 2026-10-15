@@ -1,0 +1,16 @@
+{
+  "comments": {
+    "lineComment": "#"
+  },
+  "autoClosingPairs": [
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] }
+  ],
+  "surroundingPairs": [
+    ["\"", "\""]
+  ],
+  "wordPattern": "[A-Za-z0-9_][A-Za-z0-9_.\\-]*",
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*((service|database|bucket|load\\s+balancer|lb|queue|project|network)\\b.*|on\\s+\\w+\\s*)(#.*)?$",
+    "decreaseIndentPattern": "^(?!)"
+  }
+}
