@@ -21,20 +21,53 @@ import (
 	"github.com/joshjkns/clowd/internal/emit/tfjson"
 	"github.com/joshjkns/clowd/internal/ir"
 	"github.com/joshjkns/clowd/internal/lower/aws"
+	"github.com/joshjkns/clowd/internal/lower/gcp"
 	"github.com/joshjkns/clowd/internal/project"
 	"github.com/joshjkns/clowd/internal/runner"
 	"github.com/joshjkns/clowd/internal/term"
 )
 
-// awsOptions are the deploy settings the AWS backend needs besides the
-// program.
-func awsOptions(p *project.Project, prog *ir.Program, source string) aws.Options {
-	return aws.Options{
-		Project:         p.Name(prog.Project.Name),
-		Source:          source,
-		ProviderVersion: p.Lock.Version("aws"),
-	}
+// providers are the providers each cloud's builds use, by local name, as
+// clowd.lock records them.
+var providers = map[ir.Cloud][]project.Provider{
+	ir.AWS: {{Source: aws.ProviderSource}},
+	ir.GCP: {{Source: gcp.ProviderSource}, {Source: gcp.RandomSource}},
 }
+
+// providerName is a provider's local name: "hashicorp/google" → "google".
+func providerName(source string) string {
+	_, name, _ := strings.Cut(source, "/")
+	return name
+}
+
+// lowered is one cloud's lowering, whichever backend did it.
+type lowered struct {
+	config *tfjson.Config
+	certs  []string
+	diags  diag.List
+}
+
+// lower runs the backend for cloud with the project's settings.
+func lower(p *project.Project, prog *ir.Program, cloud ir.Cloud, source string) lowered {
+	name := p.Name(prog.Project.Name)
+	switch cloud {
+	case ir.AWS:
+		res := aws.Lower(prog, aws.Options{Project: name, Source: source, ProviderVersion: p.Lock.Version("aws")})
+		return lowered{res.Config, res.Certificates, res.Diags}
+	case ir.GCP:
+		versions := map[string]string{}
+		for _, pr := range providers[ir.GCP] {
+			versions[providerName(pr.Source)] = p.Lock.Version(providerName(pr.Source))
+		}
+		res := gcp.Lower(prog, gcp.Options{Project: name, Source: source, ProviderVersions: versions})
+		return lowered{config: res.Config, diags: res.Diags}
+	}
+	panic("lower: no backend for " + cloud.String()) // build checks analyze.HasBackend first
+}
+
+// gcpProjectEnv are the environment variables the Google provider reads
+// the project from, in its order.
+var gcpProjectEnv = []string{"GOOGLE_PROJECT", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT", "CLOUDSDK_CORE_PROJECT"}
 
 // runtimeEnv names the environment variable that picks the tool, like
 // --runtime; the flag wins.
@@ -240,18 +273,18 @@ func (s *session) build(cloud ir.Cloud) (*built, int) {
 		s.fail("%s isn't deployable to %s; run `clowd check` for details", s.file.Name, cloud)
 		return nil, exitFailure
 	}
-	res := aws.Lower(s.prog, awsOptions(s.proj, s.prog, filepath.Base(s.file.Name)))
-	s.render(append(append(slices.Clone(s.diags), rep.Diagnostics()...), res.Diags...))
-	if res.Diags.HasErrors() {
-		fmt.Fprintf(s.stderr, "%s: %s\n", s.st.err.Bold(s.file.Name), s.st.err.Error(count(res.Diags)))
+	res := lower(s.proj, s.prog, cloud, filepath.Base(s.file.Name))
+	s.render(append(append(slices.Clone(s.diags), rep.Diagnostics()...), res.diags...))
+	if res.diags.HasErrors() {
+		fmt.Fprintf(s.stderr, "%s: %s\n", s.st.err.Bold(s.file.Name), s.st.err.Error(count(res.diags)))
 		return nil, exitBadInput
 	}
-	data, err := tfjson.Marshal(res.Config)
+	data, err := tfjson.Marshal(res.config)
 	if err != nil {
 		s.fail("generating %s configuration: %v", cloud, err)
 		return nil, exitFailure
 	}
-	b := &built{cloud: cloud, dir: s.proj.BuildDir(cloud.String()), certs: res.Certificates}
+	b := &built{cloud: cloud, dir: s.proj.BuildDir(cloud.String()), certs: res.certs}
 	b.path = filepath.Join(b.dir, "main.tf.json")
 	if err := os.MkdirAll(b.dir, 0o755); err != nil {
 		s.fail("%v", err)
@@ -375,6 +408,11 @@ func deploy(cmd, usage string, args []string, stdout, stderr io.Writer) int {
 		return code
 	}
 
+	if cloud == ir.GCP && s.prog.AccountOn(ir.GCP) == "" && !slices.ContainsFunc(gcpProjectEnv, func(v string) bool { return os.Getenv(v) != "" }) {
+		s.fail("%s doesn't say which Google Cloud project to deploy to; add `on gcp` with `project <id>` below it, or set GOOGLE_PROJECT", s.file.Name)
+		return exitBadInput
+	}
+
 	runtime := d.runtime
 	if runtime == "" {
 		runtime = os.Getenv(runtimeEnv)
@@ -397,7 +435,7 @@ func deploy(cmd, usage string, args []string, stdout, stderr io.Writer) int {
 	defer signal.Stop(sig)
 	ctx := context.Background()
 
-	if code := s.init(ctx, r, d.verbose); code != exitOK {
+	if code := s.init(ctx, r, cloud, d.verbose); code != exitOK {
 		return code
 	}
 	switch cmd {
@@ -428,13 +466,18 @@ func deploy(cmd, usage string, args []string, stdout, stderr io.Writer) int {
 
 // init runs tofu init and records the provider versions it chose in
 // clowd.lock, so the next build pins them.
-func (s *session) init(ctx context.Context, r *runner.Runner, verbose bool) int {
+func (s *session) init(ctx context.Context, r *runner.Runner, cloud ir.Cloud, verbose bool) int {
 	// A pin from clowd.lock that differs from what this directory last
 	// installed (after a `git pull`, say) means the old selection must go,
 	// or init refuses the new constraint.
-	want := s.proj.Lock.Version("aws")
-	if have, err := project.ReadTofuLock(r.Dir); err == nil && want != "" && have[aws.ProviderSource] != want {
-		_ = os.Remove(filepath.Join(r.Dir, ".terraform.lock.hcl"))
+	if have, err := project.ReadTofuLock(r.Dir); err == nil {
+		for _, pr := range providers[cloud] {
+			want := s.proj.Lock.Version(providerName(pr.Source))
+			if got, ok := have[pr.Source]; ok && want != "" && got != want {
+				_ = os.Remove(filepath.Join(r.Dir, ".terraform.lock.hcl"))
+				break
+			}
+		}
 	}
 	fmt.Fprintln(s.stderr, s.st.err.Dim(fmt.Sprintf("Preparing %s (%s init)…", rel(r.Dir), r.Tool)))
 	out, err := r.Init(ctx)
@@ -453,20 +496,28 @@ func (s *session) init(ctx context.Context, r *runner.Runner, verbose bool) int 
 		s.fail("reading the provider versions %s chose: %v", r.Tool, err)
 		return exitFailure
 	}
-	version := have[aws.ProviderSource]
-	if version == "" || version == want {
-		return exitOK
-	}
 	lock := project.Lock{Providers: map[string]project.Provider{}}
 	for k, v := range s.proj.Lock.Providers {
 		lock.Providers[k] = v
 	}
-	lock.Providers["aws"] = project.Provider{Source: aws.ProviderSource, Version: version}
+	var pinned []string
+	for _, pr := range providers[cloud] {
+		name := providerName(pr.Source)
+		version := have[pr.Source]
+		if version == "" || version == s.proj.Lock.Version(name) {
+			continue
+		}
+		lock.Providers[name] = project.Provider{Source: pr.Source, Version: version}
+		pinned = append(pinned, pr.Source+" "+version)
+	}
+	if len(pinned) == 0 {
+		return exitOK
+	}
 	if _, err := s.proj.WriteLock(lock); err != nil {
 		s.fail("writing %s: %v", project.LockFile, err)
 		return exitFailure
 	}
-	fmt.Fprintln(s.stderr, s.st.err.Dim(fmt.Sprintf("Pinned %s %s in %s; commit it.", aws.ProviderSource, version, project.LockFile)))
+	fmt.Fprintln(s.stderr, s.st.err.Dim(fmt.Sprintf("Pinned %s in %s; commit it.", strings.Join(pinned, ", "), project.LockFile)))
 	return exitOK
 }
 
@@ -530,7 +581,7 @@ func (s *session) summary(ctx context.Context, r *runner.Runner, cloud ir.Cloud)
 	var names []string
 	for name, raw := range outs {
 		var v string
-		if json.Unmarshal(raw, &v) == nil && !strings.HasSuffix(name, "_dns_name") {
+		if json.Unmarshal(raw, &v) == nil && !strings.HasSuffix(name, "_dns_name") && !strings.HasSuffix(name, "_ip_address") {
 			values[name] = v
 			names = append(names, name)
 		}
@@ -543,14 +594,27 @@ func (s *session) summary(ctx context.Context, r *runner.Runner, cloud ir.Cloud)
 	for _, n := range names {
 		fmt.Fprintf(s.stdout, "  %s%s  %s\n", n, spaces(width-len(n)), values[n])
 		// A TLS URL is on the user's domain, which must point at the
-		// load balancer before it works.
+		// load balancer before it works: by name on AWS, by address on
+		// GCP.
 		lb, isURL := strings.CutSuffix(n, "_url")
-		var dns string
-		if isURL && json.Unmarshal(outs[lb+"_dns_name"], &dns) == nil && !strings.Contains(values[n], dns) {
-			host := strings.TrimPrefix(values[n], "https://")
-			host, _, _ = strings.Cut(host, ":")
-			fmt.Fprintf(s.stdout, "  %s  %s\n", spaces(width), s.st.out.Dim(fmt.Sprintf("point %s at %s with a CNAME record", host, dns)))
+		if !isURL {
+			continue
 		}
+		host := strings.TrimPrefix(values[n], "https://")
+		host, _, _ = strings.Cut(host, ":")
+		var target string
+		if json.Unmarshal(outs[lb+"_dns_name"], &target) == nil && !strings.Contains(values[n], target) {
+			fmt.Fprintf(s.stdout, "  %s  %s\n", spaces(width), s.st.out.Dim(fmt.Sprintf("point %s at %s with a CNAME record", host, target)))
+		} else if json.Unmarshal(outs[lb+"_ip_address"], &target) == nil && !strings.Contains(values[n], target) {
+			fmt.Fprintf(s.stdout, "  %s  %s\n", spaces(width), s.st.out.Dim(fmt.Sprintf("point %s at %s with an A record", host, target)))
+		}
+	}
+	// Certificate Manager issues certificates once their records exist,
+	// without the apply waiting, so they are only listed among the
+	// outputs; say what to do with them.
+	if slices.ContainsFunc(names, func(n string) bool { return strings.HasSuffix(n, "_validation") }) {
+		fmt.Fprintln(s.stderr, s.st.err.Warning("Add the _validation DNS records at your DNS provider.")+
+			" HTTPS works once Google sees them and issues the certificates (usually minutes, up to 72 hours for new records).")
 	}
 }
 

@@ -17,6 +17,8 @@ database db is postgres 16, medium
 database old is postgres 11
 database my is mysql 5.7
 database fine is mysql 8.4
+database standby is mysql 8.0, highly available
+  backups off
 database minor is postgres 16.4
 bucket assets is public
 queue jobs is fifo
@@ -35,4 +37,5 @@ api connects to db
 api connects to worker
 api reads and writes assets
 worker reads jobs
+worker writes assets
 api sends to jobs

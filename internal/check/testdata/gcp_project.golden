@@ -1,0 +1,24 @@
+target gcp europe-west2 1:1
+account gcp shop-prod-123 4:3
+
+diagnostics:
+error: the gcp project is already set on line 4
+ --> gcp_project.clowd:5:3
+  |
+5 |   project other-project
+  |   ^^^^^^^^^^^^^^^^^^^^^
+  = help: remove one of them
+
+error: unknown `on gcp` setting `network`
+ --> gcp_project.clowd:6:3
+  |
+6 |   network
+  |   ^^^^^^^
+  = help: using an existing network isn't implemented for gcp yet; Clowd creates one, which the `network` declaration configures
+
+error: `Bad_ID` is not a Google Cloud project ID
+  --> gcp_project.clowd:10:11
+   |
+10 |   project Bad_ID
+   |           ^^^^^^
+   = help: project IDs are 6 to 30 lowercase letters, digits and dashes, starting with a letter; the ID is shown next to the project's name in the console

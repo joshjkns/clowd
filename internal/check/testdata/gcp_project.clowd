@@ -1,0 +1,10 @@
+use gcp in europe-west2
+
+on gcp
+  project shop-prod-123
+  project other-project
+  network
+    vpc x
+
+on GCP
+  project Bad_ID

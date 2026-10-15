@@ -32,6 +32,17 @@ func TestFile(t *testing.T) {
 			want: []string{"aws_s3_bucket has no setting `force_destroyy` that `on aws` can change"},
 		},
 		{
+			name: "gcp lowering errors",
+			src:  "use gcp\nqueue q\n  on gcp\n    filterr x\n",
+			want: []string{"google_pubsub_subscription has no setting `filterr` that `on gcp` can change"},
+		},
+		{
+			name:   "gcp lowering notes",
+			src:    "use gcp\nservice s\n  image a\n  cpu 0.5\n",
+			want:   []string{"on gcp: Cloud Run runs services with less than 1 vCPU one request at a time; s uses 1 vCPU"},
+			report: true,
+		},
+		{
 			name:    "targets replace the use lines",
 			src:     "use aws\nqueue q is fifo\n",
 			targets: []ir.Cloud{ir.GCP},

@@ -9,7 +9,6 @@ import (
 	"github.com/joshjkns/clowd/internal/check"
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
-	"github.com/joshjkns/clowd/internal/lower/aws"
 	"github.com/joshjkns/clowd/internal/syntax/ast"
 )
 
@@ -324,10 +323,11 @@ func (c *completer) nested(parents [][]string, words []string) {
 	if on[0] != "on" || len(on) < 2 || len(words) > 0 || !k.IsResource() {
 		return
 	}
-	if cl, ok := ir.ParseCloud(on[1]); !ok || cl != ir.AWS {
+	cl, ok := ir.ParseCloud(on[1])
+	if !ok {
 		return
 	}
-	resource, keys := aws.Overridable(irKind(k), path[1:]...)
+	resource, keys := overridable(cl, irKind(k), path[1:]...)
 	for _, key := range keys {
 		c.add(key, itemField, resource, "")
 	}

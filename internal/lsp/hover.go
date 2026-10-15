@@ -9,6 +9,7 @@ import (
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
 	"github.com/joshjkns/clowd/internal/lower/aws"
+	"github.com/joshjkns/clowd/internal/lower/gcp"
 	"github.com/joshjkns/clowd/internal/syntax/ast"
 )
 
@@ -218,16 +219,16 @@ func describeOverrides(d *ast.Declare, cloud string, settings []ast.Property, pa
 	for _, p := range settings {
 		key := strings.ToLower(p.Key.Text)
 		if in(p.Key.Pos, offset) {
-			if c != ir.AWS {
+			resource, _ := overridable(c, irKind(d.Kind))
+			if resource == "" {
 				return fmt.Sprintf("`%s`: a %s provider argument, applied only when deploying to %s.", p.Key.Text, cloudTitle(c), cloudTitle(c)), p.Key.Pos
 			}
-			resource, _ := aws.Overridable(irKind(d.Kind))
 			where := fmt.Sprintf("`%s`", resource)
 			if len(path) > 0 {
 				where = fmt.Sprintf("the `%s` block of `%s`", strings.Join(path, "."), resource)
 			}
-			return fmt.Sprintf("`%s`: an argument of %s, passed to the provider as written and applied only when deploying to AWS.\n\n[%s documentation](%s)",
-				p.Key.Text, where, resource, registryURL(resource)), p.Key.Pos
+			return fmt.Sprintf("`%s`: an argument of %s, passed to the provider as written and applied only when deploying to %s.\n\n[%s documentation](%s)",
+				p.Key.Text, where, cloudTitle(c), resource, registryURL(resource)), p.Key.Pos
 		}
 		if text, sp := describeOverrides(d, cloud, p.Block, append(slices.Clone(path), key), offset); text != "" {
 			return text, sp
@@ -240,6 +241,7 @@ func describeOverrides(d *ast.Declare, cloud string, settings []ast.Property, pa
 func describeCloudSettings(settings []ast.Property, path []string, offset int) (string, diag.Span) {
 	docs := map[string]string{
 		"network":         "Uses a network that already exists instead of creating one. It replaces the `network` declaration's `cidr`.",
+		"project":         "The Google Cloud project to deploy into, by its ID. Without it, the project comes from the environment (`GOOGLE_PROJECT` or `GOOGLE_CLOUD_PROJECT`).",
 		"vpc":             "The ID of the existing VPC.",
 		"public_subnets":  "Subnets for load balancers (and public services): two or more, in different availability zones, separated by `, `.",
 		"private_subnets": "Subnets for databases (and private services): two or more, in different availability zones, separated by `, `.",
@@ -259,9 +261,23 @@ func describeCloudSettings(settings []ast.Property, path []string, offset int) (
 	return "", diag.Span{}
 }
 
-// registryURL is the provider documentation page for an AWS resource.
+// registryURL is the provider documentation page for a resource type.
 func registryURL(resource string) string {
-	return "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/" + strings.TrimPrefix(resource, "aws_")
+	provider, name, _ := strings.Cut(resource, "_")
+	return "https://registry.terraform.io/providers/hashicorp/" + provider + "/latest/docs/resources/" + name
+}
+
+// overridable is the resource an `on <cloud>` block in a resource of kind
+// k sets, and the arguments it accepts at path; "" for a cloud without a
+// backend.
+func overridable(c ir.Cloud, k ir.Kind, path ...string) (resource string, keys []string) {
+	switch c {
+	case ir.AWS:
+		return aws.Overridable(k, path...)
+	case ir.GCP:
+		return gcp.Overridable(k, path...)
+	}
+	return "", nil
 }
 
 func cloudDoc(name string) string {

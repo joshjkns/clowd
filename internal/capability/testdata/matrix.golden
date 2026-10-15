@@ -32,10 +32,12 @@
 | service cpu size | ✓ | ✓ | ✗ |
 | service environment variables | ✓ | ✓ | ✗ |
 | service health check path | ✓ | ✓ | ✗ |
+| service image from a registry other than Docker Hub | ✓ | ⚠ Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private | ✗ |
 | service memory size | ✓ | ✓ | ✗ |
 | service reads or writes bucket | ✓ | ✓ | ✗ |
 | service reads queue | ✓ | ⚠ Cloud Run consumes a pull subscription, so CPU stays allocated while instances run | ✗ |
 | service scaling to zero | ✗ ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1 | ✓ | ✗ |
 | service sends to queue | ✓ | ✓ | ✗ |
+| service writes bucket without reading it | ✓ | ⚠ Cloud Storage has no role that writes objects without reading them, so the service can read the bucket too | ✗ |
 | tls listener | ✓ | ✓ | ✗ |
 | versioned bucket | ✓ | ✓ | ✗ |

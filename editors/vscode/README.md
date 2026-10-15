@@ -10,7 +10,7 @@ files:
   (`AWS: ECS Fargate · GCP: Cloud Run`), and docs for keywords, traits,
   properties and raw provider arguments.
 - **Completion** of kinds, traits, properties, verbs, resource names,
-  clouds and `on aws` provider arguments.
+  clouds and `on aws` and `on gcp` provider arguments.
 - **Formatting** with `clowd fmt` (Format Document, or format on save).
 
 Everything except highlighting comes from the language server built into

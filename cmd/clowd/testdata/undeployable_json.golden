@@ -41,8 +41,20 @@ exit 1
               ]
             },
             "gcp": {
-              "level": "supported",
-              "findings": []
+              "level": "emulated",
+              "findings": [
+                {
+                  "feature": "service image from a registry other than Docker Hub",
+                  "level": "emulated",
+                  "note": "Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+                  "pos": {
+                    "line": 5,
+                    "column": 3,
+                    "endLine": 5,
+                    "endColumn": 30
+                  }
+                }
+              ]
             }
           }
         },
@@ -61,8 +73,20 @@ exit 1
               "findings": []
             },
             "gcp": {
-              "level": "supported",
-              "findings": []
+              "level": "emulated",
+              "findings": [
+                {
+                  "feature": "service image from a registry other than Docker Hub",
+                  "level": "emulated",
+                  "note": "Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+                  "pos": {
+                    "line": 9,
+                    "column": 3,
+                    "endLine": 9,
+                    "endColumn": 33
+                  }
+                }
+              ]
             }
           }
         },
@@ -227,6 +251,16 @@ exit 1
       ],
       "diagnostics": [
         {
+          "severity": "info",
+          "message": "on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+          "pos": {
+            "line": 5,
+            "column": 3,
+            "endLine": 5,
+            "endColumn": 30
+          }
+        },
+        {
           "severity": "warning",
           "message": "not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1",
           "pos": {
@@ -234,6 +268,16 @@ exit 1
             "column": 3,
             "endLine": 6,
             "endColumn": 15
+          }
+        },
+        {
+          "severity": "info",
+          "message": "on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private",
+          "pos": {
+            "line": 9,
+            "column": 3,
+            "endLine": 9,
+            "endColumn": 33
           }
         },
         {

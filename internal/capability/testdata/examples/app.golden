@@ -1,8 +1,16 @@
 database db: aws ✓  gcp ✓
 bucket uploads: aws ✓  gcp ✓
-service api: aws ✓  gcp ✓
+service api: aws ✓  gcp ⚠
+  gcp emulated (service image from a registry other than Docker Hub) at 13:3: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
 load balancer web: aws ✓  gcp ✓
 api connects to db: aws ✓  gcp ✓
 api reads and writes uploads: aws ✓  gcp ✓
 database db on aws: aws ✓  gcp –
 deployable: aws true  gcp true
+
+diagnostics:
+info: on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
+  --> app.clowd:13:3
+   |
+13 |   image ghcr.io/me/api:latest
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^

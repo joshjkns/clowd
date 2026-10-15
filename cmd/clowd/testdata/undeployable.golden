@@ -3,8 +3,8 @@ exit 1
 testdata/undeployable.clowd → aws (eu-west-2), gcp (europe-west2)
 
 Resources                 aws  gcp
-  service api             ✗    ✓    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
-  service worker          ✓    ✓
+  service api             ✗    ⚠    aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1 (+1 more)
+  service worker          ✓    ⚠    gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
   queue jobs              ✓    ⚠    gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
   load balancer web       ✓    ✗    gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
 
@@ -16,11 +16,23 @@ Relationships
 ✓ supported  ⚠ emulated  ✗ unavailable  – not applicable
 ✗ not deployable to aws, gcp
 --- stderr
+info: on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
+ --> testdata/undeployable.clowd:5:3
+  |
+5 |   image ghcr.io/me/api:latest
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 warning: not supported on aws: ECS Fargate can't start a task for an incoming request, so the minimum must be at least 1
  --> testdata/undeployable.clowd:6:3
   |
 6 |   scale 0 to 4
   |   ^^^^^^^^^^^^
+
+info: on gcp: Cloud Run pulls only from Artifact Registry and Docker Hub, so this image comes through an Artifact Registry proxy, which needs credentials if the image is private
+ --> testdata/undeployable.clowd:9:3
+  |
+9 |   image ghcr.io/me/worker:latest
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 info: on gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
   --> testdata/undeployable.clowd:11:15

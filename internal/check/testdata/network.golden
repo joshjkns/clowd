@@ -78,4 +78,4 @@ error: unknown `on gcp` setting `network`
    |
 21 |   network
    |   ^^^^^^^
-   = help: gcp has no program-wide settings yet; settings for one resource go inside its declaration, under `on gcp`
+   = help: using an existing network isn't implemented for gcp yet; Clowd creates one, which the `network` declaration configures

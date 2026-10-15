@@ -1,0 +1,14 @@
+use gcp in europe-west2
+
+network is private
+
+service api
+  image a
+
+database db is postgres
+
+load balancer web
+  listen on 80
+  send / to api
+
+api connects to db

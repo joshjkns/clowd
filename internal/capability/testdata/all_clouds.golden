@@ -16,31 +16,37 @@ database my: aws ✗  gcp ✗  azure ✗
   azure not implemented (database) at 18:10: 
 database fine: aws ✓  gcp ✓  azure ✗
   azure not implemented (database) at 19:10: 
-database minor: aws ✓  gcp ✓  azure ✗
+database standby: aws ✓  gcp ✗  azure ✗
+  gcp unsupported (highly available database) at 20:32: a highly available Cloud SQL database needs backups; remove `backups off`
   azure not implemented (database) at 20:10: 
+database minor: aws ✓  gcp ✓  azure ✗
+  azure not implemented (database) at 22:10: 
 bucket assets: aws ✓  gcp ✓  azure ✗
-  azure not implemented (bucket) at 21:8: 
+  azure not implemented (bucket) at 23:8: 
 queue jobs: aws ✓  gcp ⚠  azure ✗
-  gcp emulated (fifo queue) at 22:15: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
-  azure not implemented (queue) at 22:7: 
+  gcp emulated (fifo queue) at 24:15: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
+  azure not implemented (queue) at 24:7: 
 load balancer web: aws ✓  gcp ✗  azure ✗
-  gcp unsupported (public listener on a port other than 80, 8080 or 443) at 26:3: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
-  azure not implemented (load balancer) at 24:15: 
+  gcp unsupported (public listener on a port other than 80, 8080 or 443) at 28:3: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
+  azure not implemented (load balancer) at 26:15: 
 load balancer inner: aws ✓  gcp ✓  azure ✗
-  azure not implemented (load balancer) at 30:15: 
+  azure not implemented (load balancer) at 32:15: 
 api connects to db: aws ✓  gcp ✓  azure ✗
-  azure not implemented (service connects to database) at 34:1: 
+  azure not implemented (service connects to database) at 36:1: 
 api connects to worker: aws ✗  gcp ✗  azure ✗
-  aws not implemented (service connects to service) at 35:1: 
-  gcp not implemented (service connects to service) at 35:1: 
-  azure not implemented (service connects to service) at 35:1: 
+  aws not implemented (service connects to service) at 37:1: 
+  gcp not implemented (service connects to service) at 37:1: 
+  azure not implemented (service connects to service) at 37:1: 
 api reads and writes assets: aws ✓  gcp ✓  azure ✗
-  azure not implemented (service reads or writes bucket) at 36:1: 
+  azure not implemented (service reads or writes bucket) at 38:1: 
 worker reads jobs: aws ✓  gcp ⚠  azure ✗
-  gcp emulated (service reads queue) at 37:1: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
-  azure not implemented (service reads queue) at 37:1: 
+  gcp emulated (service reads queue) at 39:1: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
+  azure not implemented (service reads queue) at 39:1: 
+worker writes assets: aws ✓  gcp ⚠  azure ✗
+  gcp emulated (service writes bucket without reading it) at 40:1: Cloud Storage has no role that writes objects without reading them, so the service can read the bucket too
+  azure not implemented (service writes bucket without reading it) at 40:1: 
 api sends to jobs: aws ✓  gcp ✓  azure ✗
-  azure not implemented (service sends to queue) at 38:1: 
+  azure not implemented (service sends to queue) at 41:1: 
 service api on aws: aws ✓  gcp –  azure –
 service api on azure: aws –  gcp –  azure ✗
   azure not implemented (provider overrides) at 12:3: 
@@ -116,77 +122,101 @@ warning: database is not implemented for azure yet
 warning: database is not implemented for azure yet
   --> all_clouds.clowd:20:10
    |
-20 | database minor is postgres 16.4
+20 | database standby is mysql 8.0, highly available
+   |          ^^^^^^^
+
+warning: not supported on gcp: a highly available Cloud SQL database needs backups; remove `backups off`
+  --> all_clouds.clowd:20:32
+   |
+20 | database standby is mysql 8.0, highly available
+   |                                ^^^^^^^^^^^^^^^^
+
+warning: database is not implemented for azure yet
+  --> all_clouds.clowd:22:10
+   |
+22 | database minor is postgres 16.4
    |          ^^^^^
 
 warning: bucket is not implemented for azure yet
-  --> all_clouds.clowd:21:8
+  --> all_clouds.clowd:23:8
    |
-21 | bucket assets is public
+23 | bucket assets is public
    |        ^^^^^^
 
 warning: queue is not implemented for azure yet
-  --> all_clouds.clowd:22:7
+  --> all_clouds.clowd:24:7
    |
-22 | queue jobs is fifo
+24 | queue jobs is fifo
    |       ^^^^
 
 info: on gcp: Pub/Sub has no FIFO queues; this uses an ordered, exactly-once subscription, which limits throughput
-  --> all_clouds.clowd:22:15
+  --> all_clouds.clowd:24:15
    |
-22 | queue jobs is fifo
+24 | queue jobs is fifo
    |               ^^^^
 
 warning: load balancer is not implemented for azure yet
-  --> all_clouds.clowd:24:15
+  --> all_clouds.clowd:26:15
    |
-24 | load balancer web
+26 | load balancer web
    |               ^^^
 
 warning: not supported on gcp: public load balancers serve HTTP on 80 or 8080 and HTTPS on 443
-  --> all_clouds.clowd:26:3
+  --> all_clouds.clowd:28:3
    |
-26 |   listen on 8443
+28 |   listen on 8443
    |   ^^^^^^^^^^^^^^
 
 warning: load balancer is not implemented for azure yet
-  --> all_clouds.clowd:30:15
+  --> all_clouds.clowd:32:15
    |
-30 | load balancer inner is internal
+32 | load balancer inner is internal
    |               ^^^^^
 
 warning: service connects to database is not implemented for azure yet
-  --> all_clouds.clowd:34:1
+  --> all_clouds.clowd:36:1
    |
-34 | api connects to db
+36 | api connects to db
    | ^^^^^^^^^^^^^^^^^^
 
 warning: service connects to service is not implemented for aws, gcp and azure yet
-  --> all_clouds.clowd:35:1
+  --> all_clouds.clowd:37:1
    |
-35 | api connects to worker
+37 | api connects to worker
    | ^^^^^^^^^^^^^^^^^^^^^^
 
 warning: service reads or writes bucket is not implemented for azure yet
-  --> all_clouds.clowd:36:1
+  --> all_clouds.clowd:38:1
    |
-36 | api reads and writes assets
+38 | api reads and writes assets
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: service reads queue is not implemented for azure yet
-  --> all_clouds.clowd:37:1
+  --> all_clouds.clowd:39:1
    |
-37 | worker reads jobs
+39 | worker reads jobs
    | ^^^^^^^^^^^^^^^^^
 
 info: on gcp: Cloud Run consumes a pull subscription, so CPU stays allocated while instances run
-  --> all_clouds.clowd:37:1
+  --> all_clouds.clowd:39:1
    |
-37 | worker reads jobs
+39 | worker reads jobs
    | ^^^^^^^^^^^^^^^^^
 
-warning: service sends to queue is not implemented for azure yet
-  --> all_clouds.clowd:38:1
+warning: service writes bucket without reading it is not implemented for azure yet
+  --> all_clouds.clowd:40:1
    |
-38 | api sends to jobs
+40 | worker writes assets
+   | ^^^^^^^^^^^^^^^^^^^^
+
+info: on gcp: Cloud Storage has no role that writes objects without reading them, so the service can read the bucket too
+  --> all_clouds.clowd:40:1
+   |
+40 | worker writes assets
+   | ^^^^^^^^^^^^^^^^^^^^
+
+warning: service sends to queue is not implemented for azure yet
+  --> all_clouds.clowd:41:1
+   |
+41 | api sends to jobs
    | ^^^^^^^^^^^^^^^^^

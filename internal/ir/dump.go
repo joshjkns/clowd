@@ -42,6 +42,9 @@ func Dump(src *diag.File, p *Program) string {
 			line(1, "existing %s %s public %q private %q %s", e.Cloud, e.VPC, e.PublicSubnets, e.PrivateSubnets, pos(e.Pos))
 		}
 	}
+	for _, a := range p.Accounts {
+		line(0, "account %s %s %s", a.Cloud, a.ID, pos(a.Pos))
+	}
 	for _, r := range p.Resources {
 		h := r.Meta()
 		line(0, "%s %s %s", r.Kind(), h.Name, pos(h.Pos))

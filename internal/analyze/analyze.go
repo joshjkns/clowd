@@ -12,6 +12,7 @@ import (
 	"github.com/joshjkns/clowd/internal/diag"
 	"github.com/joshjkns/clowd/internal/ir"
 	"github.com/joshjkns/clowd/internal/lower/aws"
+	"github.com/joshjkns/clowd/internal/lower/gcp"
 )
 
 // Analysis is a checked file evaluated against its clouds.
@@ -25,7 +26,18 @@ type Analysis struct {
 }
 
 // HasBackend reports whether Clowd can lower and deploy to c.
-func HasBackend(c ir.Cloud) bool { return c == ir.AWS }
+func HasBackend(c ir.Cloud) bool { return c == ir.AWS || c == ir.GCP }
+
+// lowerDiags lowers p for c and returns what lowering reports.
+func lowerDiags(p *ir.Program, c ir.Cloud, source string) diag.List {
+	switch c {
+	case ir.AWS:
+		return aws.Lower(p, aws.Options{Project: "check", Source: source}).Diags
+	case ir.GCP:
+		return gcp.Lower(p, gcp.Options{Project: "check", Source: source}).Diags
+	}
+	return nil
+}
 
 // File checks f and evaluates it against targets, or against the file's
 // own `use` lines when targets is empty.
@@ -49,7 +61,7 @@ func File(f *diag.File, targets []ir.Cloud) *Analysis {
 	// a backend and that the program can be deployed to.
 	for i, c := range clouds {
 		if HasBackend(c) && a.Report.Deployable(i) {
-			a.All.Add(aws.Lower(res.Program, aws.Options{Project: "check", Source: f.Name}).Diags...)
+			a.All.Add(lowerDiags(res.Program, c, f.Name)...)
 		}
 	}
 	a.All.Sort()
