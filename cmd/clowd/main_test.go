@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,6 +48,7 @@ func TestCLI(t *testing.T) {
 		{"color_fmt", []string{"fmt", "--check", "--color=always", "testdata/unformatted.clowd"}, exitFailure},
 		{"color_never", []string{"check", "--color=never", "../../examples/app.clowd"}, exitOK},
 		{"bad_color", []string{"check", "--color=rainbow", "../../examples/app.clowd"}, exitBadInput},
+		{"lsp_extra_arg", []string{"lsp", "app.clowd"}, exitBadInput},
 		{"unknown_command", []string{"deploy"}, exitBadInput},
 		{"no_args", nil, exitBadInput},
 	}
@@ -62,6 +64,34 @@ func TestCLI(t *testing.T) {
 			golden.Check(t, filepath.Join("testdata", tt.name+".golden"), got)
 		})
 	}
+}
+
+func TestLSP(t *testing.T) {
+	defer func(r io.Reader) { stdin = r }(stdin)
+	tests := []struct {
+		name, in string
+		code     int
+		stderr   string
+	}{
+		{"disconnect", "", exitFailure, "clowd lsp: the client disconnected without shutting the server down\n"},
+		{"shutdown and exit", frame(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`) +
+			frame(`{"jsonrpc":"2.0","id":2,"method":"shutdown"}`) +
+			frame(`{"jsonrpc":"2.0","method":"exit"}`), exitOK, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdin = strings.NewReader(tt.in)
+			_, stderr, code := runCLI("lsp", "--stdio")
+			if code != tt.code || stderr != tt.stderr {
+				t.Errorf("exit %d, stderr %q; want %d, %q", code, stderr, tt.code, tt.stderr)
+			}
+		})
+	}
+}
+
+// frame wraps a JSON-RPC message in its header.
+func frame(body string) string {
+	return fmt.Sprintf("Content-Length: %d\r\n\r\n%s", len(body), body)
 }
 
 // TestJSONIsValid guards the --json contract: it must always parse, even
