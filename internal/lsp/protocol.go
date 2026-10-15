@@ -124,7 +124,6 @@ const (
 	itemClass      = 7
 	itemModule     = 9
 	itemProperty   = 10
-	itemValue      = 12
 	itemKeyword    = 14
 	itemEnumMember = 20
 )

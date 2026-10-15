@@ -283,6 +283,9 @@ func TestComplete(t *testing.T) {
 		{"cloud settings", "on aws\n  |", "network"},
 		{"network settings", "on aws\n  network\n    |", "vpc public_subnets private_subnets"},
 		{"in a comment", "# service |", ""},
+		{"in a trailing comment", "service api  # port |", ""},
+		{"after a # inside a word", "use aws#1 |", "in"},
+		{"in a string", "service api\n  env A \"# x\"\n  |", "command cpu env health check image memory port scale on"},
 		{"after a value", "service api\n  image a |", ""},
 	}
 	for _, tt := range tests {

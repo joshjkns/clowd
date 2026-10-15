@@ -99,7 +99,7 @@ func lastWord(s string) string {
 }
 
 // inComment reports whether the end of line text is inside a comment: a
-// `#` outside quotes.
+// `#` outside quotes at the start of a word, as the lexer reads it.
 func inComment(text string) bool {
 	quoted := false
 	for i := 0; i < len(text); i++ {
@@ -108,7 +108,7 @@ func inComment(text string) bool {
 			i++
 		case text[i] == '"':
 			quoted = !quoted
-		case text[i] == '#' && !quoted:
+		case text[i] == '#' && !quoted && (i == 0 || text[i-1] == ' ' || text[i-1] == '\t'):
 			return true
 		}
 	}
