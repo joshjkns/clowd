@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Menu, X } from 'lucide-react'
 import { DOCS, FLAT } from '@/lib/docs'
 
-const TINTS = ['bg-tok-kind', 'bg-tok-verb', 'bg-tok-cloud']
-
 function normalise(p: string) {
   return p.endsWith('/') ? p : p + '/'
 }
@@ -19,10 +17,9 @@ export function DocsSidebar() {
 
   const list = (
     <nav className="space-y-7 text-sm">
-      {DOCS.map((s, si) => (
+      {DOCS.map((s) => (
         <div key={s.section}>
-          <p className="mb-2 flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-faint">
-            <span className={`size-1.5 rounded-full ${TINTS[si % TINTS.length]}`} />
+          <p className="mb-2 text-sm text-paper">
             {s.section}
           </p>
           <ul className="space-y-0.5 border-l border-line">
@@ -32,7 +29,7 @@ export function DocsSidebar() {
                 <li key={p.href}>
                   <Link
                     href={p.href}
-                    className={`-ml-px block border-l py-1.5 pl-4 transition ${active ? 'border-tok-verb font-medium text-paper' : 'border-transparent text-mute hover:border-mute hover:text-paper'}`}
+                    className={`-ml-px block border-l py-1.5 pl-4 transition ${active ? 'border-paper text-paper' : 'border-transparent text-mute hover:border-mute hover:text-paper'}`}
                   >
                     {p.title}
                   </Link>
@@ -60,7 +57,7 @@ export function DocsSidebar() {
         {open && <div className="mt-4 rounded-lg border border-line bg-ink-2 p-4">{list}</div>}
       </div>
       <aside className="hidden lg:block">
-        <div className="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto pb-10">{list}</div>
+        <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto pb-10">{list}</div>
       </aside>
     </>
   )
@@ -74,7 +71,7 @@ export function DocsPager() {
   return (
     <div className="mt-20 grid gap-3 border-t border-line pt-8 sm:grid-cols-2">
       {prev ? (
-        <Link href={prev.href} className="group rounded-xl border border-line px-4 py-3 transition hover:border-mute">
+        <Link href={prev.href} className="group rounded-lg border border-line px-4 py-3 transition hover:border-mute">
           <span className="flex items-center gap-1.5 text-xs text-faint">
             <ArrowLeft className="size-3.5" /> Previous
           </span>
@@ -84,7 +81,7 @@ export function DocsPager() {
         <span />
       )}
       {next && (
-        <Link href={next.href} className="group rounded-xl border border-line px-4 py-3 text-right transition hover:border-mute">
+        <Link href={next.href} className="group rounded-lg border border-line px-4 py-3 text-right transition hover:border-mute">
           <span className="flex items-center justify-end gap-1.5 text-xs text-faint">
             Next <ArrowRight className="size-3.5" />
           </span>

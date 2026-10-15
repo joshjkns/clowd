@@ -19,13 +19,13 @@ export function CopyCommand({ command = INSTALL, className = '' }: { command?: s
           // Clipboard can be blocked; the command is still selectable.
         }
       }}
-      className={`group flex max-w-full items-center gap-3 overflow-hidden rounded-xl border border-line bg-ink-2 px-4 py-3 text-left font-mono text-[13px] transition hover:border-mute ${className}`}
+      className={`group flex max-w-full items-center gap-3 overflow-hidden rounded-lg border border-line-2 bg-ink-2 px-4 py-3 text-left font-mono text-[13px] transition hover:border-mute ${className}`}
       aria-label={`Copy: ${command}`}
     >
-      <span className="select-none text-tok-verb">$</span>
+      <span className="select-none text-faint">$</span>
       <span className="truncate text-paper">{command}</span>
       <span className="ml-auto shrink-0 text-mute transition group-hover:text-paper">
-        {copied ? <Check className="size-4 text-tok-cloud" /> : <Copy className="size-4" />}
+        {copied ? <Check className="size-4 text-paper" /> : <Copy className="size-4" />}
       </span>
     </button>
   )

@@ -6,16 +6,17 @@ type Props = {
   title?: string
   lineNumbers?: boolean
   className?: string
+  // No frame, for code that sits inside another panel.
+  bare?: boolean
 }
 
 /** A static code block. Clowd is highlighted; shell gets a dimmed prompt. */
-export function Code({ src, lang = 'clowd', title, lineNumbers = false, className = '' }: Props) {
+export function Code({ src, lang = 'clowd', title, lineNumbers = false, className = '', bare = false }: Props) {
   const text = src.replace(/\n$/, '')
   return (
-    <div className={`overflow-hidden rounded-xl border border-line bg-ink-2 ${className}`}>
+    <div className={`overflow-hidden ${bare ? '' : 'rounded-lg border border-line bg-ink-2'} ${className}`}>
       {title && (
-        <div className="flex items-center gap-2 border-b border-line px-4 py-2 font-mono text-xs text-mute">
-          <span className="size-2 rounded-full bg-tok-verb/70" />
+        <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">
           {title}
         </div>
       )}
@@ -44,14 +45,14 @@ function Shell({ text }: { text: string }) {
     if (line.startsWith('$ ')) {
       return (
         <span key={i} className="block">
-          <span className="select-none text-tok-verb">$ </span>
+          <span className="select-none text-faint">$ </span>
           <span className="text-paper">{line.slice(2)}</span>
         </span>
       )
     }
     if (line.trimStart().startsWith('#')) {
       return (
-        <span key={i} className="block italic text-tok-comment">
+        <span key={i} className="block text-faint">
           {line}
         </span>
       )

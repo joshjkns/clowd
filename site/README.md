@@ -1,7 +1,7 @@
 # clowd.jooo.sh
 
 The landing page and docs for Clowd. Next.js (App Router, static export),
-Tailwind CSS v4, MDX for docs, `motion` for animation and `lucide-react` for
+Tailwind CSS v4, MDX for docs and `lucide-react` for
 icons.
 
 ```sh
@@ -16,8 +16,8 @@ npm run build    # static site in out/
 src/app/page.tsx          landing page
 src/app/docs/*/page.mdx   docs, one folder per page
 src/lib/docs.ts           docs sidebar order
-src/lib/clowd.ts          Clowd syntax highlighter; its colours are the site palette
-src/lib/demo.ts           the hero build animation and its measured numbers
+src/lib/clowd.ts          Clowd syntax highlighter, the only colour on the site
+src/lib/demo.ts           the hero panel's resources and the measured numbers
 src/lib/toy.ts            the "did you mean" toy checker
 src/data/app.aws.tf.json  real `clowd build --target aws` output of examples/app.clowd
 ```

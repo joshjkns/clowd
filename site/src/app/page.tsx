@@ -1,301 +1,287 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { HeroLine } from '@/components/HeroLine'
-import { BuildDemo } from '@/components/BuildDemo'
-import { SpeedTerminal } from '@/components/SpeedTerminal'
-import { Kinds } from '@/components/Kinds'
 import { DidYouMean } from '@/components/DidYouMean'
 import { Matrix } from '@/components/Matrix'
 import { Code } from '@/components/Code'
 import { CopyCommand } from '@/components/CopyCommand'
-import { REPO } from '@/components/Nav'
-import { CHECK_MS, SOURCE_LINES, TOTAL_RESOURCES } from '@/lib/demo'
+import { highlight, tokenClass } from '@/lib/clowd'
+import { CHECK_MS, FULL_SOURCE, JSON_LINES, SOURCE_LINES, STEPS, TOTAL_RESOURCES } from '@/lib/demo'
 
 export default function Home() {
   return (
     <main>
       {/* Hero */}
-      <section className="grid-bg relative">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
-          <Link
-            href="/docs/#status"
-            className="mb-10 inline-flex items-center gap-2 rounded-full border border-line bg-ink/80 px-3 py-1 font-mono text-xs text-mute transition hover:border-mute hover:text-paper"
-          >
-            <span className="size-1.5 rounded-full bg-tok-cloud" />
-            early · deploys to aws today, gcp next
-          </Link>
-          <HeroLine />
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-paper/85">
-            Clowd is a small, English-like language for cloud infrastructure. Write what you want in sentences; Clowd
-            checks it against every cloud you target and compiles it to{' '}
-            <a href="https://opentofu.org" className="underline decoration-line underline-offset-4 hover:decoration-mute">
-              OpenTofu
-            </a>
-            .
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <CopyCommand className="sm:w-auto" />
-            <Link
-              href="/docs/"
-              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-paper px-5 py-3 text-sm font-semibold text-ink transition hover:bg-white"
-            >
-              Read the docs
-              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 sm:px-6">
-        <BuildDemo />
-        <p className="mt-4 text-center font-mono text-xs text-faint">
-          # examples/app.clowd, built for real. {SOURCE_LINES} lines in, {TOTAL_RESOURCES} AWS resources out.
+      <section className="mx-auto max-w-6xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28">
+        <h1 className="max-w-3xl text-[clamp(2.4rem,6vw,4.25rem)] font-medium leading-[1.02] tracking-[-0.04em]">
+          Describe your cloud once.
+          <br />
+          <span className="text-mute">Deploy it to any of them.</span>
+        </h1>
+        <p className="mt-7 max-w-xl text-pretty text-[17px] leading-relaxed text-mute">
+          Clowd is a small, English-like language for infrastructure. Write what you want in sentences, check it against
+          every cloud you target, and deploy with OpenTofu.
         </p>
+        <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <CopyCommand className="sm:w-auto" />
+          <Link href="/docs/" className="group inline-flex items-center gap-1.5 text-sm text-mute transition hover:text-paper">
+            Read the docs <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+        </div>
+
+        <HeroPanel />
       </section>
 
-      {/* Speed */}
       <Section
-        id="fast"
-        tag="fast"
-        title={
-          <>
-            <span className="text-tok-num">{CHECK_MS} ms</span> from sentence to verdict.
-          </>
-        }
-        intro={
-          <>
-            <code>clowd check</code> parses, resolves and evaluates your file against every target cloud, locally, with no
-            credentials and no network. That’s fast enough to run on every keystroke, which is what the editor does.
-            Then <code>clowd build</code> writes plain OpenTofu JSON that you can read, diff, or take with you.
-          </>
-        }
+        label="Resources"
+        title="Nouns, not products."
+        subtitle="Clowd picks the service on each cloud."
+        body="You write service, database or bucket. Clowd chooses the product, then fills in the subnets, roles, log groups and health checks nobody wants to write by hand."
       >
-        <SpeedTerminal />
+        <Grid>
+          {KINDS.map((k) => (
+            <Card key={k.title} code={k.code} title={k.title} text={k.text} />
+          ))}
+        </Grid>
       </Section>
 
-      {/* Nouns */}
       <Section
-        id="nouns"
-        tag="nouns, not products"
-        title="Say what it is. Not what AWS calls it."
-        intro={
-          <>
-            You write <K>service</K>, <K>database</K>, <K>bucket</K>, <K>queue</K>. Clowd picks the product per cloud and
-            fills in the hundred settings nobody wants to think about: subnets, roles, log groups, health checks.
-          </>
-        }
-        aside
+        label="Relationships"
+        title="One line of wiring."
+        subtitle="Instead of a page of IAM and security groups."
+        body="A relationship generates the network path, the permissions and the environment variables your code reads. It never sees an ARN, and the variables are the same on every cloud."
       >
-        <Kinds />
+        <div className="overflow-hidden rounded-lg border border-line">
+          {RELATIONS.map((r, i) => (
+            <div key={r.src} className={`grid gap-6 p-6 md:grid-cols-[1fr_1.4fr] ${i ? 'border-t border-line' : ''}`}>
+              <Line src={r.src} className="text-[15px]" />
+              <div className="grid gap-5 text-sm sm:grid-cols-2">
+                <div>
+                  <p className="text-paper">On AWS</p>
+                  <ul className="mt-2 space-y-1 text-mute">
+                    {r.aws.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-paper">In the service</p>
+                  <ul className="mt-2 space-y-1 font-mono text-[12.5px] text-mute">
+                    {r.env.map((e) => (
+                      <li key={e}>{e}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Section>
 
-      {/* One phrasing */}
       <Section
-        id="phrasing"
-        tag="one way to say it"
-        title="Guess wrong, get the right words back."
-        intro={
-          <>
-            Each relationship has exactly one phrasing: <V>connects to</V>, never <em>links to</em>, <em>talks to</em> or{' '}
-            <em>uses</em>. A wrong guess is an error that names the fix, and the rest of the file keeps checking as if
-            you’d written it. Go on, break it.
-          </>
-        }
-      >
-        <DidYouMean />
-      </Section>
-
-      {/* Matrix */}
-      <Section
-        id="matrix"
-        tag="know before you deploy"
-        title="Find out which cloud says no before it does."
-        intro={
-          <>
-            <span className="text-ok">✓</span> maps straight across. <span className="text-warn">⚠</span> works, with a
-            caveat worth reading. <span className="text-bad">✗</span> won’t deploy, and here’s why. All from the same
-            capability matrix the compiler uses, so the check and the build never disagree.
-          </>
-        }
+        label="Checking"
+        title="Know before you deploy."
+        subtitle={`Every cloud, in ${CHECK_MS} milliseconds.`}
+        body="clowd check reads the same capability matrix the compiler uses. ✓ maps straight across, ⚠ works with a caveat, ✗ won't deploy and says why. No account, no network, no waiting for a plan."
       >
         <Matrix />
       </Section>
 
-      {/* Escape hatch */}
       <Section
-        id="escape"
-        tag="escape hatches"
-        title="Abstractions leak. Here’s the bucket."
-        intro={
-          <>
-            When the portable words aren’t enough, an <code>on aws</code> block passes raw provider arguments through.
-            Keys are checked against the real resource, so a typo fails in <code>check</code>, not halfway through an
-            apply.
-          </>
-        }
-        aside
+        label="Errors"
+        title="One way to say it."
+        subtitle="And the fix, when you guess wrong."
+        body="Each relationship has exactly one phrasing. A wrong guess is an error that names the right words, and the rest of the file keeps checking. Try a few below."
       >
-        <div className="grid gap-4">
-          <Code
-            title="app.clowd"
-            src={`service api
-  image ghcr.io/me/api:latest
-  scale 2 to 10
-  on aws
-    capacity_provider_strategy
-      capacity_provider FARGATE_SPOT
-      weight 1`}
-          />
-          <ul className="grid gap-2 text-sm text-mute sm:grid-cols-3">
-            <Fact>Raw keys look different on purpose</Fact>
-            <Fact>Only applied when lowering to that cloud</Fact>
-            <Fact>Wiring Clowd owns (subnets, roles) stays locked</Fact>
-          </ul>
-        </div>
+        <DidYouMean />
       </Section>
 
-      {/* Editor */}
       <Section
-        id="editor"
-        tag="editor"
-        title="Your editor already speaks it."
-        intro={
-          <>
-            <code>clowd lsp</code> ships in the same binary. The VS Code extension gives you live diagnostics, completion
-            that only offers what the checker accepts, formatting, and hovers that say what each line becomes.
-          </>
-        }
+        label="Output"
+        title="Plain OpenTofu underneath."
+        subtitle="No new engine, no lock-in."
+        body="clowd build writes ordinary OpenTofu JSON. OpenTofu plans, applies and keeps state, and you can read the output, diff it, or take it and leave."
+      >
+        <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-line md:grid-cols-4">
+          {[
+            [String(SOURCE_LINES), 'lines of Clowd'],
+            [String(TOTAL_RESOURCES), 'AWS resources'],
+            [String(JSON_LINES), 'lines of OpenTofu JSON'],
+            [`${CHECK_MS} ms`, 'to check it'],
+          ].map(([n, label], i) => (
+            <div key={label} className={`p-6 ${i % 2 ? 'border-l border-line' : ''} ${i > 1 ? 'border-t border-line md:border-t-0' : ''} ${i === 2 ? 'md:border-l' : ''}`}>
+              <p className="text-3xl font-medium tracking-tight">{n}</p>
+              <p className="mt-1 text-sm text-mute">{label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-faint">examples/app.clowd, built for AWS. Timed on an Apple M2.</p>
+      </Section>
+
+      <Section
+        label="Editor"
+        title="Your editor speaks it too."
+        subtitle="Diagnostics, hovers, completion, formatting."
+        body="The language server ships in the same binary as the CLI, so the editor and clowd check never disagree. Hover a resource to see what it becomes on each cloud."
       >
         <HoverMock />
       </Section>
 
       {/* Close */}
-      <section className="mx-auto max-w-6xl px-4 py-28 sm:px-6">
-        <div className="relative overflow-hidden rounded-3xl border border-line bg-ink-2 px-6 py-14 sm:px-12">
-          <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
-          <div className="relative">
-            <p className="font-mono text-[clamp(1.6rem,4.5vw,3.2rem)] font-bold leading-tight tracking-tight">
-              <span className="text-tok-name">you</span> <span className="text-tok-verb">reads</span>{' '}
-              <span className="text-tok-name">docs</span>
-              <span className="ml-1 inline-block h-[0.9em] w-[0.45em] translate-y-[0.1em] animate-blink bg-tok-verb" />
-            </p>
-            <p className="mt-3 font-mono text-sm text-faint"># error: `you` is a person, not a service. we’ll allow it.</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <CopyCommand />
-              <Link
-                href="/docs/"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-paper px-5 py-3 text-sm font-semibold text-ink transition hover:bg-white"
-              >
-                Get started <ArrowRight className="size-4" aria-hidden />
-              </Link>
-              <a
-                href={REPO}
-                className="inline-flex items-center justify-center rounded-xl border border-line px-5 py-3 text-sm text-mute transition hover:border-mute hover:text-paper"
-              >
-                Star on GitHub
-              </a>
-            </div>
-          </div>
+      <section className="border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-28 text-center sm:px-6">
+          <h2 className="text-[clamp(2rem,4.5vw,3rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+            From sentences to infrastructure.
+            <br />
+            <span className="text-mute">Install in one line.</span>
+          </h2>
+          <CopyCommand className="mt-10" />
+          <p className="mt-4 text-sm text-faint">Needs Go 1.26 or newer. Deploying also needs OpenTofu or Terraform.</p>
         </div>
       </section>
     </main>
   )
 }
 
+const KINDS = [
+  { code: 'service api', title: 'Services', text: 'Containers. ECS Fargate on AWS, Cloud Run on GCP.' },
+  { code: 'database db is postgres 16', title: 'Databases', text: 'Postgres or MySQL. RDS on AWS, Cloud SQL on GCP.' },
+  { code: 'bucket uploads is private', title: 'Buckets', text: 'Object storage. S3 on AWS, Cloud Storage on GCP.' },
+  { code: 'load balancer web', title: 'Load balancers', text: 'HTTPS with certificates, routed by path.' },
+  { code: 'queue jobs is fifo', title: 'Queues', text: 'SQS on AWS, Pub/Sub on GCP, with dead letters.' },
+  { code: 'on aws', title: 'Escape hatches', text: 'Raw provider settings when the abstraction runs out.' },
+]
+
+const RELATIONS = [
+  {
+    src: 'api connects to db',
+    aws: ['Security-group ingress rule', 'IAM grant to read the generated password'],
+    env: ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'],
+  },
+  {
+    src: 'api reads and writes uploads',
+    aws: ['IAM policy scoped to the one bucket'],
+    env: ['UPLOADS_BUCKET'],
+  },
+  {
+    src: 'api sends to jobs',
+    aws: ['IAM permission to publish to the queue'],
+    env: ['JOBS_QUEUE_URL'],
+  },
+]
+
 function Section({
-  id,
-  tag,
+  label,
   title,
-  intro,
-  aside = false,
+  subtitle,
+  body,
   children,
 }: {
-  id: string
-  tag: string
-  title: React.ReactNode
-  intro: React.ReactNode
-  aside?: boolean
+  label: string
+  title: string
+  subtitle: string
+  body: string
   children: React.ReactNode
 }) {
-  const text = (
-    <div className={aside ? 'lg:sticky lg:top-24' : 'max-w-2xl'}>
-      <p className="font-mono text-sm italic text-tok-comment"># {tag}</p>
-      <h2 className="mt-3 text-balance font-display text-[clamp(1.9rem,4vw,2.9rem)] font-bold leading-[1.05] tracking-tight">
-        {title}
-      </h2>
-      <p className="mt-5 text-pretty leading-relaxed text-mute [&_code]:font-mono [&_code]:text-[0.9em] [&_code]:text-tok-value [&_em]:not-italic [&_em]:text-paper/80 [&_em]:line-through [&_em]:decoration-bad/70">
-        {intro}
-      </p>
-    </div>
-  )
   return (
-    <section id={id} className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28 sm:px-6 sm:pt-36">
-      {aside ? (
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
-          {text}
-          {children}
+    <section className="border-t border-line">
+      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <h2 className="text-lg text-paper">{label}</h2>
+          <div>
+            <p className="text-[clamp(1.5rem,3vw,2rem)] font-medium leading-tight tracking-[-0.03em]">
+              {title}
+              <br />
+              <span className="text-mute">{subtitle}</span>
+            </p>
+            <p className="mt-5 max-w-md text-pretty text-[15px] leading-relaxed text-mute">{body}</p>
+          </div>
         </div>
-      ) : (
-        <>
-          {text}
-          <div className="mt-10">{children}</div>
-        </>
-      )}
+        <div className="mt-14">{children}</div>
+      </div>
     </section>
   )
 }
 
-function K({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono text-[0.92em] font-semibold text-tok-kind">{children}</span>
+function Grid({ children }: { children: React.ReactNode }) {
+  // gap-px over a line-coloured background draws hairlines between cells.
+  return <div className="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">{children}</div>
 }
 
-function V({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono text-[0.92em] font-semibold text-tok-verb">{children}</span>
-}
-
-function Fact({ children }: { children: React.ReactNode }) {
+function Card({ code, title, text }: { code: string; title: string; text: string }) {
   return (
-    <li className="rounded-lg border border-line/70 bg-ink-2/60 px-3 py-2.5 leading-snug">
-      <span className="mr-1.5 text-tok-prop">›</span>
-      {children}
-    </li>
+    <div className="bg-ink p-6">
+      <div className="flex h-28 items-center justify-center rounded-md border border-line bg-ink-2">
+        <Line src={code} className="text-[14px]" />
+      </div>
+      <p className="mt-5 text-[15px] text-paper">{title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-mute">{text}</p>
+    </div>
+  )
+}
+
+function Line({ src, className = '' }: { src: string; className?: string }) {
+  return (
+    <code className={`font-mono ${className}`}>
+      {highlight(src)[0].map((t, i) => (
+        <span key={i} className={tokenClass[t.kind]}>
+          {t.text}
+        </span>
+      ))}
+    </code>
+  )
+}
+
+function HeroPanel() {
+  const resources = STEPS.flatMap((s) => s.resources)
+  return (
+    <div className="mt-20 grid overflow-hidden rounded-lg border border-line bg-ink-2 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+      <div className="border-b border-line lg:border-b-0 lg:border-r">
+        <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">app.clowd</div>
+        <Code src={FULL_SOURCE} lineNumbers bare />
+      </div>
+      <div className="flex flex-col">
+        <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">clowd build --target aws</div>
+        <div className="px-5 pt-5">
+          <p className="text-4xl font-medium tracking-tight">{TOTAL_RESOURCES}</p>
+          <p className="mt-1 text-sm text-mute">AWS resources from {SOURCE_LINES} lines</p>
+        </div>
+        <ul className="mt-4 h-72 overflow-y-auto border-t border-line px-5 py-3 font-mono text-[12px] leading-[1.9] lg:h-auto lg:flex-1 lg:basis-0">
+          {resources.map((r) => {
+            const [type, name] = r.split('.')
+            return (
+              <li key={r} className="whitespace-nowrap">
+                <span className="text-faint">{type}.</span>
+                <span className="text-paper">{name}</span>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    </div>
   )
 }
 
 function HoverMock() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-ink-2 font-mono text-[13px] leading-[1.75]">
-      <div className="border-b border-line px-4 py-2.5 text-xs text-mute">app.clowd — Visual Studio Code</div>
-      <div className="relative px-4 py-4 pb-44 sm:pb-36">
-        <p>
-          <span className="text-tok-kw">use</span> <span className="text-tok-cloud">aws</span>{' '}
-          <span className="text-tok-kw">in</span> <span className="text-tok-value">eu-west-2</span>
-        </p>
-        <p>
-          <span className="text-tok-kw">use</span> <span className="text-tok-cloud">gcp</span>{' '}
-          <span className="text-tok-kw">in</span> <span className="text-tok-value">europe-west2</span>
-        </p>
-        <p>&nbsp;</p>
-        <p>
-          <span className="font-semibold text-tok-kind">service</span>{' '}
-          <span className="rounded-sm bg-paper/10 font-semibold text-tok-name">api</span>
-        </p>
-        <p className="pl-[2ch]">
-          <span className="text-tok-prop">scale</span> <span className="text-tok-num">0</span>{' '}
-          <span className="text-tok-kw">to</span>{' '}
-          <span className="text-tok-num underline decoration-tok-trait decoration-wavy underline-offset-4">5</span>
-        </p>
-        <div className="absolute left-4 right-4 top-[8.6rem] max-w-md rounded-lg border border-line bg-ink-3 p-3.5 font-sans text-[13px] leading-relaxed shadow-2xl shadow-black/60 sm:left-24 sm:right-auto">
-          <p className="font-mono text-paper">
-            <span className="text-tok-kind">service</span> api
-          </p>
+    <div className="overflow-hidden rounded-lg border border-line bg-ink-2 font-mono text-[13px] leading-[1.75]">
+      <div className="border-b border-line px-4 py-2.5 text-xs text-mute">app.clowd</div>
+      <div className="relative px-4 py-4 pb-40 sm:pb-32">
+        <Line src="use aws in eu-west-2" />
+        <br />
+        <Line src="use gcp in europe-west2" />
+        <br />
+        <br />
+        <Line src="service api" />
+        <br />
+        <Line src="  scale 0 to 5" className="whitespace-pre" />
+        <div className="absolute left-4 right-4 top-[8.6rem] max-w-md rounded-md border border-line-2 bg-ink-3 p-3.5 font-sans text-[13px] leading-relaxed shadow-2xl shadow-black sm:left-24 sm:right-auto">
+          <p className="font-mono text-paper">service api</p>
           <div className="mt-2 grid grid-cols-[3rem_1fr] gap-y-1 text-mute">
-            <span className="font-mono text-tok-cloud">aws</span>
+            <span className="font-mono text-paper">aws</span>
             <span>
               ECS Fargate <span className="text-bad">✗</span> minimum must be at least 1
             </span>
-            <span className="font-mono text-tok-cloud">gcp</span>
+            <span className="font-mono text-paper">gcp</span>
             <span>
               Cloud Run <span className="text-ok">✓</span>
             </span>

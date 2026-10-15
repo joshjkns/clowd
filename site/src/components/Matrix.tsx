@@ -24,14 +24,14 @@ export function Matrix() {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
       <Code src={MATRIX_SRC} title="app.clowd" lineNumbers />
-      <div className="overflow-x-auto rounded-xl border border-line bg-[#08090c] px-4 py-3.5 font-mono text-[12.5px] leading-[1.75]">
+      <div className="overflow-x-auto rounded-lg border border-line bg-ink-2 px-4 py-3.5 font-mono text-[12.5px] leading-[1.75]">
         <p>
-          <span className="select-none text-tok-verb">❯ </span>
+          <span className="select-none text-faint">$ </span>
           <span className="text-paper">clowd check</span>
         </p>
         <p className="text-paper">
-          app.clowd <span className="text-faint">→</span> <span className="text-tok-cloud">aws</span>,{' '}
-          <span className="text-tok-cloud">gcp</span>
+          app.clowd <span className="text-faint">→</span> <span className="text-paper">aws</span>,{' '}
+          <span className="text-paper">gcp</span>
         </p>
         <div className="mt-2 grid grid-cols-[minmax(0,1fr)_2.25rem_2.25rem] gap-x-1 sm:grid-cols-[9rem_2.25rem_2.25rem_minmax(0,1fr)] text-mute">
           <span className="font-semibold text-paper">Resources</span>
@@ -44,7 +44,7 @@ export function Matrix() {
               <span className={MARK[r.aws]}>{r.aws}</span>
               <span className={MARK[r.gcp]}>{r.gcp}</span>
               <span className="col-span-3 pb-2 pl-2 text-[11.5px] leading-snug sm:col-span-1 sm:pl-0">
-                <span className="text-tok-cloud">{r.note![0]}:</span> {r.note![1]}
+                <span className="text-paper">{r.note![0]}:</span> {r.note![1]}
               </span>
             </div>
           ))}

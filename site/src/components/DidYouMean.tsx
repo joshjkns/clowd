@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
 import { CornerDownLeft } from 'lucide-react'
 import { check, TOY_FILE, type Diag } from '@/lib/toy'
 import { highlight, tokenClass } from '@/lib/clowd'
@@ -15,7 +14,7 @@ export function DidYouMean() {
   const result = check(line)
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-ink-2">
+    <div className="overflow-hidden rounded-lg border border-line bg-ink-2">
       <div className="border-b border-line px-4 py-2.5 font-mono text-xs text-mute">toy.clowd</div>
       <pre className="px-0 pt-3 font-mono text-[13px] leading-[1.75]">
         {/* Keeps the trailing empty line: fmt puts a blank line before relationships. */}
@@ -30,7 +29,7 @@ export function DidYouMean() {
           </span>
         ))}
       </pre>
-      <label className="relative flex items-center bg-ink-3/70 py-1.5 pl-12 pr-4 font-mono text-[13px] leading-[1.75] ring-1 ring-inset ring-tok-verb/30 focus-within:ring-tok-verb/70">
+      <label className="relative flex items-center bg-ink-3 py-1.5 pl-12 pr-4 font-mono text-[13px] leading-[1.75] ring-1 ring-inset ring-line-2 focus-within:ring-mute">
         <span className="absolute left-3 w-6 select-none text-right text-faint">{LINE_NO}</span>
         <span className="sr-only">Type a relationship</span>
         {/* The input is transparent over a highlighted copy, so it colours as you type. */}
@@ -47,13 +46,12 @@ export function DidYouMean() {
           spellCheck={false}
           autoCapitalize="off"
           autoComplete="off"
-          className="w-full bg-transparent text-transparent caret-tok-verb outline-none"
+          className="w-full bg-transparent text-transparent caret-paper outline-none"
         />
       </label>
 
       <div className="min-h-[9.5rem] border-t border-line px-4 py-4 font-mono text-[12.5px] leading-[1.7]" aria-live="polite">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div key={line} initial={{ opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}>
+        <div>
             {result.kind === 'empty' && <p className="italic text-faint"># type a relationship, like api connects to db</p>}
             {result.kind === 'ok' && result.note && (
               <p>
@@ -75,18 +73,17 @@ export function DidYouMean() {
               </div>
             )}
             {result.kind === 'diags' && result.diags.map((d, i) => <Diagnostic key={i} d={d} line={line} onFix={setLine} />)}
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3 text-xs">
-        <span className="mr-1 text-faint">try</span>
+        <span className="mr-1 text-mute">Try</span>
         {TRIES.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setLine(t)}
-            className={`rounded-full border px-2.5 py-1 font-mono transition ${line === t ? 'border-tok-verb/60 text-paper' : 'border-line text-mute hover:border-mute hover:text-paper'}`}
+            className={`rounded-md border px-2.5 py-1 font-mono transition ${line === t ? 'border-mute text-paper' : 'border-line text-mute hover:border-mute hover:text-paper'}`}
           >
             {t}
           </button>
@@ -104,10 +101,10 @@ function Diagnostic({ d, line, onFix }: { d: Diag; line: string; onFix: (s: stri
         <span className={`font-bold ${colour}`}>{d.severity}</span>
         <span className="font-semibold text-paper">: {d.message}</span>
       </p>
-      <p className="text-tok-kind">
+      <p className="text-faint">
         {' '}--&gt; <span className="text-mute">toy.clowd:{LINE_NO}:{d.from + 1}</span>
       </p>
-      <p className="whitespace-pre text-tok-kind">
+      <p className="whitespace-pre text-faint">
         {'  |\n'}
         {String(LINE_NO).padStart(2)}
         {' | '}
@@ -118,15 +115,15 @@ function Diagnostic({ d, line, onFix }: { d: Diag; line: string; onFix: (s: stri
       {d.help && (
         <p className="mt-0.5 flex flex-wrap items-center gap-x-3">
           <span>
-            <span className="text-tok-kind">{'  = '}</span>
-            <span className="font-bold text-tok-prop">help</span>
+            <span className="text-faint">{'  = '}</span>
+            <span className="font-bold text-paper">help</span>
             <span className="text-paper">: {d.help}</span>
           </span>
           {d.fix && (
             <button
               type="button"
               onClick={() => onFix(d.fix!)}
-              className="inline-flex items-center gap-1 rounded border border-tok-prop/40 px-1.5 py-0.5 text-[11px] text-tok-prop transition hover:bg-tok-prop/10"
+              className="inline-flex items-center gap-1 rounded border border-line-2 px-1.5 py-0.5 text-[11px] text-paper transition hover:border-mute"
             >
               <CornerDownLeft className="size-3" aria-hidden /> apply
             </button>
