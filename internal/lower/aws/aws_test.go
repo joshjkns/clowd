@@ -112,6 +112,27 @@ func TestExamples(t *testing.T) {
 
 // TestDBName guards against RDS rejecting the database name: `db` is
 // reserved for Postgres, which broke deploying examples/app.clowd.
+func TestOverridable(t *testing.T) {
+	tests := []struct {
+		kind ir.Kind
+		path []string
+		res  string
+		want string
+	}{
+		{ir.BucketKind, nil, "aws_s3_bucket", "force_destroy object_lock_enabled"},
+		{ir.ServiceKind, []string{"capacity_provider_strategy"}, "aws_ecs_service", "base capacity_provider weight"},
+		{ir.ServiceKind, []string{"Deployment_Circuit_Breaker"}, "aws_ecs_service", "enable rollback"},
+		{ir.ServiceKind, []string{"platform_version"}, "aws_ecs_service", ""},
+		{ir.ServiceKind, []string{"nope", "deeper"}, "aws_ecs_service", ""},
+	}
+	for _, tt := range tests {
+		res, keys := Overridable(tt.kind, tt.path...)
+		if got := strings.Join(keys, " "); res != tt.res || got != tt.want {
+			t.Errorf("Overridable(%s, %q) = %s, %q; want %s, %q", tt.kind, tt.path, res, got, tt.res, tt.want)
+		}
+	}
+}
+
 func TestDBName(t *testing.T) {
 	tests := map[string]string{
 		"db":                    "db_db",

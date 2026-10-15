@@ -82,6 +82,10 @@ var traitSynonyms = map[ast.Kind]map[string]string{
 // traits checks d's traits against groups. Missing groups keep the
 // resource's defaults.
 func (c *checker) traits(d *ast.Declare, h *ir.Header, groups []traitGroup) {
+	if c.vocab != nil {
+		c.recordTraits(groups)
+		return
+	}
 	if len(groups) == 0 {
 		if len(d.Traits) > 0 {
 			sp := d.Traits[0].Pos.Join(d.Traits[len(d.Traits)-1].Pos)
@@ -264,6 +268,10 @@ var propSynonyms = map[string]string{
 // groups are the kind's traits, for suggesting a trait written as a
 // property.
 func (c *checker) props(d *ast.Declare, h *ir.Header, specs map[string]propSpec, groups []traitGroup) {
+	if c.vocab != nil {
+		c.recordProps(specs)
+		return
+	}
 	seen := map[string]diag.Span{}
 	for _, p := range d.Props {
 		key := strings.ToLower(p.Key.Text)

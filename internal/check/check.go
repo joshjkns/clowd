@@ -61,6 +61,9 @@ type checker struct {
 	// badUse is set when a `use` line was rejected, so the missing-target
 	// warning does not pile onto that error.
 	badUse bool
+	// vocab, when set, makes traits and props record what they accept
+	// instead of checking (VocabularyOf).
+	vocab *Vocabulary
 }
 
 func (c *checker) errorf(sp diag.Span, format string, args ...any) diag.Diagnostic {

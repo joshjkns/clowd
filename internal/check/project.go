@@ -208,6 +208,9 @@ func (c *checker) cloudSetting(cl ir.Cloud, p ast.Property) {
 	}
 }
 
+// networkSettings are the settings of an existing network.
+var networkSettings = []string{"vpc", "public_subnets", "private_subnets"}
+
 // existingNetwork checks an `on aws` `network` block naming a VPC that
 // already exists.
 func (c *checker) existingNetwork(cl ir.Cloud, p ast.Property) {
@@ -221,7 +224,7 @@ func (c *checker) existingNetwork(cl ir.Cloud, p ast.Property) {
 		return
 	}
 	e := ir.ExistingNetwork{Cloud: cl, Pos: p.Pos}
-	known := []string{"vpc", "public_subnets", "private_subnets"}
+	known := networkSettings
 	at := map[string]diag.Span{}
 	for _, s := range p.Block {
 		key := strings.ToLower(s.Key.Text)

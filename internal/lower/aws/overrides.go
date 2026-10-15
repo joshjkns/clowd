@@ -125,11 +125,16 @@ var wiring = map[string][]string{
 }
 
 // Overridable returns the resource type an `on aws` block in a resource
-// of kind k sets, and the top-level arguments it accepts, for completion
-// and hovers.
-func Overridable(k ir.Kind) (resource string, keys []string) {
+// of kind k sets, and the arguments it accepts, for completion and
+// hovers. With a path of nested block names (`capacity_provider_strategy`)
+// the keys are that block's arguments; a path that isn't a block has none.
+func Overridable(k ir.Kind, path ...string) (resource string, keys []string) {
 	o := overridable[k]
-	return o.resource, slices.Sorted(maps.Keys(o.args))
+	args := o.args
+	for _, name := range path {
+		args = args[strings.ToLower(name)].block
+	}
+	return o.resource, slices.Sorted(maps.Keys(args))
 }
 
 // overrides applies the program's `on aws` blocks. Values are written as
